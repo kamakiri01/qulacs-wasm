@@ -1,0 +1,4 @@
+lib-cpp/**/*
+lib/**/*
+package-lock.json
+third
