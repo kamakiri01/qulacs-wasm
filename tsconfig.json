@@ -10,7 +10,7 @@
       "forceConsistentCasingInFileNames": true
     },
     "files": [
-        "./typings/ModuleHoge.d.ts",
+        "./typings/ModuleQulacsWasm.d.ts",
         "./typings/emscriptem-types.d.ts"
     ],
     "include": [
