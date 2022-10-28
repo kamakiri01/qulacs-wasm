@@ -1,0 +1,24 @@
+{
+  "name": "qulacs-wasm",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:tsc": "tsc -p .",
+    "build:emscripten": "npm run build:emscripten:em++ && npm run build:emscripten:cp",
+    "build:emscripten:em++": "em++ -O2 -I ../qulacs/include -I ../boost/ -L ../qulacs/lib -o ./lib-cpp/module.js ./src-cpp/QulacsClient.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleHoge\"' --bind -s DISABLE_EXCEPTION_CATCHING=0",
+    "build:emscripten:cp": "cpx ./lib-cpp/** ./lib/wasm/ --clean",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/emscripten": "^1.39.6",
+    "@types/node": "^18.11.3",
+    "cpx": "^1.5.0",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+  }
+}
