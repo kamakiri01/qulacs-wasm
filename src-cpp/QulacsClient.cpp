@@ -11,7 +11,13 @@
 #include <cppsim/circuit.hpp>
 
 extern "C" {
+    struct GetStateVectorWithExpectationValueResult {
+        std::vector<double> stateVector;
+        double expectationValue;
+    };
+
     void applyGate(QuantumCircuit* circuit, int gateType, int qubitIndex) {
+        printf("applyGate: %d\n", gateType);
         switch(gateType) {
             case 1:
                 circuit->add_X_gate(qubitIndex);
@@ -65,7 +71,7 @@ extern "C" {
         }
     }
 
-        std::vector<double> getStateVectorWithExpectationValue(const emscripten::val &v) {
+        GetStateVectorWithExpectationValueResult getStateVectorWithExpectationValue(const emscripten::val &v) {
         // ToWasmCalcStateInfo型を分解
         const auto circuitInfo = v["circuitInfo"];
         const auto size = circuitInfo["size"].as<int>();
@@ -120,10 +126,14 @@ extern "C" {
 
         printf("observableStepsCount: %d \n", observableStepsCount);
         for (size_t i = 0; i < observableStepsCount; ++i) {
-            const auto step = circuitSteps[i]; // ToWasmObservableStep
+            printf("for observableStepsCount: %d\n", i);
+            const auto step = observableSteps[i]; // ToWasmObservableStep
             const double coefficient = step["coefficient"].as<double>();
+            printf("for1\n");
             const auto operators = emscripten::vecFromJSArray<emscripten::val>(step["operators"]); // GateType[]
+            printf("for2\n");
             const int operatorsCount = operators.size();
+            printf("for coefficient:%lf, operatorsCount: %d\n", coefficient, operatorsCount);
             std::string Pauli_string = "";
             for (size_t j = 0; j < operatorsCount; ++j) {
                 std::string pauli = "";
@@ -133,24 +143,27 @@ extern "C" {
                     case 0:
                         continue; // empty gate
                     case 1:
-                        pauli += "X";
+                        pauli += "X ";
                         break;
                     case 2:
-                        pauli += "Y";
+                        pauli += "Y ";
                         break;
                     case 3:
-                        pauli += "Z";
+                        pauli += "Z ";
                         break;
                 }
                 Pauli_string += pauli + std::to_string(j);
             }
+            printf("Pauli_string: %8s\n", Pauli_string.c_str());
             observable.add_operator(coefficient, Pauli_string.c_str());
+            printf("add_operator done\n");
         }
 
         // NOTE: for文前に置くべきか
         if (observableStepsCount == 0) {
             observable.add_operator(1, "");
         }
+            printf("add_operator done2\n");
 
         const auto result = observable.get_expectation_value(&state);
         printf("exp re: %lf im:%lf \n", result.real(), result.imag());
@@ -166,11 +179,17 @@ extern "C" {
             printf("c[%d] re: %lf im:%lf \n", i, c.real(), c.imag());
         }
 
-        return data;
+        return {
+            stateVector: data,
+            expectationValue: result.real()
+        };
     }
 }
 
 EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::register_vector<double>("vector<double>");
+    emscripten::value_object<GetStateVectorWithExpectationValueResult>("GetStateVectorWithExpectationValueResult")
+        .field("stateVector", &GetStateVectorWithExpectationValueResult::stateVector)
+        .field("expectationValue", &GetStateVectorWithExpectationValueResult::expectationValue);
     emscripten::function("getStateVectorWithExpectationValue", &getStateVectorWithExpectationValue, emscripten::allow_raw_pointers());
 };

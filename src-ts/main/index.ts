@@ -1,6 +1,6 @@
 const { Worker } = require('worker_threads');
 var ModuleQulacsWasm = require("../wasm/module.js");
-import { QulacsWasmClient, QulacsWasmModule } from "./QulacsWasmClient";
+import { QulacsWasmClient, QulacsWasmModule } from "./QulacsWasmClient/QulacsWasmClient";
 
 export interface initQulacsModuleOption {
     useWorker: boolean;

@@ -1,7 +1,5 @@
 // QulacsWasmClientのユーザが塚う量子回路情報の型定義。
 
-import type { ToWasmGateControllIndex, ToWasmGateParameter } from "./CommonGateType";
-
 export const ToWasmDefaultGateType = {
     EMPTY: undefined,
     X: "x",
@@ -21,6 +19,6 @@ export const ToWasmDefaultGateType = {
 
 export type ToWasmDefaultQuantumGate = {
     type: ToWasmDefaultGateType,
-    param?: ToWasmGateParameter, // RX/RY/RZのみ
-    controllQubitIndex?: ToWasmGateControllIndex // CNOT/CCNOTのみ
+    param?: number, // RX/RY/RZにおける回転角。Math.PIに対する係数であり、0~2
+    controllQubitIndex?: number[] // CNOT/CCNOTにおける制御量子ビットのindex
 }
