@@ -129,11 +129,8 @@ extern "C" {
             printf("for observableStepsCount: %d\n", i);
             const auto step = observableSteps[i]; // ToWasmObservableStep
             const double coefficient = step["coefficient"].as<double>();
-            printf("for1\n");
             const auto operators = emscripten::vecFromJSArray<emscripten::val>(step["operators"]); // GateType[]
-            printf("for2\n");
             const int operatorsCount = operators.size();
-            printf("for coefficient:%lf, operatorsCount: %d\n", coefficient, operatorsCount);
             std::string Pauli_string = "";
             for (size_t j = 0; j < operatorsCount; ++j) {
                 std::string pauli = "";
