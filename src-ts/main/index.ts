@@ -7,16 +7,15 @@ export interface initQulacsModuleOption {
 }
 
 export async function initQulacsModule(option: initQulacsModuleOption): Promise<QulacsWasmClient> {
+    let qulacsModule: QulacsWasmModule;
     if (option.useWorker) {
         throw new Error("no work around");
-        const qulacsModule = await initQulacsWorker();
-        const client = new QulacsWasmClient({module: qulacsModule});
-        return client;
+        qulacsModule = await initQulacsWorker();
     } else {
-        const qulacsModule = await initQulacs();
-        const client = new QulacsWasmClient({module: qulacsModule});
-        return client;
+        qulacsModule = await initQulacs();
     }
+    const client = new QulacsWasmClient({module: qulacsModule});
+    return client;
 }
 
 function initQulacs(): Promise<QulacsWasmModule> {
