@@ -14,7 +14,7 @@ export const ToWasmDefaultGateType = {
     CNOT: "cnot",
     CCNOT: "ccnot"
 } as const;
-  export type ToWasmDefaultGateType = typeof ToWasmDefaultGateType[keyof typeof ToWasmDefaultGateType];
+export type ToWasmDefaultGateType = typeof ToWasmDefaultGateType[keyof typeof ToWasmDefaultGateType];
 
 
 export type ToWasmDefaultQuantumGate = {
