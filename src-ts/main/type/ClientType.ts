@@ -1,19 +1,18 @@
-import { ToWasmDefaultGateType, ToWasmDefaultQuantumGate } from "./DefaultGateType";
-import { ToWasmRawGateType, ToWasmRawQuantumGate } from "./RawGateType";
+import { QuantumGate } from "./QuantumGate";
+import { PauliGateType } from "./QuantumGateType";
+import { WasmQuantumGate, WasmPauliGateType } from "./WasmGateType";
 
 //circuit
 
-type ToWasmQuantumCircuitStep<QuantumGate extends (ToWasmDefaultQuantumGate | ToWasmRawQuantumGate)> = QuantumGate[];
-type ToWasmQuantumCircuitData<QuantumGate extends (ToWasmDefaultQuantumGate | ToWasmRawQuantumGate)> = ToWasmQuantumCircuitStep<QuantumGate>[];
+type ToWasmQuantumCircuitStep<T extends (QuantumGate | WasmQuantumGate)> = T[];
+type ToWasmQuantumCircuitData<T extends (QuantumGate | WasmQuantumGate)> = ToWasmQuantumCircuitStep<T>[];
 
 // observable
 
-type ToWasmObservableGateType<T extends (ToWasmDefaultGateType | ToWasmRawGateType)> =
-    Extract<T, typeof ToWasmDefaultGateType.EMPTY | typeof ToWasmDefaultGateType.X | typeof ToWasmDefaultGateType.Y | typeof ToWasmDefaultGateType.Z > |
-    Extract<T, typeof ToWasmRawGateType.EMPTY | typeof ToWasmRawGateType.X | typeof ToWasmRawGateType.Y | typeof ToWasmRawGateType.Z>;
-type ToWasmObservableData<GateType extends (ToWasmDefaultGateType | ToWasmRawGateType)> = ToWasmObservableStep<GateType>[];
-type ToWasmObservableStep<GateType extends (ToWasmDefaultGateType | ToWasmRawGateType)> = {
-    operators: ToWasmObservableGateType<GateType>[];
+type ToWasmObservableGateType<T extends (PauliGateType | WasmPauliGateType)> = T;
+type ToWasmObservableData<T extends (PauliGateType | WasmPauliGateType)> = ToWasmObservableStep<T>[];
+type ToWasmObservableStep<T extends (PauliGateType | WasmPauliGateType)> = {
+    operators: ToWasmObservableGateType<T>[];
     coefficient: number;
 };
 
@@ -22,8 +21,8 @@ type ToWasmObservableStep<GateType extends (ToWasmDefaultGateType | ToWasmRawGat
  * QulacsWasmClient と QulacsWasmModule 先の wasm モジュールの双方で利用するため、
  * 量子ゲート表現をジェネリクスで分離している
  */
-export interface ToWasmCircuitInfo<QuantumGate extends (ToWasmDefaultQuantumGate | ToWasmRawQuantumGate)> {
-    circuit: ToWasmQuantumCircuitData<QuantumGate>;
+export interface ToWasmCircuitInfo<T extends (QuantumGate | WasmQuantumGate)> {
+    circuit: ToWasmQuantumCircuitData<T>;
     size: number;
 }
 
@@ -32,16 +31,16 @@ export interface ToWasmCircuitInfo<QuantumGate extends (ToWasmDefaultQuantumGate
  * QulacsWasmClient と QulacsWasmModule 先の wasm モジュールの双方で利用するため、
  * 量子ゲート表現をジェネリクスで分離している
  */
-export interface ToWasmObservableInfo<GateType extends (ToWasmDefaultGateType | ToWasmRawGateType)> {
-    observable: ToWasmObservableData<GateType>;
+export interface ToWasmObservableInfo<T extends (PauliGateType | WasmPauliGateType)> {
+    observable: ToWasmObservableData<T>;
 }
 
 /**
  * QulacsWasmClient と QulacsWasmModule 向けの量子状態の環境設定表現
  */
 export interface ToWasmCalcStateInfo<
-    GateType extends (ToWasmDefaultGateType | ToWasmRawGateType),
-    QuantumGate extends (ToWasmDefaultQuantumGate | ToWasmRawQuantumGate)> {
-    circuitInfo: ToWasmCircuitInfo<QuantumGate>;
-    observableInfo: ToWasmObservableInfo<GateType>;
+    T extends (PauliGateType | WasmPauliGateType),
+    U extends (QuantumGate | WasmQuantumGate)> {
+    circuitInfo: ToWasmCircuitInfo<U>;
+    observableInfo: ToWasmObservableInfo<T>;
 }

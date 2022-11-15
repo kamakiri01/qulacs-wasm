@@ -1,10 +1,10 @@
 import { ToWasmOperator } from "../client/QulacsNativeClient/util";
 import { ToWasmCalcStateInfo } from "../type/ClientType";
 import { WasmVector } from "../type/common";
-import { ToWasmRawGateType, ToWasmRawQuantumGate } from "../type/RawGateType";
+import { WasmPauliGateType, WasmQuantumGate } from "../type/WasmGateType";
 
 export interface QulacsWasmModule extends EmscriptenWasm.Module {
-    getStateVectorWithExpectationValue(request: ToWasmCalcStateInfo<ToWasmRawGateType, ToWasmRawQuantumGate>): GetStateVectorWithExpectationValueResult;
+    getStateVectorWithExpectationValue(request: ToWasmCalcStateInfo<WasmPauliGateType, WasmQuantumGate>): GetStateVectorWithExpectationValueResult;
     state_dataCpp(request: ToWasmSerialInfo): { doubleVec: WasmVector, cppVec: any }; // NOTE: 暫定
 }
 

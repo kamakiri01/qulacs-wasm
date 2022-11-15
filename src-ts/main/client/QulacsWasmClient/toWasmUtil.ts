@@ -1,9 +1,10 @@
 import { ToWasmCircuitInfo, ToWasmObservableInfo } from "../../type/ClientType";
-import { ToWasmDefaultQuantumGate, ToWasmDefaultGateType } from "../../type/DefaultGateType";
-import { ToWasmRawGateType, ToWasmRawQuantumGate } from "../../type/RawGateType";
+import { MultiQuantumGate, ParametricQuantumGate, QuantumGate } from "../../type/QuantumGate";
+import { MultiQuantumGateType, ParametricQuantumGateType, PauliGateType, QuantumGateType } from "../../type/QuantumGateType";
+import { WasmPauliGateType, WasmQuantumGate, WasmQuantumGateType } from "../../type/WasmGateType";
 
-export function convertCircuitInfo(circuitInfo: ToWasmCircuitInfo<ToWasmDefaultQuantumGate>): ToWasmCircuitInfo<ToWasmRawQuantumGate> {
-    const wasmCircuitInfo: ToWasmCircuitInfo<ToWasmRawQuantumGate> = {
+export function convertCircuitInfo(circuitInfo: ToWasmCircuitInfo<QuantumGate>): ToWasmCircuitInfo<WasmQuantumGate> {
+    const wasmCircuitInfo: ToWasmCircuitInfo<WasmQuantumGate> = {
         size: circuitInfo.size,
         circuit: []
     };
@@ -17,8 +18,8 @@ export function convertCircuitInfo(circuitInfo: ToWasmCircuitInfo<ToWasmDefaultQ
     return wasmCircuitInfo;
 }
 
-export function convertObservableInfo(observableInfo: ToWasmObservableInfo<ToWasmDefaultGateType>): ToWasmObservableInfo<ToWasmRawGateType> {
-    const wasmObsevableInfo: ToWasmObservableInfo<ToWasmRawGateType> = {
+export function convertObservableInfo(observableInfo: ToWasmObservableInfo<PauliGateType>): ToWasmObservableInfo<WasmPauliGateType> {
+    const wasmObsevableInfo: ToWasmObservableInfo<WasmPauliGateType> = {
         observable: []
     };
     observableInfo.observable.forEach((step, index) => {
@@ -32,13 +33,13 @@ export function convertObservableInfo(observableInfo: ToWasmObservableInfo<ToWas
             }
 
             switch(step.operators[i]) {
-                case ToWasmDefaultGateType.X:
+                case PauliGateType.X:
                     wasmObsevableInfo.observable[index].operators.push(1);
                     break;
-                case ToWasmDefaultGateType.Y:
+                case PauliGateType.Y:
                     wasmObsevableInfo.observable[index].operators.push(2);
                     break;
-                case ToWasmDefaultGateType.Z:
+                case PauliGateType.Z:
                     wasmObsevableInfo.observable[index].operators.push(3);
                     break;
             }
@@ -47,46 +48,63 @@ export function convertObservableInfo(observableInfo: ToWasmObservableInfo<ToWas
     return wasmObsevableInfo;
 }
 
-export function translateDefaultGateToWasmGate(gate: ToWasmDefaultQuantumGate): ToWasmRawQuantumGate {
-    let wasmGate: ToWasmRawQuantumGate;
+export function translateDefaultGateToWasmGate(gate: QuantumGate): WasmQuantumGate {
+    let wasmGate: WasmQuantumGate;
     if (!gate) {
         wasmGate = [0, 0, []];
     } else {
-        wasmGate = [
-            translateGateType(gate.type),
-            gate.param ?? 0,
-            gate.controllQubitIndex ?? []
-
-        ];
+        const gateType = translateGateType(gate.type);
+        const gateParam = isParametricQuantumGateType(gate) ? gate.param : 0;
+        const gateControlls = isMultiQuantumGateType(gate) ? gate.controllQubitIndex : []
+        wasmGate = [gateType, gateParam, gateControlls];
     }
     return wasmGate;
 }
 
-function translateGateType(defaultGateType: ToWasmDefaultGateType | Extract<ToWasmDefaultGateType,  undefined | "x" | "y" | "z">): ToWasmRawGateType {
+function translateGateType(defaultGateType: QuantumGateType): WasmQuantumGateType {
     switch(defaultGateType) {
-        case ToWasmDefaultGateType.X:
+        case QuantumGateType.X:
             return 1;
-        case ToWasmDefaultGateType.Y:
+        case QuantumGateType.Y:
             return 2;
-        case ToWasmDefaultGateType.Z:
+        case QuantumGateType.Z:
             return 3;
-        case ToWasmDefaultGateType.H:
+        case QuantumGateType.H:
             return 4;
-        case ToWasmDefaultGateType.T:
+        case QuantumGateType.T:
             return 5;
-        case ToWasmDefaultGateType.S:
+        case QuantumGateType.S:
             return 6;
-        case ToWasmDefaultGateType.RX:
+        case QuantumGateType.RX:
             return 7;
-        case ToWasmDefaultGateType.RY:
+        case QuantumGateType.RY:
             return 8;
-        case ToWasmDefaultGateType.RZ:
+        case QuantumGateType.RZ:
             return 9;
-        case ToWasmDefaultGateType.CNOT:
+        case QuantumGateType.CNOT:
             return 10;
-        case ToWasmDefaultGateType.CCNOT:
+        case QuantumGateType.CCNOT:
             return 11;
         default:
             return 0; // unreachable required
     }
+}
+
+function isParametricQuantumGateType(gate: QuantumGate): gate is ParametricQuantumGate {
+    switch(gate.type) {
+        case ParametricQuantumGateType.RX:
+        case ParametricQuantumGateType.RY:
+        case ParametricQuantumGateType.RZ:
+            return true;
+        }
+        return false;
+}
+
+function isMultiQuantumGateType(gate: QuantumGate): gate is MultiQuantumGate {
+    switch(gate.type) {
+        case MultiQuantumGateType.CNOT:
+        case MultiQuantumGateType.CCNOT:
+            return true;
+        }
+        return false;
 }

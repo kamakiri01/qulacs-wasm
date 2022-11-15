@@ -23,7 +23,7 @@ export class QulacsNativeClient {
             get_vector: (state) => {
                 const size = state.qubit_count;
                 const stateInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
-                console.log("stateInfo", stateInfo);
+                console.log("stateInfo", JSON.stringify(stateInfo));
                 const data = this.module.state_dataCpp(stateInfo);
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: {type: StateActionType.setWasmVector, data: data.cppVec} }];
                 const stateVector = convertArrayToComplexArray(convertWasmVectorToArray(data.doubleVec));

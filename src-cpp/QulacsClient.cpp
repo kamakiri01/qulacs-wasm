@@ -38,7 +38,9 @@ extern "C" {
                 int gateType = gateRaw[0].as<int>();
                 double gateParam = gateRaw[1].as<double>();
                 std::vector<int> indexs = emscripten::vecFromJSArray<int>(gateRaw[2]);
-                // ここでcircuit構築
+                applyGate(circuit, gateType, j, gateParam, indexs);
+                /*
+                // @see WasmQuantumGateType.ts
                 switch(gateType) {
                     case 0:
                         break; // empty gate. do nothing
@@ -48,7 +50,7 @@ extern "C" {
                     case 4:
                     case 5:
                     case 6:
-                        applyGate(circuit, gateType, j);
+                        applySingleGate(circuit, gateType, j);
                         break;
                     case 7:
                     case 8:
@@ -59,6 +61,7 @@ extern "C" {
                     case 11:
                         applyMultiGate(circuit, gateType, j, indexs);
                 }
+                */
             }
         }
         QuantumState state(size);

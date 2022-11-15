@@ -12,8 +12,8 @@
 
 #include "state/double.cpp"
 
-void applyGate(QuantumCircuit* circuit, int gateType, int qubitIndex) {
-    printf("applyGate: %d\n", gateType);
+void applySingleGate(QuantumCircuit* circuit, int gateType, int qubitIndex) {
+    // @see WasmQuantumGateType.ts
     switch(gateType) {
         case 1:
             circuit->add_X_gate(qubitIndex);
@@ -51,6 +51,7 @@ void applyParametricGate(QuantumCircuit* circuit, int gateType, double gateParam
     }
 }
 void applyMultiGate(QuantumCircuit* circuit, int gateType, int qubitIndex, std::vector<int> controllIndexs) {
+    printf("gateType: %d index: %d [0]:%d \n", gateType, qubitIndex, controllIndexs[0]);
     switch(gateType) {
         case 10:
             circuit->add_CNOT_gate(qubitIndex, controllIndexs[0]);
@@ -64,6 +65,31 @@ void applyMultiGate(QuantumCircuit* circuit, int gateType, int qubitIndex, std::
             delete ptr;
             circuit->add_gate(toffoli);
             break;
+    }
+}
+
+void applyGate(QuantumCircuit* circuit, int gateType, int qubitIndex, double gateParam, std::vector<int> controllIndexs) {
+    printf("gateType: %d index: %d [0]:%d \n", gateType, qubitIndex, controllIndexs[0]);
+    // @see WasmQuantumGateType.ts
+    switch(gateType) {
+        case 0:
+            break; // empty gate. do nothing
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            applySingleGate(circuit, gateType, qubitIndex);
+            break;
+        case 7:
+        case 8:
+        case 9:
+            applyParametricGate(circuit, gateType, gateParam, qubitIndex);
+            break;
+        case 10:
+        case 11:
+            applyMultiGate(circuit, gateType, qubitIndex, controllIndexs);
     }
 }
 
@@ -82,16 +108,16 @@ std::vector<double> translateDataCppToVec(CPPCTYPE* raw_data_cpp, int vecSize) {
 
         //data.push_back(a);
         //data.push_back(a);
-        printf("c[%d] real: %f imam:%f a:%f realLX:%08lx aLX:%08lx minus:%f \n", i, real, imag, a, real, a, (a - real));
-        printf("r: %f %lf %+10.10lx\n", real, real, real);
-        printf("a: %f %lf %+10.10lx\n", a, a, a);
+        //printf("c[%d] real: %f imam:%f a:%f realLX:%08lx aLX:%08lx minus:%f \n", i, real, imag, a, real, a, (a - real));
+        //printf("r: %f %lf %+10.10lx\n", real, real, real);
+        //printf("a: %f %lf %+10.10lx\n", a, a, a);
 
-        printf("real:");
-        utilFunc(real);
-        printf("a:");
-        utilFunc(a);
-        printf("t:");
-        utilFunc(0.9999999999999998);
+        //printf("real:");
+        //utilFunc(real);
+        //printf("a:");
+        //utilFunc(a);
+        //printf("t:");
+        //utilFunc(0.9999999999999998);
         //printf("minus: %f\n", (a - real));
     }
     return data;
