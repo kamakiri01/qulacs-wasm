@@ -14,7 +14,7 @@
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
 
-#include "state/double.cpp"
+QuantumGateBase* getGate(int gateType, int qubitIndex, double gateParam, std::vector<int> controllIndexs);
 
 QuantumGateBase* getSingleGate(int gateType, int qubitIndex) {
     // @see WasmQuantumGateType.ts
@@ -78,7 +78,6 @@ QuantumGate_SingleParameter* getParametricGate(int gateType, double gateParam, i
 
 
 QuantumGateBase* getMultiGate(int gateType, int qubitIndex, std::vector<int> controllIndexs) {
-    // printf("gateType: %d index: %d [0]:%d \n", gateType, qubitIndex, controllIndexs[0]);
     QuantumGateBase* gate;
     switch(gateType) {
         case 10:
@@ -99,7 +98,6 @@ QuantumGateBase* getMultiGate(int gateType, int qubitIndex, std::vector<int> con
 }
 
 QuantumGateBase* getGate(int gateType, int qubitIndex, double gateParam, std::vector<int> controllIndexs) {
-    printf("[getGate] gateType: %d index: %d [0]:%d \n", gateType, qubitIndex, controllIndexs[0]);
     QuantumGateBase* gate;
     // @see WasmQuantumGateType.ts
     switch(gateType) {
@@ -126,32 +124,15 @@ QuantumGateBase* getGate(int gateType, int qubitIndex, double gateParam, std::ve
     return gate;
 }
 
-std::vector<double> translateDataCppToVec(CPPCTYPE* raw_data_cpp, int vecSize) {
+std::vector<double> translateCppcToVec(CPPCTYPE* raw_data_cpp, int vecSize) {
     std::vector<double> data;
     for (int i = 0; i < vecSize; i++) {
         auto c = raw_data_cpp[i];
-        //printf("CPP: %f \n", c.real());
-        //data.push_back(c.real());
-        //data.push_back(c.imag());
         double real = c.real();
         double imag = c.imag();
         double a = 1.000000;
         data.push_back(real);
         data.push_back(imag);
-
-        //data.push_back(a);
-        //data.push_back(a);
-        //printf("c[%d] real: %f imam:%f a:%f realLX:%08lx aLX:%08lx minus:%f \n", i, real, imag, a, real, a, (a - real));
-        //printf("r: %f %lf %+10.10lx\n", real, real, real);
-        //printf("a: %f %lf %+10.10lx\n", a, a, a);
-
-        //printf("real:");
-        //utilFunc(real);
-        //printf("a:");
-        //utilFunc(a);
-        //printf("t:");
-        //utilFunc(0.9999999999999998);
-        //printf("minus: %f\n", (a - real));
     }
     return data;
 }

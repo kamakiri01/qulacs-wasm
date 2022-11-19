@@ -61,7 +61,7 @@ DataCppResult data_cpp(const emscripten::val &serialInfo) {
 
     const auto raw_data_cpp = state->data_cpp();
     const int vecSize = pow(2, size);
-    std::vector<double> data = translateDataCppToVec(raw_data_cpp, vecSize);
+    std::vector<double> data = translateCppcToVec(raw_data_cpp, vecSize);
     std::vector<CPPCTYPE> cppData = transpaleCPPtoCPPVec(raw_data_cpp, vecSize);
     return {
         doubleVec: data,

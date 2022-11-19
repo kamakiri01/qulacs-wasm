@@ -92,7 +92,7 @@ GetStateVectorWithExpectationValueResult util_getStateVectorWithExpectationValue
 
     const auto raw_data_cpp = state.data_cpp();
     const int vecSize = pow(2, size);
-    std::vector<double> data = translateDataCppToVec(raw_data_cpp, vecSize);
+    std::vector<double> data = translateCppcToVec(raw_data_cpp, vecSize);
 
     return {
         stateVector: data,
