@@ -120,7 +120,6 @@ QuantumGateBase* getGate(int gateType, int qubitIndex, double gateParam, std::ve
         case 11:
             gate = getMultiGate(gateType, qubitIndex, controllIndexs);
     }
-    printf("[getGate] done\n");
     return gate;
 }
 

@@ -55,7 +55,6 @@ ParametricQuantumCircuit* getSingleParametricCircuit(const emscripten::val &circ
             int gateType = gateRaw[0].as<int>();
             double gateParam = gateRaw[1].as<double>();
             std::vector<int> indexs = emscripten::vecFromJSArray<int>(gateRaw[2]);
-                printf("getParametricGate i:%d j:%d gateType:%d \n", i, j, gateType);
             if (target_step == i && target_index == j) {
                 QuantumGateBase* gate = getParametricGate(gateType, j, gateParam); // step-index位置のゲートがParametricだと暗黙に仮定する。また、このパスは1回しか通らない
                 circuit->add_parametric_gate((QuantumGate_SingleParameter*)gate);
@@ -66,13 +65,11 @@ ParametricQuantumCircuit* getSingleParametricCircuit(const emscripten::val &circ
         }
     }
     UINT param_count = circuit->get_parameter_count();
-    printf("ParametricQuantumCircuit UINT: %d\n", param_count);
     return circuit;
 }
 
 QuantumState getUpdatedState(const emscripten::val &circuitInfo) {
     const auto size = circuitInfo["size"].as<int>();
-    printf("data size: %d\n", size);
     QuantumCircuit* circuit = getCircuit(circuitInfo);
     QuantumState state(size);
     state.set_zero_state();
@@ -88,8 +85,6 @@ GetStateVectorWithExpectationValueResult util_getStateVectorWithExpectationValue
     Observable observable = getObservable(observableInfo, size);
 
     const auto result = observable.get_expectation_value(&state);
-    printf("exp re: %lf im:%lf \n", result.real(), result.imag());
-
     const auto raw_data_cpp = state.data_cpp();
     const int vecSize = pow(2, size);
     std::vector<double> data = translateCppcToVec(raw_data_cpp, vecSize);

@@ -20,10 +20,7 @@ GetExpectationValueMapResult util_getExpectationValueMap(const emscripten::val &
     const auto parametricPositionStep = request["parametricPositionStep"].as<int>();
     const auto parametricPositionQubitIndex = request["parametricPositionQubitIndex"].as<int>();
 
-    printf("getExpectationValueMap pStep:%d pIndex:%d size:%d \n", parametricPositionStep, parametricPositionQubitIndex, size);
-
     ParametricQuantumCircuit* circuit = getSingleParametricCircuit(circuitInfo, parametricPositionStep, parametricPositionQubitIndex);
-
     QuantumState state(size);
     state.set_zero_state();
     // circuit->update_quantum_state(&state);
@@ -41,7 +38,6 @@ GetExpectationValueMapResult util_getExpectationValueMap(const emscripten::val &
         circuit->update_quantum_state(&second_state);
         const auto result = observable.get_expectation_value(&second_state);
         const double expectationValue = result.real();
-        printf("set_parameter-angle[%d]: %f expectationValue:%f \n",i, angle, expectationValue);
         expectationValues.push_back(expectationValue);
     }
 
