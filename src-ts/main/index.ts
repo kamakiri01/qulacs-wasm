@@ -4,14 +4,14 @@ import { Observable } from "./nativeType/Observable";
 import { QuantumCircuit } from "./nativeType/QuantumCircuit";
 import { QuantumState } from "./nativeType/QuantumState";
 import { QulacsNativeClient } from "./client/QulacsNativeClient/QulacsNativeClient";
-import { QulacsWasmClient } from "./client/QulacsWasmClient/QulacsWasmClient";
+import { QulacsUtilClient } from "./client/QulacsWasmClient/QulacsUtilClient";
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 
 export interface initQulacsModuleOption {
     useWorker: boolean;
 }
 
-export async function initQulacsModule(option: initQulacsModuleOption): Promise<QulacsWasmClient> {
+export async function initQulacsModule(option: initQulacsModuleOption): Promise<QulacsUtilClient> {
     let qulacsModule: QulacsWasmModule;
     if (option.useWorker) {
         throw new Error("no work around");
@@ -19,7 +19,7 @@ export async function initQulacsModule(option: initQulacsModuleOption): Promise<
     } else {
         qulacsModule = await initQulacs();
     }
-    const wasmClient = new QulacsWasmClient({module: qulacsModule});
+    const wasmClient = new QulacsUtilClient({module: qulacsModule});
     const nativeClient = new QulacsNativeClient({module: qulacsModule});
     setStaticClient(nativeClient);
     return wasmClient;

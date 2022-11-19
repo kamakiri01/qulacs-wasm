@@ -30,33 +30,10 @@ void applyOperatorGate(QuantumState* state, std::vector<emscripten::val> gates) 
     for (int j = 0; j < gatesCount; ++j) { // j は量子ビットindex
         const auto gateRaw = emscripten::vecFromJSArray<emscripten::val>(gates[j]); // ToWasmRawQuantumGate
         int gateType = gateRaw[0].as<int>();
+        if (gateType == 0) continue; // empty gate
         double gateParam = gateRaw[1].as<double>();
         std::vector<int> indexs = emscripten::vecFromJSArray<int>(gateRaw[2]);
-
-        QuantumGateBase* gate;
-        switch (gateType) {
-            case 0:
-                // empty
-                break;
-            case 1:
-                gate = gate::X(j);
-                break;
-            case 2:
-                gate = gate::Y(j);
-                break;
-            case 3:
-                gate = gate::Z(j);
-                break;
-            case 4:
-                gate = gate::H(j);
-                break;
-            case 5:
-                gate = gate::T(j);
-                break;
-            case 6:
-                gate = gate::S(j);
-                break;
-        }
+        QuantumGateBase* gate = getGate(gateType, j, gateParam, indexs);
         gate->update_quantum_state(state); // &state
     }
 }
@@ -65,7 +42,6 @@ struct DataCppResult {
     std::vector<double> doubleVec;
     std::vector<CPPCTYPE> cppVec;
 };
-
 
 DataCppResult data_cpp(const emscripten::val &serialInfo) {
     const auto size = serialInfo["size"].as<int>();

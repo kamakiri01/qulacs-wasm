@@ -4,7 +4,7 @@ import { StateActionType } from "../../nativeType/helper/StateAction";
 import { WasmVector } from "../../type/common";
 import { QuantumGateType } from "../../type/QuantumGateType";
 import { WasmQuantumGate } from "../../type/WasmGateType";
-import { translateDefaultGateToWasmGate } from "../QulacsWasmClient/toWasmUtil";
+import { translateDefaultGateToWasmGate } from "../../util/toWasmUtil";
 
 type ToWasmStateAction = [StateActionType] | [StateActionType, WasmVector]; // 暫定としてset_zeroとWasmVector使うsetだけ考える
 

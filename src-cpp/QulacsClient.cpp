@@ -10,101 +10,121 @@
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
 
-#include "applyGate.cpp"
+#include "getGate.cpp"
 #include "observable.cpp"
 #include "state/data_cpp.cpp"
+#include "utilClient/getStateVectorWithExpectationValue.cpp"
 
 extern "C" {
-    struct GetStateVectorWithExpectationValueResult {
-        std::vector<double> stateVector;
-        double expectationValue;
-    };
-
-    QuantumState getUpdatedState(const emscripten::val &circuitInfo) {
-        const auto size = circuitInfo["size"].as<int>();
-        printf("data size: %d\n", size);
-
-        //QuantumCircuit circuit(size);
-        QuantumCircuit* circuit = new QuantumCircuit(size);
-
-        const auto circuitSteps = emscripten::vecFromJSArray<emscripten::val>(circuitInfo["circuit"]); // ToWasmQuantumCircuitData
-        int stepsCount = circuitSteps.size();
-        // いったん　CircuitInfo　的な中間型を考えずに進める。以後必要なら型名を付ける
-        for (size_t i = 0; i < stepsCount; ++i) {
-            const auto step = emscripten::vecFromJSArray<emscripten::val>(circuitSteps[i]); // ToWasmQuantumCircuitStep
-            int stepCount = step.size();
-            for (int j = 0; j < stepCount; ++j) {
-                const auto gateRaw = emscripten::vecFromJSArray<emscripten::val>(step[j]); // ToWasmQuantumGate
-                int gateType = gateRaw[0].as<int>();
-                double gateParam = gateRaw[1].as<double>();
-                std::vector<int> indexs = emscripten::vecFromJSArray<int>(gateRaw[2]);
-                applyGate(circuit, gateType, j, gateParam, indexs);
-                /*
-                // @see WasmQuantumGateType.ts
-                switch(gateType) {
-                    case 0:
-                        break; // empty gate. do nothing
-                    case 1:
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 5:
-                    case 6:
-                        applySingleGate(circuit, gateType, j);
-                        break;
-                    case 7:
-                    case 8:
-                    case 9:
-                        applyParametricGate(circuit, gateType, gateParam, j);
-                        break;
-                    case 10:
-                    case 11:
-                        applyMultiGate(circuit, gateType, j, indexs);
-                }
-                */
-            }
-        }
-        QuantumState state(size);
-        state.set_zero_state();
-        circuit->update_quantum_state(&state);
-        return state;
-    }
-
     GetStateVectorWithExpectationValueResult getStateVectorWithExpectationValue(const emscripten::val &v) {
-        const auto circuitInfo = v["circuitInfo"];
-        const auto size = circuitInfo["size"].as<int>();
-        QuantumState state = getUpdatedState(circuitInfo);
-        const auto observableInfo = v["observableInfo"];
-        Observable observable = getObservable(observableInfo, size);
-
-        const auto result = observable.get_expectation_value(&state);
-        printf("exp re: %lf im:%lf \n", result.real(), result.imag());
-
-        const auto raw_data_cpp = state.data_cpp();
-        const int vecSize = pow(2, size);
-        std::vector<double> data = translateDataCppToVec(raw_data_cpp, vecSize);
-
-        return {
-            stateVector: data,
-            expectationValue: result.real()
-        };
+        const auto result = util_getStateVectorWithExpectationValue(v);
+        return result;
     }
 
-//---
     DataCppResult state_dataCpp(const emscripten::val &serialInfo) {
         const auto data = data_cpp(serialInfo);
         return data;
+    }
+
+    struct RunShotResult {
+        // std::vector<int> indexVector; // TODO: ITYPE を返すべきだが JS 側でlong longを扱う方法が分からないためlong intに落としている。64bit->8bitに落ちている
+        std::vector<int> sampleMap;
+    };
+
+    RunShotResult runShotTask(const emscripten::val &v) {
+        const auto circuitInfo = v["circuitInfo"];
+        const auto size = circuitInfo["size"].as<int>();
+        QuantumState state = getUpdatedState(circuitInfo);
+        const int shot = v["shot"].as<int>();
+        const auto samples = state.sampling(shot);
+
+        /*
+        std::vector<long int> indexVector;
+        for (size_t i = 0; i < samples.size(); ++i) {
+            const int sample = (long int)samples[i];
+            indexVector.push_back(sample);
+        }
+        */
+
+        const int basis = std::pow(2, size);
+        std::vector<int> sampleMap; // (basis)で初期化すべき？
+        for (int i = 0; i < basis; i++) {
+            sampleMap.push_back(0);
+        }
+
+        const int sampleSize = samples.size();
+        for (size_t i = 0; i < sampleSize; ++i) {
+            const int sample = (long int)samples[i];
+            sampleMap[sample] += 1;
+        }
+
+        return {
+            sampleMap: sampleMap
+        };
+    }
+
+    struct GetExpectationValueMapResult {
+        std::vector<double> expectationValues;
+    };
+
+    GetExpectationValueMapResult getExpectationValueMap(const emscripten::val &request) {
+        const auto circuitInfo = request["circuitInfo"];
+        const auto size = circuitInfo["size"].as<int>();
+        const auto parametricPositionStep = request["parametricPositionStep"].as<int>();
+        const auto parametricPositionQubitIndex = request["parametricPositionQubitIndex"].as<int>();
+
+        printf("getExpectationValueMap pStep:%d pIndex:%d size:%d \n", parametricPositionStep, parametricPositionQubitIndex, size);
+
+        ParametricQuantumCircuit* circuit = getSingleParametricCircuit(circuitInfo, parametricPositionStep, parametricPositionQubitIndex);
+
+        QuantumState state(size);
+        state.set_zero_state();
+        // circuit->update_quantum_state(&state);
+
+        const auto observableInfo = request["observableInfo"];
+        Observable observable = getObservable(observableInfo, size);
+
+        std::vector<double> expectationValues;
+        const auto stepSize = request["stepSize"].as<int>();
+        for (size_t i = 0; i < stepSize; ++i) {
+            double angle = 2 * M_PI * ( (double)i / ( (double)stepSize - 1));
+            circuit->set_parameter(0, angle);
+            //auto second_state = state.copy();
+            QuantumState second_state(size);
+            circuit->update_quantum_state(&second_state);
+            const auto result = observable.get_expectation_value(&second_state);
+            const double expectationValue = result.real();
+            printf("set_parameter-angle[%d]: %f expectationValue:%f \n",i, angle, expectationValue);
+            expectationValues.push_back(expectationValue);
+        }
+
+        return {
+            expectationValues: expectationValues
+        };
     }
 }
 
 EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::register_vector<double>("vector<double>");
     emscripten::register_vector<CPPCTYPE>("vector<CPPCTYPE>");
+    emscripten::register_vector<ITYPE>("vector<ITYPE>");
+    emscripten::register_vector<int>("vector<int>");
+
     emscripten::value_object<GetStateVectorWithExpectationValueResult>("GetStateVectorWithExpectationValueResult")
         .field("stateVector", &GetStateVectorWithExpectationValueResult::stateVector)
         .field("expectationValue", &GetStateVectorWithExpectationValueResult::expectationValue);
+
+    emscripten::value_object<RunShotResult>("RunShotResult")
+        .field("sampleMap", &RunShotResult::sampleMap);
+
+    emscripten::value_object<GetExpectationValueMapResult>("GetExpectationValueMapResult")
+        .field("expectationValues", &GetExpectationValueMapResult::expectationValues);
+
     emscripten::function("getStateVectorWithExpectationValue", &getStateVectorWithExpectationValue, emscripten::allow_raw_pointers());
     emscripten::function("state_dataCpp", &state_dataCpp, emscripten::allow_raw_pointers());
+    emscripten::function("runShotTask", &runShotTask, emscripten::allow_raw_pointers());
+    emscripten::function("getExpectationValueMap", &getExpectationValueMap, emscripten::allow_raw_pointers());
+
     emscripten::value_object<DataCppResult>("DataCppResult")
         .field("doubleVec", &DataCppResult::doubleVec)
         .field("cppVec", &DataCppResult::cppVec);

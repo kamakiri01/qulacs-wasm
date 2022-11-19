@@ -1,7 +1,7 @@
 // qulacsと同名の型のclient
 
 import { QuantumState } from "../../nativeType/QuantumState";
-import { convertArrayToComplexArray, convertWasmVectorToArray } from "../QulacsWasmClient/fromWasmUtil";
+import { convertAlternateArrayToComplexArray, convertWasmVectorToArray } from "../../util/fromWasmUtil";
 import { Complex } from "../../type/common";
 import { translateOperatorQueueToSerialInfo } from "./util";
 import { QulacsWasmModule } from "../../emsciptenModule/QulacsWasmModule";
@@ -26,7 +26,7 @@ export class QulacsNativeClient {
                 console.log("stateInfo", JSON.stringify(stateInfo));
                 const data = this.module.state_dataCpp(stateInfo);
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: {type: StateActionType.setWasmVector, data: data.cppVec} }];
-                const stateVector = convertArrayToComplexArray(convertWasmVectorToArray(data.doubleVec));
+                const stateVector = convertAlternateArrayToComplexArray(convertWasmVectorToArray(data.doubleVec));
                 return stateVector;
             },
         };

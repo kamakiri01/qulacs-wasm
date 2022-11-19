@@ -3,6 +3,10 @@
 #include <cppsim/gate_factory.hpp>
 #include <cppsim/gate_merge.hpp>
 #include <cppsim/gate_matrix.hpp>
+#include <vqcsim/parametric_circuit.hpp>
+#include <vqcsim/parametric_gate.hpp>
+#include <vqcsim/parametric_gate_factory.hpp>
+
 #include <string>
 #include <vector>
 #include <emscripten.h>
@@ -12,49 +16,73 @@
 
 #include "state/double.cpp"
 
-void applySingleGate(QuantumCircuit* circuit, int gateType, int qubitIndex) {
+QuantumGateBase* getSingleGate(int gateType, int qubitIndex) {
     // @see WasmQuantumGateType.ts
+    QuantumGateBase* gate;
     switch(gateType) {
         case 1:
-            circuit->add_X_gate(qubitIndex);
+            gate = gate::X(qubitIndex);
             break;
         case 2:
-            circuit->add_Y_gate(qubitIndex);
+            gate = gate::Y(qubitIndex);
             break;
         case 3:
-            circuit->add_Z_gate(qubitIndex);
+            gate = gate::Z(qubitIndex);
             break;
         case 4:
-            circuit->add_H_gate(qubitIndex);
+            gate = gate::H(qubitIndex);
             break;
         case 5:
-            circuit->add_T_gate(qubitIndex);
+            gate = gate::T(qubitIndex);
             break;
         case 6:
-            circuit->add_S_gate(qubitIndex);
+            gate = gate::S(qubitIndex);
             break;
     }
+    return gate;
 }
 
-void applyParametricGate(QuantumCircuit* circuit, int gateType, double gateParam, int qubitIndex) {
+QuantumGateBase* getRotationGate(int gateType, double gateParam, int qubitIndex) {
     double angle = M_PI * gateParam;
+    QuantumGateBase* gate;
     switch(gateType) {
         case 7:
-            circuit->add_RX_gate(qubitIndex, angle);
+            gate = gate::RX(qubitIndex, angle);
             break;
         case 8:
-            circuit->add_RY_gate(qubitIndex, angle);
+            gate = gate::RY(qubitIndex, angle);
             break;
         case 9:
-            circuit->add_RZ_gate(qubitIndex, angle);
+            gate = gate::RZ(qubitIndex, angle);
             break;
     }
+    return gate;
 }
-void applyMultiGate(QuantumCircuit* circuit, int gateType, int qubitIndex, std::vector<int> controllIndexs) {
-    printf("gateType: %d index: %d [0]:%d \n", gateType, qubitIndex, controllIndexs[0]);
+
+QuantumGate_SingleParameter* getParametricGate(int gateType, double gateParam, int qubitIndex) {
+    double angle = M_PI * gateParam;
+    QuantumGate_SingleParameter* gate;
+    switch(gateType) {
+        case 7:
+            gate = gate::ParametricRX(qubitIndex, angle);
+            break;
+        case 8:
+            gate = gate::ParametricRY(qubitIndex, angle);
+            break;
+        case 9:
+            gate = gate::ParametricRZ(qubitIndex, angle);
+            break;
+    }
+    return gate;
+}
+
+
+QuantumGateBase* getMultiGate(int gateType, int qubitIndex, std::vector<int> controllIndexs) {
+    // printf("gateType: %d index: %d [0]:%d \n", gateType, qubitIndex, controllIndexs[0]);
+    QuantumGateBase* gate;
     switch(gateType) {
         case 10:
-            circuit->add_CNOT_gate(qubitIndex, controllIndexs[0]);
+            gate = gate::CNOT(controllIndexs[0], qubitIndex);
             break;
         case 11:
         // @see https://github.com/corryvrequan/qulacs/blob/a1eb7cd2fb62243d28fc1ebd4da9fbd8126cf126/python/cppsim_wrapper.cpp#L308
@@ -63,13 +91,16 @@ void applyMultiGate(QuantumCircuit* circuit, int gateType, int qubitIndex, std::
             toffoli->add_control_qubit(controllIndexs[0], 1);
             toffoli->add_control_qubit(controllIndexs[1], 1);
             delete ptr;
-            circuit->add_gate(toffoli);
+            //circuit->add_gate(toffoli);
+            gate = toffoli;
             break;
     }
+    return gate;
 }
 
-void applyGate(QuantumCircuit* circuit, int gateType, int qubitIndex, double gateParam, std::vector<int> controllIndexs) {
-    printf("gateType: %d index: %d [0]:%d \n", gateType, qubitIndex, controllIndexs[0]);
+QuantumGateBase* getGate(int gateType, int qubitIndex, double gateParam, std::vector<int> controllIndexs) {
+    printf("[getGate] gateType: %d index: %d [0]:%d \n", gateType, qubitIndex, controllIndexs[0]);
+    QuantumGateBase* gate;
     // @see WasmQuantumGateType.ts
     switch(gateType) {
         case 0:
@@ -80,17 +111,19 @@ void applyGate(QuantumCircuit* circuit, int gateType, int qubitIndex, double gat
         case 4:
         case 5:
         case 6:
-            applySingleGate(circuit, gateType, qubitIndex);
+            gate = getSingleGate(gateType, qubitIndex);
             break;
         case 7:
         case 8:
         case 9:
-            applyParametricGate(circuit, gateType, gateParam, qubitIndex);
+            gate = getRotationGate(gateType, gateParam, qubitIndex);
             break;
         case 10:
         case 11:
-            applyMultiGate(circuit, gateType, qubitIndex, controllIndexs);
+            gate = getMultiGate(gateType, qubitIndex, controllIndexs);
     }
+    printf("[getGate] done\n");
+    return gate;
 }
 
 std::vector<double> translateDataCppToVec(CPPCTYPE* raw_data_cpp, int vecSize) {

@@ -1,7 +1,7 @@
-import { ToWasmCircuitInfo, ToWasmObservableInfo } from "../../type/ClientType";
-import { MultiQuantumGate, ParametricQuantumGate, QuantumGate } from "../../type/QuantumGate";
-import { MultiQuantumGateType, ParametricQuantumGateType, PauliGateType, QuantumGateType } from "../../type/QuantumGateType";
-import { WasmPauliGateType, WasmQuantumGate, WasmQuantumGateType } from "../../type/WasmGateType";
+import { ToWasmCircuitInfo, ToWasmObservableInfo } from "../type/ClientType";
+import { MultiQuantumGate, ParametricQuantumGate, QuantumGate } from "../type/QuantumGate";
+import { MultiQuantumGateType, ParametricQuantumGateType, PauliGateType, QuantumGateType } from "../type/QuantumGateType";
+import { WasmPauliGateType, WasmQuantumGate, WasmQuantumGateType } from "../type/WasmGateType";
 
 export function convertCircuitInfo(circuitInfo: ToWasmCircuitInfo<QuantumGate>): ToWasmCircuitInfo<WasmQuantumGate> {
     const wasmCircuitInfo: ToWasmCircuitInfo<WasmQuantumGate> = {
