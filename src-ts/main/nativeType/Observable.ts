@@ -1,8 +1,8 @@
-import { QulacsNativeClient } from "../client/QulacsNativeClient/QulacsNativeClient";
+import { QulacsNativeClassClient } from "../client/QulacsNativeClassClient/QulacsNativeClassClient";
 import { QuantumState } from "./QuantumState";
 
 export class Observable {
-    static client: QulacsNativeClient;
+    static client: QulacsNativeClassClient;
 
     constructor(qubit_count: number) {
 

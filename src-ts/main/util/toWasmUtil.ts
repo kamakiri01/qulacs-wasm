@@ -1,10 +1,10 @@
-import { ToWasmCircuitInfo, ToWasmObservableInfo } from "../type/ClientType";
+import { CircuitInfo, ObservableInfo, ToWasmCircuitInfo, ToWasmObservableInfo } from "../type/ClientType";
 import { MultiQuantumGate, ParametricQuantumGate, QuantumGate } from "../type/QuantumGate";
 import { MultiQuantumGateType, ParametricQuantumGateType, PauliGateType, QuantumGateType } from "../type/QuantumGateType";
-import { WasmPauliGateType, WasmQuantumGate, WasmQuantumGateType } from "../type/WasmGateType";
+import { WasmQuantumGate, WasmQuantumGateType } from "../type/WasmGateType";
 
-export function convertCircuitInfo(circuitInfo: ToWasmCircuitInfo<QuantumGate>): ToWasmCircuitInfo<WasmQuantumGate> {
-    const wasmCircuitInfo: ToWasmCircuitInfo<WasmQuantumGate> = {
+export function convertCircuitInfo(circuitInfo: CircuitInfo): ToWasmCircuitInfo {
+    const wasmCircuitInfo: ToWasmCircuitInfo = {
         size: circuitInfo.size,
         circuit: []
     };
@@ -18,8 +18,8 @@ export function convertCircuitInfo(circuitInfo: ToWasmCircuitInfo<QuantumGate>):
     return wasmCircuitInfo;
 }
 
-export function convertObservableInfo(observableInfo: ToWasmObservableInfo<PauliGateType>): ToWasmObservableInfo<WasmPauliGateType> {
-    const wasmObsevableInfo: ToWasmObservableInfo<WasmPauliGateType> = {
+export function convertObservableInfo(observableInfo: ObservableInfo): ToWasmObservableInfo {
+    const wasmObsevableInfo: ToWasmObservableInfo = {
         observable: []
     };
     observableInfo.observable.forEach((step, index) => {

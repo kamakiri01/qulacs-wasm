@@ -1,7 +1,6 @@
-import { ToWasmOperator } from "../client/QulacsNativeClient/util";
+import { ToWasmOperator } from "../client/QulacsNativeClassClient/util";
 import { ToWasmCalcStateInfo, ToWasmCircuitInfo, ToWasmObservableInfo } from "../type/ClientType";
 import { WasmVector } from "../type/common";
-import { WasmPauliGateType, WasmQuantumGate } from "../type/WasmGateType";
 
 export interface QulacsWasmModule extends EmscriptenWasm.Module {
     getStateVectorWithExpectationValue(request: StateVectorWithObservableRequest): StateVectorWithObervableResult;
@@ -10,7 +9,7 @@ export interface QulacsWasmModule extends EmscriptenWasm.Module {
     state_dataCpp(request: ToWasmSerialInfo): { doubleVec: WasmVector, cppVec: any }; // NOTE: 暫定
 }
 
-export type StateVectorWithObservableRequest = ToWasmCalcStateInfo<WasmPauliGateType, WasmQuantumGate>;
+export type StateVectorWithObservableRequest = ToWasmCalcStateInfo;
 
 export interface StateVectorWithObervableResult {
     stateVector: WasmVector;
@@ -18,13 +17,17 @@ export interface StateVectorWithObervableResult {
 }
 
 export interface RunShotTaskRequest {
-    circuitInfo: ToWasmCircuitInfo<WasmQuantumGate>;
+    circuitInfo: ToWasmCircuitInfo;
     shot: number;
 }
 
+export interface RunShotTaskResult {
+    sampleMap: WasmVector;
+}
+
 export interface GetExpectationValueMapRequest {
-    circuitInfo: ToWasmCircuitInfo<WasmQuantumGate>;
-    observableInfo: ToWasmObservableInfo<WasmPauliGateType>;
+    circuitInfo: ToWasmCircuitInfo;
+    observableInfo: ToWasmObservableInfo;
     parametricPositionStep: number;
     parametricPositionQubitIndex: number;
     stepSize: number;
@@ -33,10 +36,6 @@ export interface GetExpectationValueMapRequest {
 
 export interface GetExpectationValueMapResult {
     expectationValues: WasmVector; // rangeは固定値で0~2、stepSizeで配列長さは自明なのでexpectationValueごとにparamを紐づけてwasmから返す必要はない。アプリが必要ならjs側で付ける
-}
-
-export interface RunShotTaskResult {
-    sampleMap: WasmVector;
 }
 
 export interface ToWasmSerialInfo {

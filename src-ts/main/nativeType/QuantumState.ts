@@ -1,9 +1,10 @@
-import { QulacsNativeClient } from "../client/QulacsNativeClient/QulacsNativeClient";
+import { QulacsNativeClassClient } from "../client/QulacsNativeClassClient/QulacsNativeClassClient";
+import { Complex } from "../type/common";
 import { OperatorQueue, OperatorQueueType } from "./helper/OperatorQueue";
 import { StateActionType } from "./helper/StateAction";
 
 export class QuantumState {
-    static client: QulacsNativeClient;
+    static client: QulacsNativeClassClient;
     qubit_count: number;
     // wasmに送る命令キューを持つ
     // NOTE: Gateを追加するかも
@@ -15,8 +16,6 @@ export class QuantumState {
     }
 
     /*
-    get_amplitude(index: number): Complex {
-    }
 
     // Complex[]かも
     load(state: number[]) {
@@ -27,9 +26,17 @@ export class QuantumState {
         this._operatorQueues = [{ queueType: OperatorQueueType.StateAction , queueData: {type: StateActionType.set_zero_state} }];
     };
 
-    get_vector() {
+    get_vector(): Complex[] {
         return QuantumState.client.state.get_vector(this);
-    }; // wasm
+    };
+
+    get_amplitude(index: number): Complex {
+        return QuantumState.client.state.get_amplitude(this, index);
+    }
+
+    load(stateOrArray: QuantumState | number[] | Complex[]): void {
+        
+    }
 
     /*
     sampling(sampling_count: number) {

@@ -4,43 +4,50 @@ import { WasmQuantumGate, WasmPauliGateType } from "./WasmGateType";
 
 //circuit
 
-type ToWasmQuantumCircuitStep<T extends (QuantumGate | WasmQuantumGate)> = T[];
-type ToWasmQuantumCircuitData<T extends (QuantumGate | WasmQuantumGate)> = ToWasmQuantumCircuitStep<T>[];
+type QuantumCircuitStep<T extends (QuantumGate | WasmQuantumGate)> = T[];
+type QuantumCircuitData<T extends (QuantumGate | WasmQuantumGate)> = QuantumCircuitStep<T>[];
 
 // observable
 
-type ToWasmObservableGateType<T extends (PauliGateType | WasmPauliGateType)> = T;
-type ToWasmObservableData<T extends (PauliGateType | WasmPauliGateType)> = ToWasmObservableStep<T>[];
-type ToWasmObservableStep<T extends (PauliGateType | WasmPauliGateType)> = {
-    operators: ToWasmObservableGateType<T>[];
+type ObservableGateType<T extends (PauliGateType | WasmPauliGateType)> = T;
+type ObservableStep<T extends (PauliGateType | WasmPauliGateType)> = {
+    operators: ObservableGateType<T>[];
     coefficient: number;
 };
+type ObservableData<T extends (PauliGateType | WasmPauliGateType)> = ObservableStep<T>[];
 
 /**
- * QulacsWasmClient 向けの回路表現
- * QulacsWasmClient と QulacsWasmModule 先の wasm モジュールの双方で利用するため、
+ * QulacsClient 向けの回路表現
+ * QulacsClient と QulacsWasmModule 先の wasm モジュールの双方で利用するため、
  * 量子ゲート表現をジェネリクスで分離している
  */
-export interface ToWasmCircuitInfo<T extends (QuantumGate | WasmQuantumGate)> {
-    circuit: ToWasmQuantumCircuitData<T>;
+export interface CircuitInfoBase<T extends (QuantumGate | WasmQuantumGate)> {
+    circuit: QuantumCircuitData<T>;
     size: number;
 }
+export type CircuitInfo = CircuitInfoBase<QuantumGate>;
+export type ToWasmCircuitInfo = CircuitInfoBase<WasmQuantumGate>;
 
 /**
  * QulacsWasmClient 向けのオブザーバブル表現
  * QulacsWasmClient と QulacsWasmModule 先の wasm モジュールの双方で利用するため、
  * 量子ゲート表現をジェネリクスで分離している
  */
-export interface ToWasmObservableInfo<T extends (PauliGateType | WasmPauliGateType)> {
-    observable: ToWasmObservableData<T>;
+export interface ObservableInfoBase<T extends (PauliGateType | WasmPauliGateType)> {
+    observable: ObservableData<T>;
 }
+export type ObservableInfo = ObservableInfoBase<PauliGateType>;
+export type ToWasmObservableInfo = ObservableInfoBase<WasmPauliGateType>;
 
 /**
  * QulacsWasmClient と QulacsWasmModule 向けの量子状態の環境設定表現
  */
-export interface ToWasmCalcStateInfo<
+export interface CalcStateInfoBase<
     T extends (PauliGateType | WasmPauliGateType),
     U extends (QuantumGate | WasmQuantumGate)> {
-    circuitInfo: ToWasmCircuitInfo<U>;
-    observableInfo: ToWasmObservableInfo<T>;
+    circuitInfo: CircuitInfoBase<U>;
+    observableInfo: ObservableInfoBase<T>;
 }
+
+export type CalcStateInfo = CalcStateInfoBase<PauliGateType, QuantumGate>;
+export type ToWasmCalcStateInfo = CalcStateInfoBase<WasmPauliGateType, WasmQuantumGate>;

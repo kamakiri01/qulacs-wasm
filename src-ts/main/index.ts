@@ -3,15 +3,15 @@ var ModuleQulacsWasm = require("../wasm/module.js");
 import { Observable } from "./nativeType/Observable";
 import { QuantumCircuit } from "./nativeType/QuantumCircuit";
 import { QuantumState } from "./nativeType/QuantumState";
-import { QulacsNativeClient } from "./client/QulacsNativeClient/QulacsNativeClient";
-import { QulacsUtilClient } from "./client/QulacsWasmClient/QulacsUtilClient";
+import { QulacsNativeClassClient } from "./client/QulacsNativeClassClient/QulacsNativeClassClient";
+import { QulacsClient } from "./client/QulacsClient/QulacsClient";
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 
 export interface initQulacsModuleOption {
     useWorker: boolean;
 }
 
-export async function initQulacsModule(option: initQulacsModuleOption): Promise<QulacsUtilClient> {
+export async function initQulacsModule(option: initQulacsModuleOption): Promise<QulacsClient> {
     let qulacsModule: QulacsWasmModule;
     if (option.useWorker) {
         throw new Error("no work around");
@@ -19,8 +19,8 @@ export async function initQulacsModule(option: initQulacsModuleOption): Promise<
     } else {
         qulacsModule = await initQulacs();
     }
-    const wasmClient = new QulacsUtilClient({module: qulacsModule});
-    const nativeClient = new QulacsNativeClient({module: qulacsModule});
+    const wasmClient = new QulacsClient({module: qulacsModule});
+    const nativeClient = new QulacsNativeClassClient({module: qulacsModule});
     setStaticClient(nativeClient);
     return wasmClient;
 }
@@ -55,7 +55,7 @@ function initQulacsWorker(): Promise<QulacsWasmModule> {
     })
 }
 
-function setStaticClient(client: QulacsNativeClient) {
+function setStaticClient(client: QulacsNativeClassClient) {
     QuantumState.client = client;
     QuantumCircuit.client = client;
     Observable.client = client;

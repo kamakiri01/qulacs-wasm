@@ -18,7 +18,7 @@ void applyStateAction(QuantumState* state, std::vector<emscripten::val> stateAct
         case 1:
             state->set_zero_state();
             break;
-        case 5:
+        case 4:
             auto wasmVec = stateAction[1].as<std::vector<CPPCTYPE>>();
             state->load(wasmVec);
             break;

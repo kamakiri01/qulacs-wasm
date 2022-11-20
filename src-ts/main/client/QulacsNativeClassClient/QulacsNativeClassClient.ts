@@ -8,27 +8,29 @@ import { QulacsWasmModule } from "../../emsciptenModule/QulacsWasmModule";
 import { OperatorQueueType } from "../../nativeType/helper/OperatorQueue";
 import { StateActionType } from "../../nativeType/helper/StateAction";
 
-export interface QulacsNativeClientParameterObjeect {
+export interface QulacsNativeClassClientParameterObjeect {
     module: QulacsWasmModule;
 }
 
-export class QulacsNativeClient {
+export class QulacsNativeClassClient {
     module: QulacsWasmModule;
     state: StateAPI;
     // observable: ObservableAPI;
 
-    constructor(param: QulacsNativeClientParameterObjeect) {
+    constructor(param: QulacsNativeClassClientParameterObjeect) {
         this.module = param.module;
         this.state = {
             get_vector: (state) => {
                 const size = state.qubit_count;
                 const stateInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
-                console.log("stateInfo", JSON.stringify(stateInfo));
                 const data = this.module.state_dataCpp(stateInfo);
-                state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: {type: StateActionType.setWasmVector, data: data.cppVec} }];
+                state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: {type: StateActionType.load_wasmVector, data: data.cppVec} }];
                 const stateVector = convertAlternateArrayToComplexArray(convertWasmVectorToArray(data.doubleVec));
                 return stateVector;
             },
+            get_amplitude: (state, index) => {
+                return this.state.get_vector(state)[index];
+            }
         };
     }
 }
@@ -36,5 +38,6 @@ export class QulacsNativeClient {
 // NOTE: 別ファイルに移設
 interface StateAPI {
     get_vector: (state: QuantumState) => Complex[];
+    get_amplitude: (state: QuantumState, index: number) => Complex;
     //sampling: (sampling_count: number) => void;
 }

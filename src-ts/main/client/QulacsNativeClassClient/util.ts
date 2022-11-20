@@ -6,8 +6,6 @@ import { QuantumGateType } from "../../type/QuantumGateType";
 import { WasmQuantumGate } from "../../type/WasmGateType";
 import { translateDefaultGateToWasmGate } from "../../util/toWasmUtil";
 
-type ToWasmStateAction = [StateActionType] | [StateActionType, WasmVector]; // 暫定としてset_zeroとWasmVector使うsetだけ考える
-
 // ゲート操作やstate setなどの単位の操作
 export type ToWasmOperator = [0, ToWasmStateAction] | [1, WasmQuantumGate[]]; // TODO: o番目を型付け
 
@@ -25,7 +23,7 @@ export function translateOperatorQueueToSerialInfo(queues: OperatorQueue[], size
             let wasmQueue: ToWasmStateAction;
             if (queue.queueData.type == StateActionType.set_zero_state) {
                 wasmQueue = [StateActionType.set_zero_state];
-            } else { // 暫定でset_ZeroとsatateWasmだけ考える
+            } else if (queue.queueData.type === StateActionType.setWasmVector) { // 暫定でset_ZeroとsatateWasmだけ考える
                 wasmQueue = [StateActionType.setWasmVector, queue.queueData.data];
             }
             info.operators.push([0, wasmQueue]);
@@ -46,6 +44,16 @@ export function translateOperatorQueueToSerialInfo(queues: OperatorQueue[], size
     return info;
 }
 
-function isStateInitializeAction(queue: OperatorQueue): queue is StateActionOperatorQueue {
-    return queue.queueType === OperatorQueueType.StateAction;
+type ToWasmStateAction = [StateActionType] | [StateActionType, WasmVector]; // 暫定としてset_zeroとWasmVector使うsetだけ考える
+
+function createWasmQueueFromStateActionQueue(queue: StateActionOperatorQueue): ToWasmStateAction {
+    let wasmQueue: ToWasmStateAction;
+    switch (queue.queueData.type) {
+        case StateActionType.set_zero_state:
+            return [StateActionType.set_zero_state];
+        case StateActionType.load_wasmVector:
+            return [StateActionType.load_wasmVector, queue.queueData.data];
+        case StateActionType.load_ComplexVector:
+            return [StateActionType.load_ComplexVector, queue.queueData.data];
+    }
 }

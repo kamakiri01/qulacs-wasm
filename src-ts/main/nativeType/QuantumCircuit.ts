@@ -1,11 +1,11 @@
-import { QulacsNativeClient } from "../client/QulacsNativeClient/QulacsNativeClient";
+import { QulacsNativeClassClient } from "../client/QulacsNativeClassClient/QulacsNativeClassClient";
 import { QuantumGateType } from "../type/QuantumGateType";
 import { IndexedToWasmDefaultQuantumGate } from "./helper/IndexedToWasmDefaultQuantumGate";
 import { OperatorQueue, OperatorQueueType } from "./helper/OperatorQueue";
 import { QuantumState } from "./QuantumState";
 
 export class QuantumCircuit {
-    static client: QulacsNativeClient;
+    static client: QulacsNativeClassClient;
     qubit_count: number;
     gateQueues: IndexedToWasmDefaultQuantumGate[];
 

@@ -1,23 +1,21 @@
 import { convertCircuitInfo, convertObservableInfo } from "../../util/toWasmUtil";
 import { convertAlternateArrayToComplexArray, convertWasmVectorToArray } from "../../util/fromWasmUtil";
 import { StateVectorWithObservableRequest, QulacsWasmModule, RunShotTaskRequest, GetExpectationValueMapRequest } from "../../emsciptenModule/QulacsWasmModule";
-import { ToWasmCalcStateInfo, ToWasmCircuitInfo } from "../../type/ClientType";
-import { QuantumGate } from "../../type/QuantumGate";
-import { PauliGateType } from "../../type/QuantumGateType";
+import { CalcStateInfo, CircuitInfo } from "../../type/ClientType";;
 
-export interface QulacsUtilClientParameterObject {
+export interface QulacsClientParameterObject {
     module: QulacsWasmModule;
 }
 
-export class QulacsUtilClient {
+export class QulacsClient {
     module: QulacsWasmModule;
 
-    constructor(param: QulacsUtilClientParameterObject) {
+    constructor(param: QulacsClientParameterObject) {
         this.module = param.module;
     }
 
     getStateVectorWithExpectationValue(
-        info: ToWasmCalcStateInfo<PauliGateType, QuantumGate>
+        info: CalcStateInfo
         ) {
         const request: StateVectorWithObservableRequest = {
             circuitInfo: convertCircuitInfo(info.circuitInfo),
@@ -31,7 +29,7 @@ export class QulacsUtilClient {
         }
     }    
 
-    runShotTask(circuitInfo: ToWasmCircuitInfo<QuantumGate>, shot: number): number[] {
+    runShotTask(circuitInfo: CircuitInfo, shot: number): number[] {
         const request: RunShotTaskRequest = {
             circuitInfo: convertCircuitInfo(circuitInfo),
             shot
@@ -42,10 +40,10 @@ export class QulacsUtilClient {
     }
 
     getExpectationValueMap(
-        info: ToWasmCalcStateInfo<PauliGateType, QuantumGate>,
+        info: CalcStateInfo,
         parametricPositionStep: number, // infoオブジェクトにまとめる。プロパティ名で意味を明示する。ファイルの上にinterfaceつくる
         parametricPositionQubitIndex: number,
-        stepSize: any
+        stepSize: number
     ) {
         console.log("stepSize", stepSize);
         const request: GetExpectationValueMapRequest = {
