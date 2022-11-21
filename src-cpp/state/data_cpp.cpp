@@ -10,18 +10,41 @@
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
 
+
+std::vector<CPPCTYPE> transpaleComplexAltVectoCPPVec(std::vector<double> vec) {
+    std::vector<CPPCTYPE> data;
+    const auto vecSize = vec.size(); // 偶数を暗黙に仮定する
+    for (int i = 0; i < vecSize; i+=2) {
+        auto real = vec[i];
+        auto imag = vec[i+1];
+        auto c = CPPCTYPE(real, imag);
+        data.push_back(c);
+    }
+    return data;
+}
+
 void applyStateAction(QuantumState* state, std::vector<emscripten::val> stateAction) {
     const int stateActionTye = stateAction[0].as<int>();
     switch (stateActionTye) {
         case 0:
             // empty
+            break;
         case 1:
             state->set_zero_state();
             break;
         case 4:
-            auto wasmVec = stateAction[1].as<std::vector<CPPCTYPE>>();
-            state->load(wasmVec);
-            break;
+            {
+                auto wasmVec = stateAction[1].as<std::vector<CPPCTYPE>>();
+                state->load(wasmVec);
+                break;
+            }
+        case 5:
+            {
+                auto complexAltVec = emscripten::vecFromJSArray<double>(stateAction[1]);
+                auto wasmVec = transpaleComplexAltVectoCPPVec(complexAltVec);
+                state->load(wasmVec);
+                break;
+            }
     }
 }
 

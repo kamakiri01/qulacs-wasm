@@ -6,8 +6,9 @@ import { StateActionType } from "./helper/StateAction";
 export class QuantumState {
     static client: QulacsNativeClassClient;
     qubit_count: number;
-    // wasmに送る命令キューを持つ
-    // NOTE: Gateを追加するかも
+    /**
+     * length === 0 を想定しない
+     */
     _operatorQueues: OperatorQueue[] = [];
 
     constructor(qubit_count: number) {
@@ -15,15 +16,8 @@ export class QuantumState {
         this.set_zero_state();
     }
 
-    /*
-
-    // Complex[]かも
-    load(state: number[]) {
-    }
-    */
-    
     set_zero_state() {
-        this._operatorQueues = [{ queueType: OperatorQueueType.StateAction , queueData: {type: StateActionType.set_zero_state} }];
+        this._operatorQueues = [{ queueType: OperatorQueueType.StateAction , queueData: [StateActionType.set_zero_state] }];
     };
 
     get_vector(): Complex[] {
@@ -35,7 +29,20 @@ export class QuantumState {
     }
 
     load(stateOrArray: QuantumState | number[] | Complex[]): void {
-        
+        if (stateOrArray instanceof QuantumState) {
+            const copiedQueue = stateOrArray._operatorQueues[0];
+            this._operatorQueues = [copiedQueue];
+        } else if (Array.isArray(stateOrArray)) {
+            if (isComplexArray(stateOrArray)) {
+                this._operatorQueues =
+                    [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_ComplexSerialVector, complexArrayToSerialArray(stateOrArray)]}];
+            } else if (typeof stateOrArray[0] === "number") {
+                this._operatorQueues =
+                    [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_ComplexSerialVector, arrayToSerialArray(stateOrArray)]}];
+            }
+        } else {
+            throw new Error("invalid load data");
+        }
     }
 
     /*
@@ -43,4 +50,26 @@ export class QuantumState {
         return QuantumState.client.state.sampling();
     }; // wasm
     */
+}
+
+function isComplexArray(array: any): array is Complex[] {
+    return array[0].hasOwnProperty("re") && array[0].hasOwnProperty("im");
+}
+
+function complexArrayToSerialArray(array: Complex[]): number[] {
+    const arr: number[] = [];
+    array.forEach(e => {
+        arr.push(e.re);
+        arr.push(e.im);
+    });
+    return arr;
+}
+
+function arrayToSerialArray(array: number[]): number[] {
+    const arr: number[] = [];
+    array.forEach(e => {
+        arr.push(e); // re
+        arr.push(0); // im
+    });
+    return arr;
 }
