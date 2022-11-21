@@ -11,7 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "kamakiri01",
   "license": "MIT",
   "devDependencies": {
     "@types/emscripten": "^1.39.6",
