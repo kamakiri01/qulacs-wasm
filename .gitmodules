@@ -1,5 +1,5 @@
-[submodule "submodules/Boost"]
-	path = submodules/Boost
+[submodule "submodules/boost"]
+	path = submodules/boost
 	url = git@github.com:boostorg/boost.git
 [submodule "submodules/qulacs"]
 	path = submodules/qulacs
