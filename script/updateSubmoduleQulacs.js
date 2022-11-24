@@ -2,7 +2,7 @@ const child_process = require("child_process");
 const fs = require("fs");
 const path = require("path")
 
-const PATH_QULACS_DIR = "../submodules/qulacs/";
+const PATH_QULACS_DIR = "./submodules/qulacs/";
 const PATH_CMAKELIST = path.join(PATH_QULACS_DIR, "CMakeLists.txt");
 const PATH_BUILD_GCC = path.join(PATH_QULACS_DIR, "script", "build_gcc.sh");
 
@@ -29,4 +29,4 @@ make -j $(nproc)
 cd ../`;
 fs.writeFileSync(PATH_BUILD_GCC, buildGccEm);
 
-child_process.execSync(`grep -lr 'x86intrin.h' ./Submodules/qulacs/* | xargs sed -i -e 's/x86intrin.h/wasm_simd128.h/g'`);
+child_process.execSync(`grep -lr 'x86intrin.h' ./submodules/qulacs/* | xargs sed -i -e 's/x86intrin.h/wasm_simd128.h/g'`);
