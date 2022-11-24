@@ -35,7 +35,6 @@ export class QulacsNativeClassClient {
     }
 }
 
-// NOTE: 別ファイルに移設
 interface StateAPI {
     get_vector: (state: QuantumState) => Complex[];
     get_amplitude: (state: QuantumState, index: number) => Complex;

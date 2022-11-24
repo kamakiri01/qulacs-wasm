@@ -32,6 +32,12 @@ void applyStateAction(QuantumState* state, std::vector<emscripten::val> stateAct
         case 1:
             state->set_zero_state();
             break;
+        case 2:
+            {
+                int comp_basis = stateAction[1].as<int>();
+                state->set_computational_basis(comp_basis);
+                break;
+            }
         case 4:
             {
                 auto wasmVec = stateAction[1].as<std::vector<CPPCTYPE>>();

@@ -18,5 +18,6 @@ export type StateActionType = typeof StateActionType[keyof typeof StateActionTyp
 export type SetZeroStateAction = [typeof StateActionType.set_zero_state];
 export type LoadWasmVectorStateAction = [typeof StateActionType.load_wasmVector, WasmVector];
 export type LoadComplexSerialVectorStateAction = [typeof StateActionType.load_ComplexSerialVector, number[]];
+export type SetComputationalBasisAction = [typeof StateActionType.set_computational_basis, number]; // require: int
 
-export type StateAction = SetZeroStateAction | LoadWasmVectorStateAction | LoadComplexSerialVectorStateAction;
+export type StateAction = SetZeroStateAction | LoadWasmVectorStateAction | LoadComplexSerialVectorStateAction | SetComputationalBasisAction;

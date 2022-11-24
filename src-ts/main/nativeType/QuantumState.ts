@@ -17,8 +17,12 @@ export class QuantumState {
     }
 
     set_zero_state() {
-        this._operatorQueues = [{ queueType: OperatorQueueType.StateAction , queueData: [StateActionType.set_zero_state] }];
+        this._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.set_zero_state] }];
     };
+
+    set_computational_basis(comp_basis: number) {
+        this._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.set_computational_basis, comp_basis]}];
+    }
 
     get_vector(): Complex[] {
         return QuantumState.client.state.get_vector(this);
