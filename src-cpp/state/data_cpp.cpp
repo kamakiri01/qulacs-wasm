@@ -38,13 +38,22 @@ void applyStateAction(QuantumState* state, std::vector<emscripten::val> stateAct
                 state->set_computational_basis(comp_basis);
                 break;
             }
+        case 3:
+            state->set_Haar_random_state();
+            break;
         case 4:
+            {
+                auto seed = stateAction[1].as<UINT>();
+                state->set_Haar_random_state(seed);
+                break;
+            }
+        case 5:
             {
                 auto wasmVec = stateAction[1].as<std::vector<CPPCTYPE>>();
                 state->load(wasmVec);
                 break;
             }
-        case 5:
+        case 6:
             {
                 auto complexAltVec = emscripten::vecFromJSArray<double>(stateAction[1]);
                 auto wasmVec = transpaleComplexAltVectoCPPVec(complexAltVec);

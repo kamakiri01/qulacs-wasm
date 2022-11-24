@@ -24,6 +24,14 @@ export class QuantumState {
         this._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.set_computational_basis, comp_basis]}];
     }
 
+    set_Haar_random_state(seed?: number) {
+        if (seed) {
+            this._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.set_Haar_random_state_seed, seed]}];
+        } else {
+            this._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.set_Haar_random_state_no_seed]}];
+        }
+    }
+
     get_vector(): Complex[] {
         return QuantumState.client.state.get_vector(this);
     };
