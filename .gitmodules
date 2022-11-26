@@ -1,0 +1,6 @@
+[submodule "submodules/boost"]
+	path = submodules/boost
+	url = git@github.com:boostorg/boost.git
+[submodule "submodules/qulacs"]
+	path = submodules/qulacs
+	url = git@github.com:qulacs/qulacs.git

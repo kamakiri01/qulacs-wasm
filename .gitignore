@@ -2,3 +2,4 @@ lib-cpp/**/*
 lib/**/*
 package-lock.json
 third
+node_modules
