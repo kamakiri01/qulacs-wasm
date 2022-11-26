@@ -15,7 +15,7 @@ export interface QulacsWasmModule extends EmscriptenWasm.Module {
 export type StateVectorWithObservableRequest = ToWasmCalcStateInfo;
 
 export interface StateVectorWithObervableResult {
-    stateVector: WasmVector;
+    stateVector: WasmVector<number>;
     expectationValue: number;
 }
 
@@ -25,7 +25,7 @@ export interface RunShotTaskRequest {
 }
 
 export interface RunShotTaskResult {
-    sampleMap: WasmVector;
+    sampleMap: WasmVector<number>;
 }
 
 export interface GetExpectationValueMapRequest {
@@ -38,7 +38,7 @@ export interface GetExpectationValueMapRequest {
 }
 
 export interface GetExpectationValueMapResult {
-    expectationValues: WasmVector; // rangeは固定値で0~2、stepSizeで配列長さは自明なのでexpectationValueごとにparamを紐づけてwasmから返す必要はない。アプリが必要ならjs側で付ける
+    expectationValues: WasmVector<number>; // rangeは固定値で0~2、stepSizeで配列長さは自明なのでexpectationValueごとにparamを紐づけてwasmから返す必要はない。アプリが必要ならjs側で付ける
 }
 
 export interface ToWasmSerialInfo {
@@ -54,16 +54,16 @@ export interface StateDataCppResult {
     /**
      * std::vector<double>
      */
-    doubleVec: WasmVector,
+    doubleVec: WasmVector<number>,
 
     /**
      * std::vector<CPPTYPE>
      * 
-     * stateを継続利用する際にwasmに返送するためJS側で維持する
+     * stateを継続利用する際にwasmに返送するためJS側で参照を維持する。JS側でこの値を利用することはない
      */
-    cppVec: WasmVector;
+    cppVec: WasmVector<unknown>;
 }
 
 export interface SamplingResult extends StateDataCppResult {
-    samplingVec: WasmVector;
+    samplingVec: WasmVector<number>;
 }

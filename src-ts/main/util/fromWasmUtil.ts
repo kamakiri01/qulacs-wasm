@@ -1,6 +1,6 @@
 import { Complex, WasmVector } from "../type/common";
 
-export function convertWasmVectorToArray(vector: WasmVector): number[] {
+export function convertWasmVectorToArray<T>(vector: WasmVector<T>): T[] {
     const data: any[] = [];
     const size = vector.size();
     console.log("size", size, vector);
