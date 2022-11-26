@@ -62,7 +62,7 @@ m.initQulacsModule({useWorker: false})
 
         console.log("---test qulacs I/F---");
 
-        const state = new m2.QuantumState(2);
+        state = new m2.QuantumState(2);
         state.set_zero_state();
         const circuit = new m3.QuantumCircuit(3);
         circuit.add_H_gate(0);
@@ -87,4 +87,53 @@ m.initQulacsModule({useWorker: false})
         state.load([0,0,1,0]);
         const vec4 = state.get_vector();
         console.log("vec4", vec4);
+        state.set_computational_basis(3);
+        const vec5 = state.get_vector();
+        console.log("vec5", vec5);
+        state.set_Haar_random_state();
+        const vec6 = state.get_vector();
+        console.log("vec6", vec6);
+        state.set_Haar_random_state(5);
+        const vec7 = state.get_vector();
+        console.log("vec7", vec7);
+
+        var n = 1;
+        var avg = 0;
+        for(var i = 0; i < 10; i++) {
+            avg += test1(n);
+        }
+        console.log("-avg:", (avg/10));
+        avg = 0;
+        for(var i = 0; i < 10; i++) {
+            avg += test2(n);
+        }
+        console.log("-avg:", (avg/10));
     }))
+
+function test1(len) {
+    let arr = [];
+    for (var i = 0; i < len; i++) {
+        arr.push(i);
+    }
+    let date = Date.now();
+    m2.QuantumState.client.module.test_calc(arr);
+    //state.get_vector();
+    let date2 = Date.now();
+    let r = (date2 - date);
+    //console.log("time1:", r);
+    return r;
+}
+
+function test2(len) {
+    let arr = [];
+    for (var i = 0; i < len; i++) {
+        arr.push(String(i));
+    }
+    let date = Date.now();
+    m2.QuantumState.client.module.test_calc2(arr);
+    //state.get_vector();
+    let date2 = Date.now();
+    let r = (date2 - date);
+    //console.log("time2:", r);
+    return r;
+}

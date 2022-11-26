@@ -37,6 +37,28 @@ extern "C" {
         const auto data = util_getExpectationValueMap(v);
         return data;
     }
+
+    int test_calc(const emscripten::val &v) {
+        const auto arr = emscripten::vecFromJSArray<int>(v);
+        int num = 0;
+        const int size = arr.size();
+        for (int i = 0; i < size; ++i) {
+            const auto e = arr[i];
+            num += e;
+        }
+        return num;
+    }
+
+    int test_calc2(const emscripten::val &v) {
+        const auto arr = emscripten::vecFromJSArray<std::string>(v);
+        int num = 0;
+        const int size = arr.size();
+        for (int i = 0; i < size; ++i) {
+            const auto e = arr[i];
+            num += e.size();
+        }
+        return num;
+    }
 }
 
 EMSCRIPTEN_BINDINGS(Bindings) {
@@ -63,4 +85,6 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("state_dataCpp", &state_dataCpp, emscripten::allow_raw_pointers());
     emscripten::function("runShotTask", &runShotTask, emscripten::allow_raw_pointers());
     emscripten::function("getExpectationValueMap", &getExpectationValueMap, emscripten::allow_raw_pointers());
+    emscripten::function("test_calc", &test_calc, emscripten::allow_raw_pointers());
+    emscripten::function("test_calc2", &test_calc2, emscripten::allow_raw_pointers());
 };

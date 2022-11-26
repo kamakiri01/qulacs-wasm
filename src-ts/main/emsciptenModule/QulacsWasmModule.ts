@@ -7,6 +7,8 @@ export interface QulacsWasmModule extends EmscriptenWasm.Module {
     runShotTask(request: RunShotTaskRequest): RunShotTaskResult;
     getExpectationValueMap(request: GetExpectationValueMapRequest): GetExpectationValueMapResult;
     state_dataCpp(request: ToWasmSerialInfo): { doubleVec: WasmVector, cppVec: any }; // NOTE: 暫定
+    test_calc(req: any): number;
+    test_calc2(req: any): number;
 }
 
 export type StateVectorWithObservableRequest = ToWasmCalcStateInfo;
