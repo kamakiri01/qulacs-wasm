@@ -57,11 +57,9 @@ export class QuantumState {
         }
     }
 
-    /*
-    sampling(sampling_count: number) {
-        return QuantumState.client.state.sampling();
-    }; // wasm
-    */
+    sampling(sampling_count: number): number[] {
+        return QuantumState.client.state.sampling(this, sampling_count);
+    };
 }
 
 function isComplexArray(array: any): array is Complex[] {

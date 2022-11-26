@@ -6,7 +6,8 @@ export interface QulacsWasmModule extends EmscriptenWasm.Module {
     getStateVectorWithExpectationValue(request: StateVectorWithObservableRequest): StateVectorWithObervableResult;
     runShotTask(request: RunShotTaskRequest): RunShotTaskResult;
     getExpectationValueMap(request: GetExpectationValueMapRequest): GetExpectationValueMapResult;
-    state_dataCpp(request: ToWasmSerialInfo): { doubleVec: WasmVector, cppVec: any }; // NOTE: 暫定
+    state_dataCpp(request: ToWasmSerialInfo): StateDataCppResult;
+    state_sampling(request: ToWasmSamplingInfo): SamplingResult;
     test_calc(req: any): number;
     test_calc2(req: any): number;
 }
@@ -45,6 +46,10 @@ export interface ToWasmSerialInfo {
     size: number;
 }
 
+export interface ToWasmSamplingInfo extends ToWasmSerialInfo {
+    sampling_count: number;
+}
+
 export interface StateDataCppResult {
     /**
      * std::vector<double>
@@ -57,4 +62,8 @@ export interface StateDataCppResult {
      * stateを継続利用する際にwasmに返送するためJS側で維持する
      */
     cppVec: WasmVector;
+}
+
+export interface SamplingResult extends StateDataCppResult {
+    samplingVec: WasmVector;
 }
