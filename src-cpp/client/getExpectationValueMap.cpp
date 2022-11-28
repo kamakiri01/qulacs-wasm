@@ -23,7 +23,6 @@ GetExpectationValueMapResult util_getExpectationValueMap(const emscripten::val &
     ParametricQuantumCircuit* circuit = getSingleParametricCircuit(circuitInfo, parametricPositionStep, parametricPositionQubitIndex);
     QuantumState state(size);
     state.set_zero_state();
-    // circuit->update_quantum_state(&state);
 
     const auto observableInfo = request["observableInfo"];
     Observable observable = getObservable(observableInfo, size);

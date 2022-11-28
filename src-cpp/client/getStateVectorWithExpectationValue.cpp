@@ -17,6 +17,7 @@ struct GetStateVectorWithExpectationValueResult {
     double expectationValue;
 };
 
+// circuitInfo から QuantumCircuit を生成して返す
 QuantumCircuit* getCircuit(const emscripten::val &circuitInfo) {
     const auto size = circuitInfo["size"].as<int>();
     QuantumCircuit* circuit = new QuantumCircuit(size);
@@ -40,6 +41,7 @@ QuantumCircuit* getCircuit(const emscripten::val &circuitInfo) {
 }
 
 // circuit->get_parameter_count() = 1のcircuitを返す
+// circuitInfo と 対象座標から ParametricQuantumCircuit を生成して返す
 ParametricQuantumCircuit* getSingleParametricCircuit(const emscripten::val &circuitInfo, int target_step, int target_index) {
     const auto size = circuitInfo["size"].as<int>();
     ParametricQuantumCircuit* circuit = new ParametricQuantumCircuit(size);

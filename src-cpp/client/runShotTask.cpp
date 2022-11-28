@@ -15,25 +15,29 @@ struct RunShotResult {
     std::vector<int> sampleMap;
 };
 
+// sampling 結果から分布の配列を返す
+std::vector<int> createSampleMap(std::vector<ITYPE> samples, int qubit_count) {
+    const int basis = std::pow(2, qubit_count);
+    std::vector<int> sampleMap; // (basis)で初期化すべき？
+    // 取りうる基底の数の配列長に初期化
+    for (int i = 0; i < basis; i++) {
+        sampleMap.push_back(0);
+    }
+    const int sampleSize = samples.size();
+    for (size_t i = 0; i < sampleSize; ++i) {
+        const int sample = (long int)samples[i]; // NNOTE: long long int対応を検討
+        sampleMap[sample] += 1;
+    }
+    return sampleMap;
+}
+
 RunShotResult util_runShotTask(const emscripten::val &v) {
     const auto circuitInfo = v["circuitInfo"];
     const auto size = circuitInfo["size"].as<int>();
     QuantumState state = getUpdatedState(circuitInfo);
     const int shot = v["shot"].as<int>();
     const auto samples = state.sampling(shot);
-
-    const int basis = std::pow(2, size);
-    std::vector<int> sampleMap; // (basis)で初期化すべき？
-    for (int i = 0; i < basis; i++) {
-        sampleMap.push_back(0);
-    }
-
-    const int sampleSize = samples.size();
-    for (size_t i = 0; i < sampleSize; ++i) {
-        const int sample = (long int)samples[i];
-        sampleMap[sample] += 1;
-    }
-
+    std::vector<int> sampleMap = createSampleMap(samples, size);
     return {
         sampleMap: sampleMap
     };
