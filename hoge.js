@@ -96,6 +96,9 @@ m.initQulacsModule({useWorker: false})
         state.set_Haar_random_state(5);
         const vec7 = state.get_vector();
         console.log("vec7", vec7);
+        state.set_computational_basis(1);
+        const samples = state.sampling(10);
+        console.log("samples", samples);
 
         var n = 1;
         var avg = 0;
