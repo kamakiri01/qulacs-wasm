@@ -1,6 +1,6 @@
 # Qulacs Wasm
 
-qulacs-wasm lets you use Qulacs in JavaScript via WebAssembly. It provides a convenient syntax similar to Qulacs on Python in JavaScript/TypeScript, and aims an efficient way to manipulate quantum computation on JavaScript.
+qulacs-wasm lets you use Qulacs in JavaScript via WebAssembly. It provides a convenient syntax similar to Qulacs on Python in JavaScript/TypeScript, and aims an efficient way to manipulate quantum computation on JavaScript runtime environment.
 
 Qulacs and qulacs-wasm is licensed under the [MIT license](https://github.com/qulacs/qulacs/blob/master/LICENSE).
 
@@ -9,6 +9,42 @@ Qulacs and qulacs-wasm is licensed under the [MIT license](https://github.com/qu
 ```
 npm install qulacs-wasm
 ```
+
+```javascript
+const { initQulacsModule } = require("./lib/main/index");
+const { QuantumState } = require("./lib/main/nativeType/QuantumState");
+const { QuantumCircuit } = require("./lib/main/nativeType/QuantumCircuit");
+
+(async () => {
+    await initQulacsModule({useWorker: false}); // init Qulacs WebAssembly module
+
+    const state = new QuantumState(2);
+    state.set_zero_state();
+
+    const circuit = new QuantumCircuit(3);
+    circuit.add_H_gate(0);
+    circuit.add_CNOT_gate(0, 1);
+    circuit.update_quantum_state(state);
+    const get_vector = state.get_vector();
+    const sampling = state.sampling(10);
+    console.log("get_vector", get_vector);
+    console.log("sampling", sampling);
+})();
+```
+
+```
+get_vector [
+  { re: 0.7071067811865475, im: 0 },
+  { re: 0, im: 0 },
+  { re: 0, im: 0 },
+  { re: 0.7071067811865475, im: 0 }
+]
+sampling [
+  0, 0, 3, 3, 3,
+  0, 0, 0, 0, 0
+]
+```
+
 
 ## Installation and build from source
 
