@@ -10,16 +10,22 @@
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
 
-#include "getGate.cpp"
-#include "getObservable.cpp"
-#include "state/data_cpp.cpp"
-#include "utilClient/getStateVectorWithExpectationValue.cpp"
-#include "utilClient/runShotTask.cpp"
-#include "utilClient/getExpectationValueMap.cpp"
+#include "util/getGate.cpp"
+#include "util/getObservable.cpp"
+#include "nativeClass/state/data_cpp.cpp"
+#include "nativeClass/state/sampling.cpp"
+#include "client/getStateVectorWithExpectationValue.cpp"
+#include "client/runShotTask.cpp"
+#include "client/getExpectationValueMap.cpp"
 
 extern "C" {
     DataCppResult state_dataCpp(const emscripten::val &serialInfo) {
         const auto data = data_cpp(serialInfo);
+        return data;
+    }
+
+    SamplingResult state_sampling(const emscripten::val &samplingInfo) {
+        const auto data = sampling(samplingInfo);
         return data;
     }
 
@@ -66,6 +72,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::register_vector<CPPCTYPE>("vector<CPPCTYPE>");
     emscripten::register_vector<ITYPE>("vector<ITYPE>");
     emscripten::register_vector<int>("vector<int>");
+    emscripten::register_vector<long int>("vector<long int>");
 
     emscripten::value_object<GetStateVectorWithExpectationValueResult>("GetStateVectorWithExpectationValueResult")
         .field("stateVector", &GetStateVectorWithExpectationValueResult::stateVector)
@@ -81,8 +88,14 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .field("doubleVec", &DataCppResult::doubleVec)
         .field("cppVec", &DataCppResult::cppVec);
 
+    emscripten::value_object<SamplingResult>("SamplingResult")
+        .field("doubleVec", &SamplingResult::doubleVec)
+        .field("cppVec", &SamplingResult::cppVec)
+        .field("samplingVec", &SamplingResult::samplingVec);
+
     emscripten::function("getStateVectorWithExpectationValue", &getStateVectorWithExpectationValue, emscripten::allow_raw_pointers());
     emscripten::function("state_dataCpp", &state_dataCpp, emscripten::allow_raw_pointers());
+    emscripten::function("state_sampling", &state_sampling, emscripten::allow_raw_pointers());
     emscripten::function("runShotTask", &runShotTask, emscripten::allow_raw_pointers());
     emscripten::function("getExpectationValueMap", &getExpectationValueMap, emscripten::allow_raw_pointers());
     emscripten::function("test_calc", &test_calc, emscripten::allow_raw_pointers());
