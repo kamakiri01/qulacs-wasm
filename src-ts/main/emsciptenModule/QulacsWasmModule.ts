@@ -41,6 +41,10 @@ export interface GetExpectationValueMapResult {
     expectationValues: WasmVector<number>; // rangeは固定値で0~2、stepSizeで配列長さは自明なのでexpectationValueごとにparamを紐づけてwasmから返す必要はない。アプリが必要ならjs側で付ける
 }
 
+/**
+ * QuantumState の操作ログを wasm に送るためのフォーマット
+ * ToWasmOperator は StateAction を含むため、量子回路の表現型である ToWasmCircuitInfo と共通化はしない
+ */
 export interface ToWasmSerialInfo {
     operators: ToWasmOperator[];
     size: number;

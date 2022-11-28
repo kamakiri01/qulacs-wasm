@@ -22,8 +22,8 @@ export class QulacsNativeClassClient {
         this.state = {
             get_vector: (state) => {
                 const size = state.qubit_count;
-                const stateInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
-                const data = this.module.state_dataCpp(stateInfo);
+                const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
+                const data = this.module.state_dataCpp(serialInfo);
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, data.cppVec] }];
                 const stateVector = convertAlternateArrayToComplexArray(convertWasmVectorToArray(data.doubleVec));
                 return stateVector;
@@ -33,8 +33,8 @@ export class QulacsNativeClassClient {
             },
             sampling: (state, sampling_count) => {
                 const size = state.qubit_count;
-                const stateInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
-                const samplingInfo: ToWasmSamplingInfo = {...stateInfo, ...{sampling_count}};
+                const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
+                const samplingInfo: ToWasmSamplingInfo = {...serialInfo, ...{sampling_count}};
                 const data = this.module.state_sampling(samplingInfo);
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, data.cppVec] }];
                 const samplingResult = convertWasmVectorToArray(data.samplingVec);
