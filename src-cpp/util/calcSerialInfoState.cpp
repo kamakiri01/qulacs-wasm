@@ -1,3 +1,5 @@
+#pragma once
+
 #include <emscripten/bind.h>
 #include <cppsim/state.hpp>
 #include <cppsim/gate_factory.hpp>
@@ -9,7 +11,6 @@
 #include <iostream>
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
-
 
 std::vector<CPPCTYPE> transpaleComplexAltVectoCPPVec(std::vector<double> vec) {
     std::vector<CPPCTYPE> data;
@@ -76,12 +77,7 @@ void applyOperatorGate(QuantumState* state, std::vector<emscripten::val> gates) 
     }
 }
 
-struct DataCppResult {
-    std::vector<double> doubleVec;
-    std::vector<CPPCTYPE> cppVec;
-};
-
-DataCppResult data_cpp(const emscripten::val &serialInfo) {
+QuantumState* calcSerialInfoState(const emscripten::val &serialInfo) {
     const auto size = serialInfo["size"].as<int>();
     QuantumState* state = new QuantumState(size);
     const auto operators = emscripten::vecFromJSArray<emscripten::val>(serialInfo["operators"]);
@@ -96,13 +92,5 @@ DataCppResult data_cpp(const emscripten::val &serialInfo) {
             applyOperatorGate(state, operatorData);
         }
     }
-
-    const auto raw_data_cpp = state->data_cpp();
-    const int vecSize = pow(2, size);
-    std::vector<double> data = translateCppcToVec(raw_data_cpp, vecSize);
-    std::vector<CPPCTYPE> cppData = transpaleCPPtoCPPVec(raw_data_cpp, vecSize);
-    return {
-        doubleVec: data,
-        cppVec: cppData
-    };
+    return state;
 }

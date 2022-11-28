@@ -6,7 +6,8 @@ export interface QulacsWasmModule extends EmscriptenWasm.Module {
     getStateVectorWithExpectationValue(request: StateVectorWithObservableRequest): StateVectorWithObervableResult;
     runShotTask(request: RunShotTaskRequest): RunShotTaskResult;
     getExpectationValueMap(request: GetExpectationValueMapRequest): GetExpectationValueMapResult;
-    state_dataCpp(request: ToWasmSerialInfo): { doubleVec: WasmVector, cppVec: any }; // NOTE: 暫定
+    state_dataCpp(request: ToWasmSerialInfo): StateDataCppResult;
+    state_sampling(request: ToWasmSamplingInfo): SamplingResult;
     test_calc(req: any): number;
     test_calc2(req: any): number;
 }
@@ -14,7 +15,7 @@ export interface QulacsWasmModule extends EmscriptenWasm.Module {
 export type StateVectorWithObservableRequest = ToWasmCalcStateInfo;
 
 export interface StateVectorWithObervableResult {
-    stateVector: WasmVector;
+    stateVector: WasmVector<number>;
     expectationValue: number;
 }
 
@@ -24,7 +25,7 @@ export interface RunShotTaskRequest {
 }
 
 export interface RunShotTaskResult {
-    sampleMap: WasmVector;
+    sampleMap: WasmVector<number>;
 }
 
 export interface GetExpectationValueMapRequest {
@@ -37,24 +38,36 @@ export interface GetExpectationValueMapRequest {
 }
 
 export interface GetExpectationValueMapResult {
-    expectationValues: WasmVector; // rangeは固定値で0~2、stepSizeで配列長さは自明なのでexpectationValueごとにparamを紐づけてwasmから返す必要はない。アプリが必要ならjs側で付ける
+    expectationValues: WasmVector<number>; // rangeは固定値で0~2、stepSizeで配列長さは自明なのでexpectationValueごとにparamを紐づけてwasmから返す必要はない。アプリが必要ならjs側で付ける
 }
 
+/**
+ * QuantumState の操作ログを wasm に送るためのフォーマット
+ * ToWasmOperator は StateAction を含むため、量子回路の表現型である ToWasmCircuitInfo と共通化はしない
+ */
 export interface ToWasmSerialInfo {
     operators: ToWasmOperator[];
     size: number;
+}
+
+export interface ToWasmSamplingInfo extends ToWasmSerialInfo {
+    sampling_count: number;
 }
 
 export interface StateDataCppResult {
     /**
      * std::vector<double>
      */
-    doubleVec: WasmVector,
+    doubleVec: WasmVector<number>,
 
     /**
      * std::vector<CPPTYPE>
      * 
-     * stateを継続利用する際にwasmに返送するためJS側で維持する
+     * stateを継続利用する際にwasmに返送するためJS側で参照を維持する。JS側でこの値を利用することはない
      */
-    cppVec: WasmVector;
+    cppVec: WasmVector<unknown>;
+}
+
+export interface SamplingResult extends StateDataCppResult {
+    samplingVec: WasmVector<number>;
 }

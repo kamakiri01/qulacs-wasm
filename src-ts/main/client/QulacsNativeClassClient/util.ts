@@ -28,7 +28,6 @@ export function translateOperatorQueueToSerialInfo(queues: OperatorQueue[], size
         }
         info.operators.push(wasmOperator);
     });
-    console.log("info", JSON.stringify(info));
     return info;
 }
 

@@ -20,7 +20,7 @@ export type SetZeroStateAction = [typeof StateActionType.set_zero_state];
 export type SetComputationalBasisAction = [typeof StateActionType.set_computational_basis, number]; // require: number is int
 export type SetHaarRandomStateNoSeed = [typeof StateActionType.set_Haar_random_state_no_seed];
 export type SetHaarRandomStateSeed = [typeof StateActionType.set_Haar_random_state_seed, number]; // require: number is uint
-export type LoadWasmVectorStateAction = [typeof StateActionType.load_wasmVector, WasmVector];
+export type LoadWasmVectorStateAction = [typeof StateActionType.load_wasmVector, WasmVector<unknown>];
 export type LoadComplexSerialVectorStateAction = [typeof StateActionType.load_ComplexSerialVector, number[]];
 
 export type StateAction =
