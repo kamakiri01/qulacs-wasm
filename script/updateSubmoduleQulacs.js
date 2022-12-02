@@ -23,7 +23,7 @@ set -eux
 mkdir -p ./build
 cd ./build
 
-emcmake cmake -D CMAKE_C_COMPILER="emcc" -D CMAKE_CXX_COMPILER="em++" -D OPT_FLAGS="-mtune=native -march=native" -D CMAKE_BUILD_TYPE=Release -D USE_GPU:STR=No -D "Boost_INCLUDE_DIR=../boost" ..
+emcmake cmake -D CMAKE_C_COMPILER="emcc" -D CMAKE_CXX_COMPILER="em++" -D OPT_FLAGS="-mtune=native -march=native" -D CMAKE_BUILD_TYPE=Release -D USE_GPU:STR=No -D Boost_INCLUDE_DIR="../boost" ..
 
 make -j $(nproc)
 cd ../`;

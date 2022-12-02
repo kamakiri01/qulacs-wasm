@@ -46,24 +46,24 @@ sampling [
 ```
 
 
-## Installation and build from source
+## Build from source
+
+Building qulacs-wasm involves building Qulacs and Boost, so those requirements must be satisfied, and Emscripten environment for qulacs-wasm.
 
 ### Requirements
 
 - [Qulacs requirements](https://github.com/qulacs/qulacs#requirements)
 - Emscripten (tested on v3.1.22)
-- Node.js/npm (tested on Node.js v18.3.0 / npm 8.11.0)
+- Node.js/npm (tested on Node.js v18.3.0/npm 8.11.0)
+  - some version included in Emscripten environment
 
 tested on the following systems.
 
 - Ubuntu 20.04.3 LTS (on WSL2)
 
 ```
-npm run submodule:clone-recursive
-npm run submodule:qulacs:wasm-optimization
-npm run submodule:boost:build
-npm run submodule:qulacs:build
-npm run build:tsc
-npm run build:emscripten
+npm run init
+npm run submodule:build
+npm run build
 ```
 
