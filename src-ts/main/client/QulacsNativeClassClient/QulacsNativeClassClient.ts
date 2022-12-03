@@ -4,7 +4,7 @@ import { QuantumState } from "../../nativeType/QuantumState";
 import { convertAlternateArrayToComplexArray, convertWasmVectorToArray } from "../../util/fromWasmUtil";
 import { Complex } from "../../type/common";
 import { translateOperatorQueueToSerialInfo } from "./util";
-import { QulacsWasmModule, ToWasmSamplingInfo } from "../../emsciptenModule/QulacsWasmModule";
+import { GetZeroProbabilityInfo, QulacsWasmModule, ToWasmSamplingInfo } from "../../emsciptenModule/QulacsWasmModule";
 import { OperatorQueueType } from "../../nativeType/helper/OperatorQueue";
 import { StateActionType } from "../../nativeType/helper/StateAction";
 
@@ -22,8 +22,8 @@ export class QulacsNativeClassClient {
         this.state = {
             get_vector: (state) => {
                 const size = state.qubit_count;
-                const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
-                const data = this.module.state_dataCpp(serialInfo);
+                const request = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
+                const data = this.module.state_dataCpp(request);
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, data.cppVec] }];
                 const stateVector = convertAlternateArrayToComplexArray(convertWasmVectorToArray(data.doubleVec));
                 return stateVector;
@@ -34,11 +34,19 @@ export class QulacsNativeClassClient {
             sampling: (state, sampling_count) => {
                 const size = state.qubit_count;
                 const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
-                const samplingInfo: ToWasmSamplingInfo = {...serialInfo, ...{sampling_count}};
-                const data = this.module.state_sampling(samplingInfo);
+                const request: ToWasmSamplingInfo = {...serialInfo, ...{sampling_count}};
+                const data = this.module.state_sampling(request);
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, data.cppVec] }];
                 const samplingResult = convertWasmVectorToArray(data.samplingVec);
                 return samplingResult;
+            },
+            get_zero_probability: (state, target_qubit_index) => {
+                const size = state.qubit_count;
+                const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
+                const request: GetZeroProbabilityInfo = {...serialInfo, ...{target_qubit_index}};
+                console.log("request", request, request.operators[0]);
+                const data = this.module.state_get_zero_probability(request);
+                return data.prob;
             }
         };
     }
@@ -48,4 +56,5 @@ interface StateAPI {
     get_vector: (state: QuantumState) => Complex[];
     get_amplitude: (state: QuantumState, index: number) => Complex;
     sampling: (state: QuantumState, sampling_count: number) => number[];
+    get_zero_probability: (state: QuantumState, target_qubit_index: number) => number;
 }

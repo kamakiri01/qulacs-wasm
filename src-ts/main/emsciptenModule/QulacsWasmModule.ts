@@ -8,6 +8,7 @@ export interface QulacsWasmModule extends EmscriptenWasm.Module {
     getExpectationValueMap(request: GetExpectationValueMapRequest): GetExpectationValueMapResult;
     state_dataCpp(request: ToWasmSerialInfo): StateDataCppResult;
     state_sampling(request: ToWasmSamplingInfo): SamplingResult;
+    state_get_zero_probability(request: GetZeroProbabilityInfo): GetZeroProbabilityResult;
     test_calc(req: any): number;
     test_calc2(req: any): number;
 }
@@ -54,6 +55,10 @@ export interface ToWasmSamplingInfo extends ToWasmSerialInfo {
     sampling_count: number;
 }
 
+export interface GetZeroProbabilityInfo extends ToWasmSerialInfo {
+    target_qubit_index: number;
+}
+
 export interface StateDataCppResult {
     /**
      * std::vector<double>
@@ -70,4 +75,8 @@ export interface StateDataCppResult {
 
 export interface SamplingResult extends StateDataCppResult {
     samplingVec: WasmVector<number>;
+}
+
+export interface GetZeroProbabilityResult {
+    prob: number;
 }
