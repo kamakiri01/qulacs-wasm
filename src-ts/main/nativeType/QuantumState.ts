@@ -48,10 +48,10 @@ export class QuantumState {
     get_zero_probability(index: number): number {
         return QuantumState.client.state.get_zero_probability(this, index);
     }
-/*
-    get_marginal_probability(measured_values: number[]): number {
 
-    }*/
+    get_marginal_probability(measured_values: number[]): number {
+        return QuantumState.client.state.get_marginal_probability(this, measured_values);
+    }
 
     load(stateOrArray: QuantumState | number[] | Complex[]): void {
         if (stateOrArray instanceof QuantumState) {

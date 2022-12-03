@@ -15,6 +15,7 @@
 #include "nativeClass/state/data_cpp.cpp"
 #include "nativeClass/state/sampling.cpp"
 #include "nativeClass/state/get_zero_probability.cpp"
+#include "nativeClass/state/get_marginal_probability.cpp"
 #include "client/getStateVectorWithExpectationValue.cpp"
 #include "client/runShotTask.cpp"
 #include "client/getExpectationValueMap.cpp"
@@ -32,6 +33,11 @@ extern "C" {
 
     GerZeroProbabilityResult state_get_zero_probability(const emscripten::val &getZeroProbabilityInfo) {
         const auto data = get_zero_probability(getZeroProbabilityInfo);
+        return data;
+    }
+
+    GetMarginalProbabilityResult state_get_marginal_probability(const emscripten::val &getMarginalProbabilityInfo) {
+        const auto data = get_marginal_probability(getMarginalProbabilityInfo);
         return data;
     }
 
@@ -81,10 +87,14 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::value_object<GerZeroProbabilityResult>("GerZeroProbabilityResult")
         .field("prob", &GerZeroProbabilityResult::prob);
 
+    emscripten::value_object<GetMarginalProbabilityResult>("GetMarginalProbabilityResult")
+        .field("marginal_prob", &GetMarginalProbabilityResult::marginal_prob);
+
     emscripten::function("getStateVectorWithExpectationValue", &getStateVectorWithExpectationValue, emscripten::allow_raw_pointers());
     emscripten::function("state_dataCpp", &state_dataCpp, emscripten::allow_raw_pointers());
     emscripten::function("state_sampling", &state_sampling, emscripten::allow_raw_pointers());
     emscripten::function("state_get_zero_probability", &state_get_zero_probability, emscripten::allow_raw_pointers());
+    emscripten::function("state_get_marginal_probability", &state_get_marginal_probability, emscripten::allow_raw_pointers());
     emscripten::function("runShotTask", &runShotTask, emscripten::allow_raw_pointers());
     emscripten::function("getExpectationValueMap", &getExpectationValueMap, emscripten::allow_raw_pointers());
 };

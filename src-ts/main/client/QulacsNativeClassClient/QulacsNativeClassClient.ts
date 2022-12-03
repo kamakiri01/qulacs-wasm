@@ -4,7 +4,7 @@ import { QuantumState } from "../../nativeType/QuantumState";
 import { convertAlternateArrayToComplexArray, convertWasmVectorToArray } from "../../util/fromWasmUtil";
 import { Complex } from "../../type/common";
 import { translateOperatorQueueToSerialInfo } from "./util";
-import { GetZeroProbabilityInfo, QulacsWasmModule, ToWasmSamplingInfo } from "../../emsciptenModule/QulacsWasmModule";
+import { GetMarginalProbabilityInfo, GetZeroProbabilityInfo, QulacsWasmModule, ToWasmSamplingInfo } from "../../emsciptenModule/QulacsWasmModule";
 import { OperatorQueueType } from "../../nativeType/helper/OperatorQueue";
 import { StateActionType } from "../../nativeType/helper/StateAction";
 
@@ -23,9 +23,9 @@ export class QulacsNativeClassClient {
             get_vector: (state) => {
                 const size = state.qubit_count;
                 const request = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
-                const data = this.module.state_dataCpp(request);
-                state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, data.cppVec] }];
-                const stateVector = convertAlternateArrayToComplexArray(convertWasmVectorToArray(data.doubleVec));
+                const result = this.module.state_dataCpp(request);
+                state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, result.cppVec] }];
+                const stateVector = convertAlternateArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
                 return stateVector;
             },
             get_amplitude: (state, index) => {
@@ -35,18 +35,24 @@ export class QulacsNativeClassClient {
                 const size = state.qubit_count;
                 const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
                 const request: ToWasmSamplingInfo = {...serialInfo, ...{sampling_count}};
-                const data = this.module.state_sampling(request);
-                state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, data.cppVec] }];
-                const samplingResult = convertWasmVectorToArray(data.samplingVec);
+                const result = this.module.state_sampling(request);
+                state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, result.cppVec] }];
+                const samplingResult = convertWasmVectorToArray(result.samplingVec);
                 return samplingResult;
             },
             get_zero_probability: (state, target_qubit_index) => {
                 const size = state.qubit_count;
                 const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
                 const request: GetZeroProbabilityInfo = {...serialInfo, ...{target_qubit_index}};
-                console.log("request", request, request.operators[0]);
-                const data = this.module.state_get_zero_probability(request);
-                return data.prob;
+                const result = this.module.state_get_zero_probability(request);
+                return result.prob;
+            },
+            get_marginal_probability: (state: QuantumState, measured_values: number[]) => {
+                const size = state.qubit_count;
+                const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
+                const request: GetMarginalProbabilityInfo = {...serialInfo, ...{measured_values}};
+                const result = this.module.state_get_marginal_probability(request);
+                return result.marginal_prob;
             }
         };
     }
@@ -57,4 +63,5 @@ interface StateAPI {
     get_amplitude: (state: QuantumState, index: number) => Complex;
     sampling: (state: QuantumState, sampling_count: number) => number[];
     get_zero_probability: (state: QuantumState, target_qubit_index: number) => number;
+    get_marginal_probability: (state: QuantumState, measured_values: number[]) => number;
 }
