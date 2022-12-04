@@ -11,14 +11,15 @@
 #include <cppsim/circuit.hpp>
 
 #include "../../util/calcSerialInfoState.cpp"
+#include "data_cpp.cpp"
 
-struct SamplingResult: DataCppResult {
+
+struct SamplingResult: public DataCppResult {
     std::vector<long int> samplingVec;
 };
 
 SamplingResult sampling(const emscripten::val &samplingInfo) {
     // data_cpp相当をやって、sampingしてかえす
-    const auto size = samplingInfo["size"].as<int>();
     auto state = calcSerialInfoState(samplingInfo);
     const auto sampling_count = samplingInfo["sampling_count"].as<int>();
     std::vector<ITYPE> rawSamples = state->sampling(sampling_count);
@@ -30,7 +31,8 @@ SamplingResult sampling(const emscripten::val &samplingInfo) {
         samples.push_back(sample);
     }
 
-    return {
-        samplingVec: samples
-    };
+    const auto size = samplingInfo["size"].as<int>();
+    const auto vecs = vecsFromState(state, size);
+    SamplingResult result = {vecs.doubleVec, vecs.cppVec, samples};
+    return result;
 };

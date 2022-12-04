@@ -12,22 +12,20 @@
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
 
-#include "../../util/calcSerialInfoState.cpp"
-#include "../../util/vecsFromState.cpp"
+#include "calcSerialInfoState.cpp"
 
-struct DataCppResult {
+struct VecsFromState {
     std::vector<double> doubleVec;
     std::vector<CPPCTYPE> cppVec;
 };
 
-DataCppResult data_cpp(const emscripten::val &serialInfo) {
-    const auto size = serialInfo["size"].as<int>();
-    auto state = calcSerialInfoState(serialInfo);
+VecsFromState vecsFromState(QuantumState* state, int size) {
     const auto raw_data_cpp = state->data_cpp();
     const int vecSize = pow(2, size);
-    const auto vecs = vecsFromState(state, size);
+    std::vector<double> data = translateCppcToVec(raw_data_cpp, vecSize);
+    std::vector<CPPCTYPE> cppData = transpaleCPPtoCPPVec(raw_data_cpp, vecSize);
     return {
-        doubleVec: vecs.doubleVec,
-        cppVec: vecs.cppVec
+        doubleVec: data,
+        cppVec: cppData
     };
 }
