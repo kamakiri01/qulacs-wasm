@@ -3,6 +3,7 @@ import { ToWasmCalcStateInfo, ToWasmCircuitInfo, ToWasmObservableInfo } from "..
 import { WasmVector } from "../type/common";
 
 export interface QulacsWasmModule extends EmscriptenWasm.Module {
+    getExceptionMessage(exceptionPtr: number): string;
     getStateVectorWithExpectationValue(request: StateVectorWithObservableRequest): StateVectorWithObervableResult;
     runShotTask(request: RunShotTaskRequest): RunShotTaskResult;
     getExpectationValueMap(request: GetExpectationValueMapRequest): GetExpectationValueMapResult;

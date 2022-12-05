@@ -56,6 +56,10 @@ extern "C" {
         return data;
     }
 
+    // @see https://emscripten.org/docs/porting/Debugging.html#handling-c-exceptions-from-javascriptd
+    std::string getExceptionMessage(intptr_t exceptionPtr) {
+    return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what());
+    }
 }
 
 EMSCRIPTEN_BINDINGS(Bindings) {
@@ -97,4 +101,5 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("state_get_marginal_probability", &state_get_marginal_probability, emscripten::allow_raw_pointers());
     emscripten::function("runShotTask", &runShotTask, emscripten::allow_raw_pointers());
     emscripten::function("getExpectationValueMap", &getExpectationValueMap, emscripten::allow_raw_pointers());
+    emscripten::function("getExceptionMessage", &getExceptionMessage);
 };

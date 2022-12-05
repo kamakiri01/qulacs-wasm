@@ -23,7 +23,7 @@ export class QulacsNativeClassClient {
             get_vector: (state) => {
                 const size = state.qubit_count;
                 const request = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
-                const result = this.module.state_dataCpp(request);
+                const result = this._callWasmWithThrowableException(() => this.module.state_dataCpp(request));
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, result.cppVec] }];
                 const stateVector = convertAlternateArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
                 return stateVector;
@@ -35,7 +35,7 @@ export class QulacsNativeClassClient {
                 const size = state.qubit_count;
                 const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
                 const request: ToWasmSamplingInfo = {...serialInfo, ...{sampling_count}};
-                const result = this.module.state_sampling(request);
+                const result = this._callWasmWithThrowableException(() => this.module.state_sampling(request));
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, result.cppVec] }];
                 const samplingResult = convertWasmVectorToArray(result.samplingVec);
                 return samplingResult;
@@ -44,17 +44,29 @@ export class QulacsNativeClassClient {
                 const size = state.qubit_count;
                 const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
                 const request: GetZeroProbabilityInfo = {...serialInfo, ...{target_qubit_index}};
-                const result = this.module.state_get_zero_probability(request);
+                const result = this._callWasmWithThrowableException(() => this.module.state_get_zero_probability(request));
                 return result.prob;
             },
             get_marginal_probability: (state: QuantumState, measured_values: number[]) => {
                 const size = state.qubit_count;
                 const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
                 const request: GetMarginalProbabilityInfo = {...serialInfo, ...{measured_values}};
-                const result = this.module.state_get_marginal_probability(request);
+                const result = this._callWasmWithThrowableException(() => this.module.state_get_marginal_probability(request));
                 return result.marginal_prob;
             }
         };
+    }
+
+    _callWasmWithThrowableException<T>(moduleFunc: () => T): T {
+        try {
+            return moduleFunc();
+        } catch (exception) {
+            if (typeof exception === "number") {
+                const wasmErrorMessage = this.module.getExceptionMessage(exception as number);
+                throw new Error(wasmErrorMessage);
+            }
+            throw exception;
+        }
     }
 }
 
