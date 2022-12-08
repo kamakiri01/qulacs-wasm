@@ -2,23 +2,23 @@
 // 通常、本ライブラリのユーザがこの型を使う必要はない。
 
 export const WasmPauliGateType = {
-    EMPTY: 0,
-    X: 1,
-    Y: 2,
-    Z: 3
+    EMPTY: "0",
+    X: "x",
+    Y: "y",
+    Z: "z"
 } as const;
 export type WasmPauliGateType = typeof WasmPauliGateType[keyof typeof WasmPauliGateType];
 
 export const WasmQuantumGateType = {
     ...WasmPauliGateType,
-    H: 4,
-    T: 5,
-    S: 6,
-    RX: 7,
-    RY: 8,
-    RZ: 9,
-    CNOT: 10,
-    CCNOT: 11
+    H: "h",
+    T: "t",
+    S: "s",
+    RX: "rx",
+    RY: "ry",
+    RZ: "rz",
+    CNOT: "cnot",
+    CCNOT: "ccnot"
 } as const;
 export type WasmQuantumGateType = typeof WasmQuantumGateType[keyof typeof WasmQuantumGateType];
 

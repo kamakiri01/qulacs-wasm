@@ -21,7 +21,8 @@ export class QulacsClient {
             circuitInfo: convertCircuitInfo(info.circuitInfo),
             observableInfo: convertObservableInfo(info.observableInfo)
         };
-        const result = this.module.getStateVectorWithExpectationValue(request);
+        console.log("request", JSON.stringify(request));
+        const result = this._callWasmWithThrowableException(() => this.module.getStateVectorWithExpectationValue(request));
         const stateVector = convertAlternateArrayToComplexArray(convertWasmVectorToArray(result.stateVector));
         return {
             stateVector,
@@ -34,7 +35,7 @@ export class QulacsClient {
             circuitInfo: convertCircuitInfo(circuitInfo),
             shot
         };
-        const result = this.module.runShotTask(request);
+        const result = this._callWasmWithThrowableException(() => this.module.runShotTask(request));
         // const resultMap
         return convertWasmVectorToArray(result.sampleMap);
     }
@@ -54,7 +55,18 @@ export class QulacsClient {
             stepSize
         };
         console.log("request", request);
-        const result = this.module.getExpectationValueMap(request);
+        const result = this._callWasmWithThrowableException(() => this.module.getExpectationValueMap(request));
         return convertWasmVectorToArray(result.expectationValues);
+    }
+    _callWasmWithThrowableException<T>(moduleFunc: () => T): T {
+        try {
+            return moduleFunc();
+        } catch (exception) {
+            if (typeof exception === "number") {
+                const wasmErrorMessage = this.module.getExceptionMessage(exception as number);
+                throw new Error(wasmErrorMessage);
+            }
+            throw exception;
+        }
     }
 }
