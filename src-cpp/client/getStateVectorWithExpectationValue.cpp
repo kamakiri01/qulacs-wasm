@@ -30,7 +30,7 @@ QuantumCircuit* getCircuit(const emscripten::val &circuitInfo) {
         int stepCount = step.size();
         for (int j = 0; j < stepCount; ++j) {
             const auto gateRaw = emscripten::vecFromJSArray<emscripten::val>(step[j]); // ToWasmQuantumGate
-            int gateType = gateRaw[0].as<int>();
+            std::string gateType = gateRaw[0].as<std::string>();
             double gateParam = gateRaw[1].as<double>();
             std::vector<int> indexs = emscripten::vecFromJSArray<int>(gateRaw[2]);
             QuantumGateBase* gate = getGate(gateType, j, gateParam, indexs);
@@ -54,7 +54,7 @@ ParametricQuantumCircuit* getSingleParametricCircuit(const emscripten::val &circ
         int stepCount = step.size();
         for (int j = 0; j < stepCount; ++j) {
             const auto gateRaw = emscripten::vecFromJSArray<emscripten::val>(step[j]); // ToWasmQuantumGate
-            int gateType = gateRaw[0].as<int>();
+            std::string gateType = gateRaw[0].as<std::string>();
             double gateParam = gateRaw[1].as<double>();
             std::vector<int> indexs = emscripten::vecFromJSArray<int>(gateRaw[2]);
             if (target_step == i && target_index == j) {
@@ -85,7 +85,6 @@ GetStateVectorWithExpectationValueResult util_getStateVectorWithExpectationValue
     QuantumState state = getUpdatedState(circuitInfo);
     const auto observableInfo = request["observableInfo"];
     Observable observable = getObservable(observableInfo, size);
-
     const auto result = observable.get_expectation_value(&state);
     const auto raw_data_cpp = state.data_cpp();
     const int vecSize = pow(2, size);

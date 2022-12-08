@@ -68,8 +68,8 @@ void applyOperatorGate(QuantumState* state, std::vector<emscripten::val> gates) 
     const int gatesCount = gates.size();
     for (int j = 0; j < gatesCount; ++j) { // j は量子ビットindex
         const auto gateRaw = emscripten::vecFromJSArray<emscripten::val>(gates[j]); // ToWasmRawQuantumGate
-        int gateType = gateRaw[0].as<int>();
-        if (gateType == 0) continue; // empty gate
+        std::string gateType = gateRaw[0].as<std::string>();
+        if (gateType == "0") continue; // empty gate
         double gateParam = gateRaw[1].as<double>();
         std::vector<int> indexs = emscripten::vecFromJSArray<int>(gateRaw[2]);
         QuantumGateBase* gate = getGate(gateType, j, gateParam, indexs);

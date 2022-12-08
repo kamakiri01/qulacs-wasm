@@ -14,7 +14,6 @@ Observable getObservable(const emscripten::val &observableInfo, int size) {
     Observable observable(size);
     auto observableSteps = emscripten::vecFromJSArray<emscripten::val>(observableInfo["observable"]); // ToWasmObservableData
     int observableStepsCount = observableSteps.size();
-
     for (size_t i = 0; i < observableStepsCount; ++i) {
         const auto step = observableSteps[i]; // ToWasmObservableStep
         const double coefficient = step["coefficient"].as<double>();
@@ -23,19 +22,15 @@ Observable getObservable(const emscripten::val &observableInfo, int size) {
         std::string Pauli_string = "";
         for (size_t j = 0; j < operatorsCount; ++j) {
             std::string pauli = "";
-            int o = operators[j].as<int>();
-            switch (o) {
-                case 0:
-                    continue; // empty gate
-                case 1:
-                    pauli += "X ";
-                    break;
-                case 2:
-                    pauli += "Y ";
-                    break;
-                case 3:
-                    pauli += "Z ";
-                    break;
+            std::string op = operators[j].as<std::string>();
+            if (op == "0") {
+                // do nothing
+            } else if (op == "x") {
+                pauli += "X ";
+            } else if (op == "y") {
+                pauli += "Y ";
+            } else if (op == "z") {
+                pauli += "Z ";
             }
             Pauli_string += pauli + std::to_string(j);
         }
