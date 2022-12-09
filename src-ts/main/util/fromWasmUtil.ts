@@ -3,7 +3,6 @@ import { Complex, WasmVector } from "../type/common";
 export function convertWasmVectorToArray<T>(vector: WasmVector<T>): T[] {
     const data: any[] = [];
     const size = vector.size();
-    console.log("size", size, vector);
     for (let i = 0; i < size; i+=1) {
         data.push(vector.get(i));
     }
