@@ -58,6 +58,7 @@ export class QulacsClient {
         const result = this._callWasmWithThrowableException(() => this.module.getExpectationValueMap(request));
         return convertWasmVectorToArray(result.expectationValues);
     }
+
     _callWasmWithThrowableException<T>(moduleFunc: () => T): T {
         try {
             return moduleFunc();

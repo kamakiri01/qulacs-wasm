@@ -73,7 +73,8 @@ void applyOperatorGate(QuantumState* state, std::vector<emscripten::val> gates) 
         double gateParam = gateRaw[1].as<double>();
         std::vector<int> indexs = emscripten::vecFromJSArray<int>(gateRaw[2]);
         QuantumGateBase* gate = getGate(gateType, j, gateParam, indexs);
-        gate->update_quantum_state(state); // &state
+        gate->update_quantum_state(state);
+        delete gate;
     }
 }
 
