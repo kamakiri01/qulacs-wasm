@@ -1,7 +1,7 @@
 import { CircuitInfo, ObservableInfo, ToWasmCircuitInfo, ToWasmObservableInfo } from "../type/ClientType";
 import { MultiQuantumGate, ParametricQuantumGate, QuantumGate } from "../type/QuantumGate";
 import { MultiQuantumGateType, ParametricQuantumGateType, PauliGateType, QuantumGateType } from "../type/QuantumGateType";
-import { WasmQuantumGate, WasmQuantumGateType } from "../type/WasmGateType";
+import { WasmPauliGateType, WasmQuantumGate, WasmQuantumGateType } from "../type/WasmGateType";
 
 export function convertCircuitInfo(circuitInfo: CircuitInfo): ToWasmCircuitInfo {
     const wasmCircuitInfo: ToWasmCircuitInfo = {
@@ -29,18 +29,14 @@ export function convertObservableInfo(observableInfo: ObservableInfo): ToWasmObs
         };
         step.operators.forEach((operator, i) => {
             if (!operator) {
-                wasmObsevableInfo.observable[index].operators.push(0);
+                wasmObsevableInfo.observable[index].operators.push("0");
             }
 
             switch(step.operators[i]) {
                 case PauliGateType.X:
-                    wasmObsevableInfo.observable[index].operators.push(1);
-                    break;
                 case PauliGateType.Y:
-                    wasmObsevableInfo.observable[index].operators.push(2);
-                    break;
                 case PauliGateType.Z:
-                    wasmObsevableInfo.observable[index].operators.push(3);
+                    wasmObsevableInfo.observable[index].operators.push(translateGateType(step.operators[i]) as WasmPauliGateType);
                     break;
             }
         });
@@ -51,7 +47,7 @@ export function convertObservableInfo(observableInfo: ObservableInfo): ToWasmObs
 export function translateDefaultGateToWasmGate(gate: QuantumGate): WasmQuantumGate {
     let wasmGate: WasmQuantumGate;
     if (!gate) {
-        wasmGate = [0, 0, []];
+        wasmGate = ["0", 0, []];
     } else {
         const gateType = translateGateType(gate.type);
         const gateParam = isParametricQuantumGateType(gate) ? gate.param : 0;
@@ -64,29 +60,29 @@ export function translateDefaultGateToWasmGate(gate: QuantumGate): WasmQuantumGa
 function translateGateType(defaultGateType: QuantumGateType): WasmQuantumGateType {
     switch(defaultGateType) {
         case QuantumGateType.X:
-            return 1;
+            return "x";
         case QuantumGateType.Y:
-            return 2;
+            return "y";
         case QuantumGateType.Z:
-            return 3;
+            return "z";
         case QuantumGateType.H:
-            return 4;
+            return "h";
         case QuantumGateType.T:
-            return 5;
+            return "t";
         case QuantumGateType.S:
-            return 6;
+            return "s";
         case QuantumGateType.RX:
-            return 7;
+            return "rx";
         case QuantumGateType.RY:
-            return 8;
+            return "ry";
         case QuantumGateType.RZ:
-            return 9;
+            return "rz";
         case QuantumGateType.CNOT:
-            return 10;
+            return "cnot";
         case QuantumGateType.CCNOT:
-            return 11;
+            return "ccnot";
         default:
-            return 0; // unreachable required
+            return "0"; // unreachable required
     }
 }
 

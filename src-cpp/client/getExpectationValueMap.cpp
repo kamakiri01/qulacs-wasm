@@ -32,13 +32,13 @@ GetExpectationValueMapResult util_getExpectationValueMap(const emscripten::val &
     for (size_t i = 0; i < stepSize; ++i) {
         double angle = 2 * M_PI * ( (double)i / ( (double)stepSize - 1));
         circuit->set_parameter(0, angle);
-        //auto second_state = state.copy();
         QuantumState second_state(size);
         circuit->update_quantum_state(&second_state);
         const auto result = observable.get_expectation_value(&second_state);
         const double expectationValue = result.real();
         expectationValues.push_back(expectationValue);
     }
+    delete circuit;
 
     return {
         expectationValues: expectationValues
