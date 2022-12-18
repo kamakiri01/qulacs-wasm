@@ -2,7 +2,7 @@
   "name": "qulacs-wasm",
   "version": "0.0.1",
   "description": "",
-  "main": "lib/main/index.js",
+  "main": "lib/index.js",
   "scripts": {
     "init": "npm run submodule:clone-recursive && npm run submodule:qulacs:wasm-optimization",
     "submodule:clone-recursive": "git submodule update --init --recursive",
