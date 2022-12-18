@@ -1,12 +1,12 @@
 {
-  "name": "html-load-test",
+  "name": "qulacs-wasm-browser-sample",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build": "tsc -p .",
     "pack": "webpack && cpx node_modules/qulacs-wasm/lib/wasm/*.wasm dist",
-    "start": "http-server"
+    "start": "http-server dist"
   },
   "keywords": [],
   "author": "",

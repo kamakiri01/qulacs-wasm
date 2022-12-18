@@ -1,0 +1,19 @@
+{
+  "name": "qulacs-wasm-node-sample",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "node lib/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "qulacs-wasm": "^0.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  }
+}
