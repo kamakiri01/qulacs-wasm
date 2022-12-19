@@ -11,25 +11,19 @@ npm install qulacs-wasm
 ```
 
 ```javascript
-const { initQulacsModule } = require("./lib/main/index");
-const { QuantumState } = require("./lib/main/nativeType/QuantumState");
-const { QuantumCircuit } = require("./lib/main/nativeType/QuantumCircuit");
+import { initQulacsModule, QuantumState } from "qulacs-wasm";
 
-(async () => {
-    await initQulacsModule({useWorker: false}); // init Qulacs WebAssembly module
-
+initQulacsModule(S).then(_ => {
     const state = new QuantumState(2);
     state.set_zero_state();
-
-    const circuit = new QuantumCircuit(3);
+    const circuit = new QuantumCircuit(2);
     circuit.add_H_gate(0);
     circuit.add_CNOT_gate(0, 1);
     circuit.update_quantum_state(state);
-    const get_vector = state.get_vector();
-    const sampling = state.sampling(10);
-    console.log("get_vector", get_vector);
-    console.log("sampling", sampling);
-})();
+    console.log("getVec", state.get_vector());
+    console.log("sampling", state.sampling(10));
+
+});
 ```
 
 ```
@@ -45,6 +39,7 @@ sampling [
 ]
 ```
 
+See more details, `sample` dir.
 
 ## Build from source
 
