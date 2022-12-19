@@ -1,12 +1,9 @@
-import { ToWasmSerialInfo } from "../../emsciptenModule/QulacsWasmModule";
+import { ToWasmOperator, ToWasmSerialInfo } from "../../emsciptenModule/QulacsWasmModule";
 import { OperatorQueue, OperatorQueueType, QuantumGateOperatorQueue } from "../../nativeType/helper/OperatorQueue";
-import { StateAction } from "../../nativeType/helper/StateAction";
+import { StateAction } from "../../type/StateAction";
 import { QuantumGateType } from "../../type/QuantumGateType";
 import { WasmQuantumGate } from "../../type/WasmGateType";
 import { translateDefaultGateToWasmGate } from "../../util/toWasmUtil";
-
-// ゲート操作やstate setなどの単位の操作
-export type ToWasmOperator = [0, StateAction] | [1, WasmQuantumGate[]]; // TODO: o番目を型付け
 
 /**
  * module.state_dataCpp に渡される構造を生成する

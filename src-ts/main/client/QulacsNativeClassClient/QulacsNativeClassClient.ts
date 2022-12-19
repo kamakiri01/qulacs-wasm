@@ -6,7 +6,7 @@ import { Complex } from "../../type/common";
 import { translateOperatorQueueToSerialInfo } from "./util";
 import { GetMarginalProbabilityInfo, GetZeroProbabilityInfo, QulacsWasmModule, ToWasmSamplingInfo } from "../../emsciptenModule/QulacsWasmModule";
 import { OperatorQueueType } from "../../nativeType/helper/OperatorQueue";
-import { StateActionType } from "../../nativeType/helper/StateAction";
+import { StateActionType } from "../../type/StateAction";
 
 export interface QulacsNativeClassClientParameterObjeect {
     module: QulacsWasmModule;

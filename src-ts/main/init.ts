@@ -8,7 +8,6 @@ import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 
 export interface InitQulacsModuleOption {
     module?: WebAssembly.Module;
-    // instantiateWasm(importObject: WebAssembly.Imports, successCallback: (module: WebAssembly.Module) => void): void;
 }
 
 export async function initQulacsModule(option: InitQulacsModuleOption = {}): Promise<QulacsClient> {
@@ -36,13 +35,13 @@ function initQulacsFromModule(compiledModule: WebAssembly.Module): Promise<Qulac
                 .then(instance => {
                     successCallback(instance);
                 })
-                .catch(e => reject);
+                .catch(e => reject(e));
         }
         ModuleQulacsWasm({ instantiateWasm: onInstantiateWasm })
             .then((emscriptenModule: EmscriptenWasm.Module) => {
                 resolve(emscriptenModule as QulacsWasmModule);
             })
-            .catch((e: any) => reject);
+            .catch((e: any) => reject(e));
         });
 }
 

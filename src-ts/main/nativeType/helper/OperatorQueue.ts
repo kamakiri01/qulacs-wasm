@@ -1,5 +1,5 @@
 import { IndexedToWasmDefaultQuantumGate } from "./IndexedToWasmDefaultQuantumGate";
-import {StateAction } from "./StateAction";
+import {StateAction } from "../../type/StateAction";
 
 export const OperatorQueueType = {
     StateAction: "stateAction",

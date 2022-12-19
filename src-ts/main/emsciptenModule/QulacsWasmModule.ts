@@ -1,6 +1,7 @@
-import { ToWasmOperator } from "../client/QulacsNativeClassClient/util";
 import { ToWasmCalcStateInfo, ToWasmCircuitInfo, ToWasmObservableInfo } from "../type/ClientType";
 import { WasmVector } from "../type/common";
+import { StateAction } from "../type/StateAction";
+import { WasmQuantumGate } from "../type/WasmGateType";
 
 export interface QulacsWasmModule extends EmscriptenWasm.Module {
     getExceptionMessage(exceptionPtr: number): string;
@@ -41,6 +42,10 @@ export interface GetExpectationValueMapRequest {
 export interface GetExpectationValueMapResult {
     expectationValues: WasmVector<number>; // rangeは固定値で0~2、stepSizeで配列長さは自明なのでexpectationValueごとにparamを紐づけてwasmから返す必要はない。アプリが必要ならjs側で付ける
 }
+
+// ゲート操作やstate setなどの単位の操作
+export type ToWasmOperator = [0, StateAction] | [1, WasmQuantumGate[]]; // TODO: o番目を型付け
+
 
 /**
  * QuantumState の操作ログを wasm に送るためのフォーマット
