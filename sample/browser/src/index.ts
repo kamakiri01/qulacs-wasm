@@ -1,10 +1,9 @@
 import { initQulacsModule, QuantumState } from "qulacs-wasm";
+
 const USE_WORKER = true;
 if (USE_WORKER) {
-    let wasmModule: WebAssembly.Module;
-    WebAssembly.compileStreaming(fetch("module.wasm")) // you can also fetch .wasm in your Worker
+    WebAssembly.compileStreaming(fetch("module.wasm")) // you can also compile .wasm in your Worker
         .then(module => {
-            wasmModule = module;
             const worker = new Worker("./calculate.worker.js");
             worker.onmessage = function(event: unknown) {
                 console.log("getVec", (<MessageEvent>event).data);
@@ -12,8 +11,8 @@ if (USE_WORKER) {
             worker.postMessage(module);
         });
 } else {
-    initQulacsModule({}).then(_ => {
-        var state = new QuantumState(3);
+    initQulacsModule().then(_ => {
+        const state = new QuantumState(3);
         console.log("getVec", state.get_vector());
     });
 }

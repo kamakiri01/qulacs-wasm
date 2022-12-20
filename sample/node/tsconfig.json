@@ -9,6 +9,9 @@
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true
     },
+    "files": [
+      "./typings/WebAssembly.d.ts"
+    ],
   "include": [
       "./src/**/*"
     ]

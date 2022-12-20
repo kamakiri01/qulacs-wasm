@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p .",
-    "pack": "webpack && cpx node_modules/qulacs-wasm/lib/wasm/*.wasm dist",
+    "build": "npm run build:tsc && npm run build:webpack && npm run build:cpx",
+    "build:tsc": "tsc -p .",
+    "build:webpack": "webpack",
+    "build:cpx": "cpx node_modules/qulacs-wasm/lib/wasm/*.wasm dist",
     "start": "http-server dist"
   },
   "keywords": [],

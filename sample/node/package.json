@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p .",
+    "build": "npm run build:tsc && npm run build:cpx",
+    "build:tsc": "tsc -p .",
+    "build:cpx": " cpx node_modules/qulacs-wasm/lib/wasm/*.wasm lib",
     "start": "node lib/index.js"
   },
   "keywords": [],
@@ -14,6 +16,7 @@
     "qulacs-wasm": "^0.0.1"
   },
   "devDependencies": {
+    "cpx": "^1.5.0",
     "typescript": "^4.9.4"
   }
 }
