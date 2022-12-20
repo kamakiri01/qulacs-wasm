@@ -1,7 +1,7 @@
 
-var m = require("./lib/main/index");
-var m2 = require("./lib/main/nativeType/QuantumState");
-var m3 = require("./lib/main/nativeType/QuantumCircuit");
+var m = require("../../lib/main/index");
+var m2 = require("../../lib/main/nativeType/QuantumState");
+var m3 = require("../../lib/main/nativeType/QuantumCircuit");
 
 
 m.initQulacsModule({useWorker: false})
@@ -100,6 +100,7 @@ m.initQulacsModule({useWorker: false})
         const samples = state.sampling(10);
         console.log("samples", samples);
 
+        /*
         var n = 1;
         var avg = 0;
         for(var i = 0; i < 10; i++) {
@@ -111,6 +112,23 @@ m.initQulacsModule({useWorker: false})
             avg += test2(n);
         }
         console.log("-avg:", (avg/10));
+        */
+
+        const vec8 = state.get_vector();
+        console.log("vec8", vec8);
+        state.set_Haar_random_state();
+        const prob = state.get_zero_probability(1);
+        console.log("prob", prob);
+
+        state = new m2.QuantumState(5);
+        state.set_Haar_random_state();
+        try {
+            const marginal_prob = state.get_marginal_probability([1,2,2,0,2]);
+            console.log("marginal_prob", marginal_prob);
+        } catch(err) {
+            console.log("err" ,err);
+        }
+        return 0;
     }))
 
 function test1(len) {

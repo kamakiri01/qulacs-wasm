@@ -1,5 +1,4 @@
-import { WasmVector } from "../../type/common";
-
+import { WasmVector } from "./common";
 
 /**
  * QuantumState.set~系操作をQunatumState#_operatorQueuesに積む際の表現定義

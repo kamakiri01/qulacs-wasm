@@ -1,12 +1,13 @@
 import { QulacsNativeClassClient } from "../client/QulacsNativeClassClient/QulacsNativeClassClient";
 import { Complex } from "../type/common";
 import { OperatorQueue, OperatorQueueType } from "./helper/OperatorQueue";
-import { StateActionType } from "./helper/StateAction";
+import { StateActionType } from "../type/StateAction";
 
 export class QuantumState {
     static client: QulacsNativeClassClient;
 
     qubit_count: number;
+
     /**
      * length === 0 を想定しない
      */

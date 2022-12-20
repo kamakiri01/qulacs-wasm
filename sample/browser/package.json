@@ -1,0 +1,28 @@
+{
+  "name": "qulacs-wasm-browser-sample",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run build:tsc && npm run build:webpack && npm run build:cpx",
+    "build:tsc": "tsc -p .",
+    "build:webpack": "webpack",
+    "build:cpx": "cpx node_modules/qulacs-wasm/lib/wasm/*.wasm dist",
+    "start": "http-server dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "qulacs-wasm": "^0.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.5",
+    "@babel/preset-env": "^7.20.2",
+    "babel-loader": "^9.1.0",
+    "cpx": "^1.5.0",
+    "typescript": "^4.9.4",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  }
+}
