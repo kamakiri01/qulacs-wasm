@@ -59,6 +59,7 @@ tested on the following systems.
 ```
 npm run init
 npm run submodule:build
+npm install
 npm run build
 ```
 
