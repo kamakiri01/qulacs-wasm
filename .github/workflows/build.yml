@@ -1,0 +1,41 @@
+name: "build"
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node: [18.x]
+    steps:
+      - uses: mymindstorm/setup-emsdk@v11
+        with:
+          version: 3.1.22
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install Ubuntu build-essential # install gcc
+        run: |
+          sudo apt -y update
+          sudo apt -y upgrade
+          sudo apt -y install build-essential
+      - name: Submodule CI Workaround # @see https://gist.github.com/petrbel/c3bf7e0f59c22a52f534
+        run: sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+      - name: Init Submodules
+        run: npm run init
+      - name: Submodule CI Workaround2 # @see https://gist.github.com/petrbel/c3bf7e0f59c22a52f534
+        run: sed -i 's/git@github.com:/https:\/\/github.com\//' ./submodules/boost/.gitmodules
+      - name: Submodule CI workaround3 # retry submodule update for boost submodules
+        run: npm run submodule:clone-recursive
+      - name: Build Submodules
+        run: npm run submodule:build
+      - name: Install Dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Test run # WIP
+        run: node sample/node/hoge.js
