@@ -12,6 +12,10 @@ jobs:
         node: [18.x]
     steps:
       - uses: mymindstorm/setup-emsdk@v11
+        with:
+          version: 3.1.22
+      - name: Verify
+        run: emcc -v
       - name: Checkout code
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
