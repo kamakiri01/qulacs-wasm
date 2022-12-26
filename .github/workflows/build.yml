@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [18.x]
+        node: [20.x]
     steps:
       - uses: mymindstorm/setup-emsdk@v11
       - name: Checkout code
