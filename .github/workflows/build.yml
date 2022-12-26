@@ -1,0 +1,19 @@
+name: "emsdk"
+
+on:
+  push:
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mymindstorm/setup-emsdk@v11
+      - name: Install Dependencies
+        run: npm install
+      - name: Install submodules
+        run: npm run submodule:build
+      - name: Build
+        run: npm run build
+      - name: Test Run
+        run: node sample/node/hoge3.js
