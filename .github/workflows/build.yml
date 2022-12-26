@@ -18,10 +18,12 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+      - name: Init Submodules
+        run: npm run init
+      - name: Install Submodules
+        run: npm run submodule:build
       - name: Install Dependencies
         run: npm install
-      - name: Install submodules
-        run: npm run submodule:build
       - name: Build
         run: npm run build
       - name: Test Run
