@@ -1,5 +1,5 @@
 
-var m = require("../../lib/main/index");
+var m = require("../../lib/index");
 var m2 = require("../../lib/main/nativeType/QuantumState");
 var m3 = require("../../lib/main/nativeType/QuantumCircuit");
 
