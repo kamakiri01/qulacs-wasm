@@ -43,4 +43,4 @@ jobs:
       - name: Build
         run: npm run build
       - name: Test Run
-        run: node sample/node/hoge3.js
+        run: node sample/node/hoge.js
