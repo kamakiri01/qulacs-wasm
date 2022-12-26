@@ -6,11 +6,10 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        node: [20.x]
+        node: [18.x]
     steps:
       - uses: mymindstorm/setup-emsdk@v11
       - name: Checkout code
