@@ -11,7 +11,7 @@ npm install qulacs-wasm
 ```
 
 ```javascript
-import { initQulacsModule, QuantumState } from "qulacs-wasm";
+import { initQulacsModule, QuantumState, QuantumCircuit } from "qulacs-wasm";
 
 initQulacsModule(S).then(_ => {
     const state = new QuantumState(2);
