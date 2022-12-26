@@ -29,9 +29,13 @@ jobs:
       - name: Submodule Workaround
         run: |
           sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-          sed -i 's/git@github.com:/https:\/\/github.com\//' ./submodules/boost/.gitmodules
       - name: Init Submodules
         run: npm run init
+      - name: Submodule Workaround2
+        run: |
+          sed -i 's/git@github.com:/https:\/\/github.com\//' ./submodules/boost/.gitmodules
+      - name: workaround3
+        run: npm run submodule:clone-recursive
       - name: Build Submodules
         run: npm run submodule:build
       - name: Install Dependencies
