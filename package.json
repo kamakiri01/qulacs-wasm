@@ -15,8 +15,8 @@
     "build": "npm run build:tsc && npm run build:emscripten",
     "build:tsc": "tsc -p .",
     "build:emscripten": "mkdir -p lib-cpp/ && npm run build:emscripten:em++ && npm run build:emscripten:cp",
-    "build:emscripten:em++": "em++ -O2 -I ./submodules/qulacs/include -I ./submodules/Boost -L ./submodules/qulacs/lib -o ./lib-cpp/module.js ./src-cpp/QulacsClient.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleQulacsWasm\"' --bind -s DISABLE_EXCEPTION_CATCHING=0",
-    "build:emscripten:em++2": "em++ -O2 -I ../qulacs/include -I ./submodules/Boost -L ../qulacs/lib -o ./lib-cpp/module.js ./src-cpp/QulacsClient.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleQulacsWasm\"' --bind -s DISABLE_EXCEPTION_CATCHING=0",
+    "build:emscripten:em++": "em++ -O2 -I ./submodules/boost -I ./submodules/qulacs/include -L ./submodules/qulacs/lib -o ./lib-cpp/module.js ./src-cpp/QulacsClient.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleQulacsWasm\"' --bind -s DISABLE_EXCEPTION_CATCHING=0",
+    "build:emscripten:em++2": "em++ -O2 -I ../qulacs/include -I ./submodules/boost-e62f2239cdd4e04285ad2a5a3fbb9d2002e4b2ec -L ../qulacs/lib -o ./lib-cpp/module.js ./src-cpp/QulacsClient.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleQulacsWasm\"' --bind -s DISABLE_EXCEPTION_CATCHING=0",
     "build:emscripten:cp": "cpx \"./lib-cpp/**\" \"./lib/wasm/\" --clean",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
