@@ -30,7 +30,7 @@ jobs:
         run: sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
       - name: Init Submodules
         run: npm run init
-      - name: Install Submodules
+      - name: Build Submodules
         run: npm run submodule:build
       - name: Install Dependencies
         run: npm install
