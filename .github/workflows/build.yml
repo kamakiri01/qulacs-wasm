@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+      - name: Submodule Workaround
+        run: sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
       - name: Init Submodules
         run: npm run init
       - name: Install Submodules
