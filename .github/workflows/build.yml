@@ -27,7 +27,9 @@ jobs:
           sudo apt -y upgrade
           sudo apt -y install build-essential
       - name: Submodule Workaround
-        run: sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+        run: |
+          sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+          sed -i 's/git@github.com:/https:\/\/github.com\//' ./submodules/boost/.gitmodules
       - name: Init Submodules
         run: npm run init
       - name: Build Submodules
