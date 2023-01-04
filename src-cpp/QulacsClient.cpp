@@ -21,45 +21,15 @@
 #include "client/getExpectationValueMap.cpp"
 
 extern "C" {
-    DataCppResult state_dataCpp(const emscripten::val &serialInfo) {
-        const auto data = data_cpp(serialInfo);
-        return data;
-    }
-
-    SamplingResult state_sampling(const emscripten::val &samplingInfo) {
-        const auto data = sampling(samplingInfo);
-        return data;
-    }
-
-    GerZeroProbabilityResult state_get_zero_probability(const emscripten::val &getZeroProbabilityInfo) {
-        const auto data = get_zero_probability(getZeroProbabilityInfo);
-        return data;
-    }
-
-    GetMarginalProbabilityResult state_get_marginal_probability(const emscripten::val &getMarginalProbabilityInfo) {
-        const auto data = get_marginal_probability(getMarginalProbabilityInfo);
-        return data;
-    }
-
-    GetStateVectorWithExpectationValueResult getStateVectorWithExpectationValue(const emscripten::val &v) {
-        const auto result = util_getStateVectorWithExpectationValue(v);
-        return result;
-    }
-
-    RunShotResult runShotTask(const emscripten::val &v) {
-        const auto data = util_runShotTask(v);
-        return data;
-    }
-
-    GetExpectationValueMapResult getExpectationValueMap(const emscripten::val &v) {
-        const auto data = util_getExpectationValueMap(v);
-        return data;
-    }
-
+    DataCppResult state_dataCpp(const emscripten::val &serialInfo) { return data_cpp(serialInfo); }
+    SamplingResult state_sampling(const emscripten::val &samplingInfo) { return sampling(samplingInfo); }
+    GetZeroProbabilityResult state_get_zero_probability(const emscripten::val &getZeroProbabilityInfo) { return get_zero_probability(getZeroProbabilityInfo); }
+    GetMarginalProbabilityResult state_get_marginal_probability(const emscripten::val &getMarginalProbabilityInfo) { return get_marginal_probability(getMarginalProbabilityInfo); }
+    GetStateVectorWithExpectationValueResult getStateVectorWithExpectationValue(const emscripten::val &v) { return util_getStateVectorWithExpectationValue(v); }
+    RunShotResult runShotTask(const emscripten::val &v) { return util_runShotTask(v); }
+    GetExpectationValueMapResult getExpectationValueMap(const emscripten::val &v) { return util_getExpectationValueMap(v); }
     // @see https://emscripten.org/docs/porting/Debugging.html#handling-c-exceptions-from-javascriptd
-    std::string getExceptionMessage(intptr_t exceptionPtr) {
-    return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what());
-    }
+    std::string getExceptionMessage(intptr_t exceptionPtr) { return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what()); }
 }
 
 EMSCRIPTEN_BINDINGS(Bindings) {
@@ -88,8 +58,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .field("cppVec", &SamplingResult::cppVec)
         .field("samplingVec", &SamplingResult::samplingVec);
 
-    emscripten::value_object<GerZeroProbabilityResult>("GerZeroProbabilityResult")
-        .field("prob", &GerZeroProbabilityResult::prob);
+    emscripten::value_object<GetZeroProbabilityResult>("GetZeroProbabilityResult")
+        .field("prob", &GetZeroProbabilityResult::prob);
 
     emscripten::value_object<GetMarginalProbabilityResult>("GetMarginalProbabilityResult")
         .field("marginal_prob", &GetMarginalProbabilityResult::marginal_prob);

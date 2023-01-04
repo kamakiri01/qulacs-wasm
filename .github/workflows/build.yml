@@ -23,7 +23,7 @@ jobs:
           sudo apt -y update
           sudo apt -y upgrade
           sudo apt -y install build-essential
-      - name: Submodule CI Workaround # @see https://gist.github.com/petrbel/c3bf7e0f59c22a52f534
+      - name: Submodule CI Workaround # @see https://gist.github.com/petrbel/c3bf7e0f59c22a52f534 if you run in Mac OS X, specify -i ""
         run: sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
       - name: Init Submodules
         run: npm run init
