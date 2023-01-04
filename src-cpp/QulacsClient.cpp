@@ -72,5 +72,4 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("runShotTask", &runShotTask, emscripten::allow_raw_pointers());
     emscripten::function("getExpectationValueMap", &getExpectationValueMap, emscripten::allow_raw_pointers());
     emscripten::function("getExceptionMessage", &getExceptionMessage);
-    emscripten::function("FindPrimes", &FindPrimes);
 };
