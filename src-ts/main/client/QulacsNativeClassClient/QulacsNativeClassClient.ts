@@ -1,5 +1,3 @@
-// qulacsと同名の型のclient
-
 import { QuantumState } from "../../nativeType/QuantumState";
 import { convertAlternateArrayToComplexArray, convertWasmVectorToArray } from "../../util/fromWasmUtil";
 import { Complex } from "../../type/common";

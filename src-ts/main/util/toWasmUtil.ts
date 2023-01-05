@@ -1,48 +1,6 @@
-import { CircuitInfo, ObservableInfo, ToWasmCircuitInfo, ToWasmObservableInfo } from "../type/ClientType";
-import { MultiQuantumGate, ParametricQuantumGate, QuantumGate } from "../type/QuantumGate";
-import { MultiQuantumGateType, ParametricQuantumGateType, PauliGateType, QuantumGateType } from "../type/QuantumGateType";
-import { WasmPauliGateType, WasmQuantumGate, WasmQuantumGateType } from "../type/WasmGateType";
-
-export function convertCircuitInfo(circuitInfo: CircuitInfo): ToWasmCircuitInfo {
-    const wasmCircuitInfo: ToWasmCircuitInfo = {
-        size: circuitInfo.size,
-        circuit: []
-    };
-    circuitInfo.circuit.forEach((step, index) => {
-        wasmCircuitInfo.circuit[index] = [];
-        step.forEach((gate, i) => {
-            let wasmGate = translateDefaultGateToWasmGate(gate);
-            wasmCircuitInfo.circuit[index].push(wasmGate);
-        });
-    });
-    return wasmCircuitInfo;
-}
-
-export function convertObservableInfo(observableInfo: ObservableInfo): ToWasmObservableInfo {
-    const wasmObsevableInfo: ToWasmObservableInfo = {
-        observable: []
-    };
-    observableInfo.observable.forEach((step, index) => {
-        wasmObsevableInfo.observable[index] = {
-            coefficient: step.coefficient,
-            operators: []
-        };
-        step.operators.forEach((operator, i) => {
-            if (!operator) {
-                wasmObsevableInfo.observable[index].operators.push("0");
-            }
-
-            switch(step.operators[i]) {
-                case PauliGateType.X:
-                case PauliGateType.Y:
-                case PauliGateType.Z:
-                    wasmObsevableInfo.observable[index].operators.push(translateGateType(step.operators[i]) as WasmPauliGateType);
-                    break;
-            }
-        });
-    });
-    return wasmObsevableInfo;
-}
+import type { MultiQuantumGate, ParametricQuantumGate, QuantumGate } from "../type/QuantumGate";
+import { MultiQuantumGateType, ParametricQuantumGateType, QuantumGateType } from "../type/QuantumGateType";
+import { WasmQuantumGate, WasmQuantumGateType } from "../type/WasmGateType";
 
 export function translateDefaultGateToWasmGate(gate: QuantumGate): WasmQuantumGate {
     let wasmGate: WasmQuantumGate;
@@ -57,7 +15,7 @@ export function translateDefaultGateToWasmGate(gate: QuantumGate): WasmQuantumGa
     return wasmGate;
 }
 
-function translateGateType(defaultGateType: QuantumGateType): WasmQuantumGateType {
+export function translateGateType(defaultGateType: QuantumGateType): WasmQuantumGateType {
     switch(defaultGateType) {
         case QuantumGateType.X:
             return "x";

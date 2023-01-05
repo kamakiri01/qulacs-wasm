@@ -3,14 +3,13 @@ import { Observable } from "./nativeType/Observable";
 import { QuantumCircuit } from "./nativeType/QuantumCircuit";
 import { QuantumState } from "./nativeType/QuantumState";
 import { QulacsNativeClassClient } from "./client/QulacsNativeClassClient/QulacsNativeClassClient";
-import { QulacsClient } from "./client/QulacsClient/QulacsClient";
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 
 export interface InitQulacsModuleOption {
     module?: WebAssembly.Module;
 }
 
-export async function initQulacsModule(option: InitQulacsModuleOption = {}): Promise<QulacsClient> {
+export async function initQulacsModule(option: InitQulacsModuleOption = {}): Promise<void> {
     let qulacsModule: QulacsWasmModule;
     if (option.module) {
         qulacsModule = await initQulacsFromModule(option.module);
@@ -18,10 +17,8 @@ export async function initQulacsModule(option: InitQulacsModuleOption = {}): Pro
         qulacsModule = await initQulacs();
     }
 
-    const wasmClient = new QulacsClient({module: qulacsModule});
     const nativeClient = new QulacsNativeClassClient({module: qulacsModule});
     setStaticClient(nativeClient);
-    return wasmClient;
 }
 
 function initQulacs(): Promise<QulacsWasmModule> {
