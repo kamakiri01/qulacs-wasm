@@ -16,18 +16,12 @@
 #include "nativeClass/state/sampling.cpp"
 #include "nativeClass/state/get_zero_probability.cpp"
 #include "nativeClass/state/get_marginal_probability.cpp"
-#include "client/getStateVectorWithExpectationValue.cpp"
-#include "client/runShotTask.cpp"
-#include "client/getExpectationValueMap.cpp"
 
 extern "C" {
     DataCppResult state_dataCpp(const emscripten::val &serialInfo) { return data_cpp(serialInfo); }
     SamplingResult state_sampling(const emscripten::val &samplingInfo) { return sampling(samplingInfo); }
     GetZeroProbabilityResult state_get_zero_probability(const emscripten::val &getZeroProbabilityInfo) { return get_zero_probability(getZeroProbabilityInfo); }
     GetMarginalProbabilityResult state_get_marginal_probability(const emscripten::val &getMarginalProbabilityInfo) { return get_marginal_probability(getMarginalProbabilityInfo); }
-    GetStateVectorWithExpectationValueResult getStateVectorWithExpectationValue(const emscripten::val &v) { return util_getStateVectorWithExpectationValue(v); }
-    RunShotResult runShotTask(const emscripten::val &v) { return util_runShotTask(v); }
-    GetExpectationValueMapResult getExpectationValueMap(const emscripten::val &v) { return util_getExpectationValueMap(v); }
     // @see https://emscripten.org/docs/porting/Debugging.html#handling-c-exceptions-from-javascriptd
     std::string getExceptionMessage(intptr_t exceptionPtr) { return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what()); }
 }
@@ -38,16 +32,6 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::register_vector<ITYPE>("vector<ITYPE>");
     emscripten::register_vector<int>("vector<int>");
     emscripten::register_vector<long int>("vector<long int>");
-
-    emscripten::value_object<GetStateVectorWithExpectationValueResult>("GetStateVectorWithExpectationValueResult")
-        .field("stateVector", &GetStateVectorWithExpectationValueResult::stateVector)
-        .field("expectationValue", &GetStateVectorWithExpectationValueResult::expectationValue);
-
-    emscripten::value_object<RunShotResult>("RunShotResult")
-        .field("sampleMap", &RunShotResult::sampleMap);
-
-    emscripten::value_object<GetExpectationValueMapResult>("GetExpectationValueMapResult")
-        .field("expectationValues", &GetExpectationValueMapResult::expectationValues);
 
     emscripten::value_object<DataCppResult>("DataCppResult")
         .field("doubleVec", &DataCppResult::doubleVec)
@@ -64,12 +48,9 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::value_object<GetMarginalProbabilityResult>("GetMarginalProbabilityResult")
         .field("marginal_prob", &GetMarginalProbabilityResult::marginal_prob);
 
-    emscripten::function("getStateVectorWithExpectationValue", &getStateVectorWithExpectationValue, emscripten::allow_raw_pointers());
     emscripten::function("state_dataCpp", &state_dataCpp, emscripten::allow_raw_pointers());
     emscripten::function("state_sampling", &state_sampling, emscripten::allow_raw_pointers());
     emscripten::function("state_get_zero_probability", &state_get_zero_probability, emscripten::allow_raw_pointers());
     emscripten::function("state_get_marginal_probability", &state_get_marginal_probability, emscripten::allow_raw_pointers());
-    emscripten::function("runShotTask", &runShotTask, emscripten::allow_raw_pointers());
-    emscripten::function("getExpectationValueMap", &getExpectationValueMap, emscripten::allow_raw_pointers());
     emscripten::function("getExceptionMessage", &getExceptionMessage);
 };

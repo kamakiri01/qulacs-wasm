@@ -6,6 +6,7 @@ var m3 = require("../../lib/main/nativeType/QuantumCircuit");
 
 m.initQulacsModule({useWorker: false})
     .then((client => {
+        /*
         console.log("client", !!client);
         const size = 3;
         var result = client.getStateVectorWithExpectationValue({
@@ -59,6 +60,7 @@ m.initQulacsModule({useWorker: false})
          10,
         );
         console.log("result3" , result3);
+        */
 
         console.log("---test qulacs I/F---");
 

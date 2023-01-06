@@ -1,3 +1,5 @@
+#pragma once
+
 #include <emscripten/bind.h>
 #include <cppsim/state.hpp>
 #include <cppsim/gate_factory.hpp>

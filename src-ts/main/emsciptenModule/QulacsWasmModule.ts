@@ -1,51 +1,17 @@
-import { ToWasmCalcStateInfo, ToWasmCircuitInfo, ToWasmObservableInfo } from "../type/ClientType";
 import { WasmVector } from "../type/common";
 import { StateAction } from "../type/StateAction";
 import { WasmQuantumGate } from "../type/WasmGateType";
 
 export interface QulacsWasmModule extends EmscriptenWasm.Module {
     getExceptionMessage(exceptionPtr: number): string;
-    getStateVectorWithExpectationValue(request: StateVectorWithObservableRequest): StateVectorWithObervableResult;
-    runShotTask(request: RunShotTaskRequest): RunShotTaskResult;
-    getExpectationValueMap(request: GetExpectationValueMapRequest): GetExpectationValueMapResult;
     state_dataCpp(request: ToWasmSerialInfo): StateDataCppResult;
     state_sampling(request: ToWasmSamplingInfo): SamplingResult;
     state_get_zero_probability(request: GetZeroProbabilityInfo): GetZeroProbabilityResult;
     state_get_marginal_probability(request: GetMarginalProbabilityInfo): GetMarginalProbabilityResult;
 }
 
-export type StateVectorWithObservableRequest = ToWasmCalcStateInfo;
-
-export interface StateVectorWithObervableResult {
-    stateVector: WasmVector<number>;
-    expectationValue: number;
-}
-
-export interface RunShotTaskRequest {
-    circuitInfo: ToWasmCircuitInfo;
-    shot: number;
-}
-
-export interface RunShotTaskResult {
-    sampleMap: WasmVector<number>;
-}
-
-export interface GetExpectationValueMapRequest {
-    circuitInfo: ToWasmCircuitInfo;
-    observableInfo: ToWasmObservableInfo;
-    parametricPositionStep: number;
-    parametricPositionQubitIndex: number;
-    stepSize: number;
-    // parametricRange: number; // 通常2を想定する。Math.PIの係数。2以外なさそう
-}
-
-export interface GetExpectationValueMapResult {
-    expectationValues: WasmVector<number>; // rangeは固定値で0~2、stepSizeで配列長さは自明なのでexpectationValueごとにparamを紐づけてwasmから返す必要はない。アプリが必要ならjs側で付ける
-}
-
 // ゲート操作やstate setなどの単位の操作
-export type ToWasmOperator = [0, StateAction] | [1, WasmQuantumGate[]]; // TODO: o番目を型付け
-
+export type ToWasmOperator = [0, StateAction] | [1, WasmQuantumGate[]]; // TODO: 0番目を型付け
 
 /**
  * QuantumState の操作ログを wasm に送るためのフォーマット

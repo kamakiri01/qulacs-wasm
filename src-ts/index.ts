@@ -1,5 +1,4 @@
 export * from "./main/init";
-export * from "./main/client/QulacsClient/QulacsClient";
 export * from "./main/client/QulacsNativeClassClient/QulacsNativeClassClient";
 export * from "./main/nativeType/QuantumCircuit";
 export * from "./main/nativeType/QuantumState";
@@ -7,9 +6,10 @@ export * from "./main/nativeType/QuantumCircuit";
 export * from "./main/nativeType/Observable";
 export * from "./main/nativeType/helper/IndexedToWasmDefaultQuantumGate";
 export * from "./main/nativeType/helper/OperatorQueue";
-export * from "./main/type/ClientType";
 export * from "./main/type/QuantumGate"
 export * from "./main/type/QuantumGateType";
 export * from "./main/type/StateAction";
 export * from "./main/type/WasmGateType";
 export * from "./main/type/common";
+export * from "./main/util/toWasmUtil";
+export * from "./main/util/fromWasmUtil";
