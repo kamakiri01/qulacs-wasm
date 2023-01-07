@@ -1,5 +1,5 @@
-import { IndexedToWasmDefaultQuantumGate } from "./IndexedToWasmDefaultQuantumGate";
 import {StateAction } from "../../type/StateAction";
+import { QuantumGateBase } from "../QuantumGate/QuantumGateBase";
 
 export const OperatorQueueType = {
     StateAction: "stateAction",
@@ -14,7 +14,7 @@ export type StateActionOperatorQueue = {
 
 export type QuantumGateOperatorQueue = {
     queueType: typeof OperatorQueueType.Gate;
-    queueData: IndexedToWasmDefaultQuantumGate;
+    queueData: QuantumGateBase;
 };
 
 /**
