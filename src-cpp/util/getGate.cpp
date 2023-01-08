@@ -50,8 +50,8 @@ QuantumGateBase* getRotationGate(std::string gateType, double gateParam, int qub
     return gate;
 }
 
-QuantumGate_SingleParameter* getParametricGate(std::string gateType, double gateParam, int qubitIndex) {
-    double angle = M_PI * gateParam;
+QuantumGate_SingleParameter* getParametricGate(std::string gateType, int qubitIndex, double rad) {
+    double angle = M_PI * rad;
     QuantumGate_SingleParameter* gate;
     if (gateType == "rx") {
         gate = gate::ParametricRX(qubitIndex, angle);
@@ -59,24 +59,36 @@ QuantumGate_SingleParameter* getParametricGate(std::string gateType, double gate
         gate = gate::ParametricRY(qubitIndex, angle);
     } else if (gateType == "rz") {
         gate = gate::ParametricRZ(qubitIndex, angle);
+    } else {
+        // throw
     }
     return gate;
 }
 
-
-QuantumGateBase* getMultiGate(std::string gateType, int qubitIndex, std::vector<int> controllIndexs) {
+QuantumGateBase* getOneControlOneTargetGate(std::string gateType, int targetQubitIndex, int controlQubitIndex) {
     QuantumGateBase* gate;
-
     if (gateType == "cnot") {
-        gate = gate::CNOT(controllIndexs[0], qubitIndex);
-    } else if (gateType == "ccnot") {
+        gate = gate::CNOT(controlQubitIndex, targetQubitIndex);
+    } else if (gateType == "cz") {
+        gate = gate::CZ(controlQubitIndex, targetQubitIndex);
+    } else {
+        // throw
+    }
+    return gate;
+}
+
+QuantumGateBase* getTwoControlOneTargetGate(std::string gateType, int targetQubitIndex, int controlQubitIndex0, int controlQubitIndex1) {
+    QuantumGateBase* gate;
+    if (gateType == "ccnot") {
         // @see https://github.com/corryvrequan/qulacs/blob/a1eb7cd2fb62243d28fc1ebd4da9fbd8126cf126/python/cppsim_wrapper.cpp#L308
-        auto ptr = gate::X(qubitIndex);
+        auto ptr = gate::X(targetQubitIndex);
         auto toffoli = gate::to_matrix_gate(ptr);
-        toffoli->add_control_qubit(controllIndexs[0], 1);
-        toffoli->add_control_qubit(controllIndexs[1], 1);
+        toffoli->add_control_qubit(controlQubitIndex0, 1);
+        toffoli->add_control_qubit(controlQubitIndex1, 1);
         delete ptr;
         gate = toffoli;
+    } else {
+        // throw
     }
     return gate;
 }
@@ -88,20 +100,28 @@ int getIndex(std::list<std::string> ls, std::string key) {
     return index;
 }
 
-QuantumGateBase* getGate(std::string gateType, int qubitIndex, double gateParam, std::vector<int> controllIndexs) {
+QuantumGateBase* getGate(std::vector<emscripten::val> gateData) {
+    std::string gateType = gateData[0].as<std::string>();
+    const int targetQubitIndex = gateData[1].as<int>();
+
     QuantumGateBase* gate;
     // @see WasmQuantumGateType.ts
-    const std::list<std::string> singleGateTypes{"x", "y", "z", "h", "t", "s"};
+    const std::list<std::string> singleGateTypes{"i", "x", "y", "z", "h", "t", "s"};
     const std::list<std::string> rotationGateTypes{"rx", "ry", "rz",};
-    const std::list<std::string> multiGateTypes{"cnot", "ccnot"};
-    if (gateType == "0") {
-        // do nothing
-    } else if (getIndex(singleGateTypes, gateType) > -1) {
-        gate = getSingleGate(gateType, qubitIndex);
+    const std::list<std::string> oneControlOneTargetGateTypes{"cnot", "cz"};
+    const std::list<std::string> twoControlOneTargetGateTypes{"ccnot"};
+    if (getIndex(singleGateTypes, gateType) > -1) {
+        gate = getSingleGate(gateType, targetQubitIndex);
     } else if (getIndex(rotationGateTypes, gateType) > -1) {
-        gate = getRotationGate(gateType, gateParam, qubitIndex);
-    } else if (getIndex(multiGateTypes, gateType) > -1) {
-        gate = getMultiGate(gateType, qubitIndex, controllIndexs);
+        const double angle = gateData[2].as<double>();
+        gate = getRotationGate(gateType, targetQubitIndex, angle);
+    } else if (getIndex(oneControlOneTargetGateTypes, gateType) > -1) {
+        const int controlQubitIndex = gateData[2].as<int>();
+        gate = getOneControlOneTargetGate(gateType, targetQubitIndex, controlQubitIndex);
+    } else if (getIndex(twoControlOneTargetGateTypes, gateType) > -1) {
+        const int controlQubitIndex0 = gateData[2].as<int>();
+        const int controlQubitIndex1 = gateData[3].as<int>();
+        gate = getTwoControlOneTargetGate(gateType, targetQubitIndex, controlQubitIndex0, controlQubitIndex1);
     }
     return gate;
 }
