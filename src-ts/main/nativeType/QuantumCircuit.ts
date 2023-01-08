@@ -1,7 +1,7 @@
 import { QulacsNativeClassClient } from "../client/QulacsNativeClassClient/QulacsNativeClassClient";
-import { OperatorQueue, OperatorQueueType, QuantumGateOperatorQueue } from "./helper/OperatorQueue";
+import { OperatorQueueType, QuantumGateOperatorQueue } from "./helper/OperatorQueue";
 import { H, QuantumGateBase, X, Y, Z, T, S } from "./QuantumGate/QuantumGateBase";
-import { CNOT } from "./QuantumGate/TwoQubitQuantumGate";
+import { CNOT } from "./QuantumGate/OneControlOneTargetGate";
 import { QuantumState } from "./QuantumState";
 
 export class QuantumCircuit {

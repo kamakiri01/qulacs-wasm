@@ -2,7 +2,7 @@ import { QulacsNativeClassClient } from "../../client/QulacsNativeClassClient/Qu
 import { Complex } from "../../type/common";
 //import { QuantumGateMatrix } from "./QuantumGateMatrix";
 import { QuantumState } from "../QuantumState";
-import { OneQubitGateType, OneQubitRotationGateType, QuantumGateType } from "../../type/QuantumGateType";
+import { OneControlOneTargetGateType, OneQubitGateType, OneQubitRotationGateType, QuantumGateType } from "../../type/QuantumGateType";
 
 export abstract class QuantumGateBase {
     static client: QulacsNativeClassClient;

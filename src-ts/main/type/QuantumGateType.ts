@@ -34,16 +34,22 @@ export const OneQubitRotationGateType = {
 } as const;
 export type OneQubitRotationGateType = typeof OneQubitRotationGateType[keyof typeof OneQubitRotationGateType];
 
-export const MultiQuantumGateType = {
+export const OneControlOneTargetGateType = {
   CNOT: "cnot",
   CZ: "cz",
+} as const;
+export type OneControlOneTargetGateType = typeof OneControlOneTargetGateType[keyof typeof OneControlOneTargetGateType];
+
+
+export const TwoControlOneTargetGateType = {
   CCNOT: "ccnot"
 } as const;
-export type MultiQuantumGateType = typeof MultiQuantumGateType[keyof typeof MultiQuantumGateType];
+export type TwoControlOneTargetGateType = typeof TwoControlOneTargetGateType[keyof typeof TwoControlOneTargetGateType];
 
 export const QuantumGateType = {
   ...OneQubitGateType,
   ...OneQubitRotationGateType,
-  ...MultiQuantumGateType
+  ...OneControlOneTargetGateType,
+  ...TwoControlOneTargetGateType,
 }
-export type QuantumGateType = OneQubitGateType | OneQubitRotationGateType | MultiQuantumGateType;
+export type QuantumGateType = OneQubitGateType | OneQubitRotationGateType | TwoControlOneTargetGateType | OneControlOneTargetGateType;
