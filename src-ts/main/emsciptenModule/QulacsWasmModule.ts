@@ -1,6 +1,6 @@
 import { WasmVector } from "../type/common";
 import { StateAction } from "../type/StateAction";
-import { WasmQuantumGate } from "../type/WasmGateType";
+import { WasmQuantumGateData } from "../type/WasmGateType";
 
 export interface QulacsWasmModule extends EmscriptenWasm.Module {
     getExceptionMessage(exceptionPtr: number): string;
@@ -11,7 +11,7 @@ export interface QulacsWasmModule extends EmscriptenWasm.Module {
 }
 
 // ゲート操作やstate setなどの単位の操作
-export type ToWasmOperator = [0, StateAction] | [1, WasmQuantumGate[]]; // TODO: 0番目を型付け
+export type ToWasmOperator = [0, StateAction] | [1, WasmQuantumGateData]; // TODO: 0番目を型付け
 
 /**
  * QuantumState の操作ログを wasm に送るためのフォーマット
