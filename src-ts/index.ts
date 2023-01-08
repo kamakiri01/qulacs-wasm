@@ -4,9 +4,7 @@ export * from "./main/nativeType/QuantumCircuit";
 export * from "./main/nativeType/QuantumState";
 export * from "./main/nativeType/QuantumCircuit";
 export * from "./main/nativeType/Observable";
-export * from "./main/nativeType/helper/IndexedToWasmDefaultQuantumGate";
 export * from "./main/nativeType/helper/OperatorQueue";
-export * from "./main/type/QuantumGate"
 export * from "./main/type/QuantumGateType";
 export * from "./main/type/StateAction";
 export * from "./main/type/WasmGateType";

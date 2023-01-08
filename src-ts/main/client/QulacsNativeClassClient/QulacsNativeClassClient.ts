@@ -1,7 +1,7 @@
 import { QuantumState } from "../../nativeType/QuantumState";
 import { convertAlternateArrayToComplexArray, convertWasmVectorToArray } from "../../util/fromWasmUtil";
 import { Complex } from "../../type/common";
-import { translateOperatorQueueToSerialInfo } from "./util";
+import { translateOperatorQueueToWasmSerialInfo } from "./util";
 import { GetMarginalProbabilityInfo, GetZeroProbabilityInfo, QulacsWasmModule, ToWasmSamplingInfo } from "../../emsciptenModule/QulacsWasmModule";
 import { OperatorQueueType } from "../../nativeType/helper/OperatorQueue";
 import { StateActionType } from "../../type/StateAction";
@@ -20,7 +20,7 @@ export class QulacsNativeClassClient {
         this.state = {
             get_vector: (state) => {
                 const size = state.qubit_count;
-                const request = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
+                const request = translateOperatorQueueToWasmSerialInfo(state._operatorQueues, size);
                 const result = this._callWasmWithThrowableException(() => this.module.state_dataCpp(request));
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, result.cppVec] }];
                 const stateVector = convertAlternateArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
@@ -31,7 +31,7 @@ export class QulacsNativeClassClient {
             },
             sampling: (state, sampling_count) => {
                 const size = state.qubit_count;
-                const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
+                const serialInfo = translateOperatorQueueToWasmSerialInfo(state._operatorQueues, size);
                 const request: ToWasmSamplingInfo = {...serialInfo, ...{sampling_count}};
                 const result = this._callWasmWithThrowableException(() => this.module.state_sampling(request));
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, result.cppVec] }];
@@ -40,14 +40,14 @@ export class QulacsNativeClassClient {
             },
             get_zero_probability: (state, target_qubit_index) => {
                 const size = state.qubit_count;
-                const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
+                const serialInfo = translateOperatorQueueToWasmSerialInfo(state._operatorQueues, size);
                 const request: GetZeroProbabilityInfo = {...serialInfo, ...{target_qubit_index}};
                 const result = this._callWasmWithThrowableException(() => this.module.state_get_zero_probability(request));
                 return result.prob;
             },
             get_marginal_probability: (state: QuantumState, measured_values: number[]) => {
                 const size = state.qubit_count;
-                const serialInfo = translateOperatorQueueToSerialInfo(state._operatorQueues, size);
+                const serialInfo = translateOperatorQueueToWasmSerialInfo(state._operatorQueues, size);
                 const request: GetMarginalProbabilityInfo = {...serialInfo, ...{measured_values}};
                 const result = this._callWasmWithThrowableException(() => this.module.state_get_marginal_probability(request));
                 return result.marginal_prob;

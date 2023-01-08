@@ -4,6 +4,7 @@
  * アプリケーションで利用するパウリゲートの種類
  */
 export const PauliGateType = {
+  I: "i",
   X: "x",
   Y: "y",
   Z: "z"
@@ -13,34 +14,36 @@ export type PauliGateType = typeof PauliGateType[keyof typeof PauliGateType];
 /**
  * アプリケーションで利用する単一量子ビットに作用する量子ゲートの種類
  */
-export const SingleQuantumGateType = {
-  EMPTY: undefined,
+export const OneQubitGateType = {
+  //EMPTY: undefined,
   H: "h",
   T: "t",
   S: "s",
   ...PauliGateType
 } as const;
-export type SingleQuantumGateType = typeof SingleQuantumGateType[keyof typeof SingleQuantumGateType];
+export type OneQubitGateType = typeof OneQubitGateType[keyof typeof OneQubitGateType];
 
 /**
  * アプリケーションで利用するパラメータ付き単一量子ビットに作用する量子ゲートの種類
  */
-export const ParametricQuantumGateType = {
+export const OneQubitRotationGateType = {
   RX: "rx",
   RY: "ry",
   RZ: "rz",
+  RotX: "rotx",
 } as const;
-export type ParametricQuantumGateType = typeof ParametricQuantumGateType[keyof typeof ParametricQuantumGateType];
+export type OneQubitRotationGateType = typeof OneQubitRotationGateType[keyof typeof OneQubitRotationGateType];
 
 export const MultiQuantumGateType = {
   CNOT: "cnot",
+  CZ: "cz",
   CCNOT: "ccnot"
 } as const;
 export type MultiQuantumGateType = typeof MultiQuantumGateType[keyof typeof MultiQuantumGateType];
 
 export const QuantumGateType = {
-  ...SingleQuantumGateType,
-  ...ParametricQuantumGateType,
+  ...OneQubitGateType,
+  ...OneQubitRotationGateType,
   ...MultiQuantumGateType
-} 
-export type QuantumGateType = SingleQuantumGateType | ParametricQuantumGateType | MultiQuantumGateType;
+}
+export type QuantumGateType = OneQubitGateType | OneQubitRotationGateType | MultiQuantumGateType;

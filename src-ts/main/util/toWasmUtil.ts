@@ -1,22 +1,48 @@
-import type { MultiQuantumGate, ParametricQuantumGate, QuantumGate } from "../type/QuantumGate";
-import { MultiQuantumGateType, ParametricQuantumGateType, QuantumGateType } from "../type/QuantumGateType";
-import { WasmQuantumGate, WasmQuantumGateType } from "../type/WasmGateType";
+import { OneQubitGate, OneQubitRotationGate, QuantumGateBase } from "../nativeType/QuantumGate/QuantumGateBase";
+import { OneQubitGateType, OneQubitRotationGateType, QuantumGateType } from "../type/QuantumGateType";
+import { WasmOneQubitGateData, WasmOneQubitRotationGateData, WasmPauliGateData, WasmQuantumGateData } from "../type/WasmGateType";
 
-export function translateDefaultGateToWasmGate(gate: QuantumGate): WasmQuantumGate {
-    let wasmGate: WasmQuantumGate;
-    if (!gate) {
-        wasmGate = ["0", 0, []];
+export function translateDefaultGateToWasmGate(gate: QuantumGateBase): WasmQuantumGateData {
+    if (!gate) return [QuantumGateType.I, 0] as WasmPauliGateData;
+    if (isOneQubitGate(gate)) {
+        return [gate._type, gate._index] as WasmOneQubitGateData;
+    } else if (isOneQubitRotationGate(gate)) {
+        return [gate._type, gate._index, gate._angle] as WasmOneQubitRotationGateData;
     } else {
-        const gateType = translateGateType(gate.type);
-        const gateParam = isParametricQuantumGateType(gate) ? gate.param : 0;
-        const gateControlls = isMultiQuantumGateType(gate) ? gate.controllQubitIndex : []
-        wasmGate = [gateType, gateParam, gateControlls];
+        throw Error("暫定、ccnot cnot");
     }
-    return wasmGate;
+/*
+    var a =  (typeof gate._type);
+
+    if (gate._type instanceof OneQubitGateType) {
+        gate._type
+    }
+
+    const gateParam = isParametricQuantumGateType(gate._type) ? gate.param : 0;
+    const gateControlls = isMultiQuantumGateType(gate) ? gate.controllQubitIndex : []
+    data = [gateType, gate._index, gateParam, gateControlls];
+    */
 }
 
-export function translateGateType(defaultGateType: QuantumGateType): WasmQuantumGateType {
-    switch(defaultGateType) {
+function isOneQubitGate(gate: QuantumGateBase): gate is OneQubitGate {
+    // @see https://github.com/Microsoft/TypeScript/issues/26255
+    // @see https://fettblog.eu/typescript-array-includes/
+    if ((Object.values(OneQubitGateType) as string[]).includes(gate._type)) return true;
+    return false;
+}
+
+function isOneQubitRotationGate(gate: QuantumGateBase): gate is OneQubitRotationGate {
+    // @see https://github.com/Microsoft/TypeScript/issues/26255
+    // @see https://fettblog.eu/typescript-array-includes/
+    if ((Object.values(OneQubitRotationGateType) as string[]).includes(gate._type)) return true;
+    return false;
+}
+
+/*
+function translateGateType(gateType: QuantumGateType): QuantumGateType {
+    switch(gateType) {
+        case QuantumGateType.I:
+            return "i";
         case QuantumGateType.X:
             return "x";
         case QuantumGateType.Y:
@@ -35,17 +61,20 @@ export function translateGateType(defaultGateType: QuantumGateType): WasmQuantum
             return "ry";
         case QuantumGateType.RZ:
             return "rz";
+        case QuantumGateType.RotX:
+            return "rotx";
         case QuantumGateType.CNOT:
             return "cnot";
         case QuantumGateType.CCNOT:
             return "ccnot";
         default:
-            return "0"; // unreachable required
+            const unhandleGateType: never = gateType;
+            throw new Error(`unknown QuantumGateType: ${unhandleGateType}`);
     }
 }
 
-function isParametricQuantumGateType(gate: QuantumGate): gate is ParametricQuantumGate {
-    switch(gate.type) {
+function isParametricQuantumGateType(gateType: QuantumGateType): gateType is ParametricQuantumGateType {
+    switch(gateType) {
         case ParametricQuantumGateType.RX:
         case ParametricQuantumGateType.RY:
         case ParametricQuantumGateType.RZ:
@@ -62,3 +91,4 @@ function isMultiQuantumGateType(gate: QuantumGate): gate is MultiQuantumGate {
         }
         return false;
 }
+*/
