@@ -1,8 +1,9 @@
 import { QulacsNativeClassClient } from "../client/QulacsNativeClassClient/QulacsNativeClassClient";
 import { OperatorQueueType, QuantumGateOperatorQueue } from "./helper/OperatorQueue";
-import { H, QuantumGateBase, X, Y, Z, T, S } from "./QuantumGate/QuantumGateBase";
-import { CNOT } from "./QuantumGate/OneControlOneTargetGate";
+import { H, QuantumGateBase, X, Y, Z, T, S, RX, RY, RZ, RotX, RotY, RotZ } from "./QuantumGate/QuantumGateBase";
+import { CNOT, CZ } from "./QuantumGate/OneControlOneTargetGate";
 import { QuantumState } from "./QuantumState";
+import { translateGateQueuesToOperatorQueue } from "../util/toWasmUtil";
 
 export class QuantumCircuit {
     static client: QulacsNativeClassClient;
@@ -15,7 +16,7 @@ export class QuantumCircuit {
     }
 
     update_quantum_state(state: QuantumState) {
-        state._operatorQueues = state._operatorQueues.concat(translateGateQueuesToOperatorQueues(this.gateQueues));
+        state._operatorQueues = state._operatorQueues.concat(this.gateQueues.map(translateGateQueuesToOperatorQueue));
     }
 
     add_gate(gate: QuantumGateBase) {
@@ -46,16 +47,35 @@ export class QuantumCircuit {
         this.gateQueues.push(new S(index));
     }
 
+    add_RX_gate(index: number, angle: number) {
+        this.gateQueues.push(new RX(index, angle));
+    }
+
+    add_RY_gate(index: number, angle: number) {
+        this.gateQueues.push(new RY(index, angle));
+    }
+
+    add_RZ_gate(index: number, angle: number) {
+        this.gateQueues.push(new RZ(index, angle));
+    }
+
+    add_RotX_gate(index: number, angle: number) {
+        this.gateQueues.push(new RotX(index, angle));
+    }
+
+    add_RotY_gate(index: number, angle: number) {
+        this.gateQueues.push(new RotY(index, angle));
+    }
+
+    add_RotZ_gate(index: number, angle: number) {
+        this.gateQueues.push(new RotZ(index, angle));
+    }
+
     add_CNOT_gate(control: number, index: number) {
         this.gateQueues.push(new CNOT(control, index));
     }
-}
 
-function translateGateQueuesToOperatorQueues(gates: QuantumGateBase[]): QuantumGateOperatorQueue[] {
-    return gates.map(gate => {
-        return {
-            queueType: OperatorQueueType.Gate,
-            queueData: gate
-        };
-    });
+    add_CZ_gate(control: number, index: number) {
+        this.gateQueues.push(new CZ(control, index));
+    }
 }

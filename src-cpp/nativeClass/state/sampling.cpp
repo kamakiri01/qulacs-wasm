@@ -13,7 +13,6 @@
 #include "../../util/calcSerialInfoState.cpp"
 #include "data_cpp.cpp"
 
-
 struct SamplingResult: public DataCppResult {
     std::vector<long int> samplingVec;
 };
@@ -27,7 +26,7 @@ SamplingResult sampling(const emscripten::val &samplingInfo) {
 
     const int sampleSize = rawSamples.size();
     for (size_t i = 0; i < sampleSize; ++i) {
-        const int sample = (long int)rawSamples[i]; // NNOTE: long long int対応を検討
+        const int sample = (long int)rawSamples[i]; // NOTE: long long int対応を検討
         samples.push_back(sample);
     }
 

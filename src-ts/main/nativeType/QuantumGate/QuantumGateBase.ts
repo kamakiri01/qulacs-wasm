@@ -3,6 +3,8 @@ import { Complex } from "../../type/common";
 //import { QuantumGateMatrix } from "./QuantumGateMatrix";
 import { QuantumState } from "../QuantumState";
 import { OneControlOneTargetGateType, OneQubitGateType, OneQubitRotationGateType, QuantumGateType } from "../../type/QuantumGateType";
+import { translateGateQueuesToOperatorQueue } from "../../util/toWasmUtil";
+import { QuantumGateMatrix } from "./QuantumGateMatrix";
 
 export abstract class QuantumGateBase {
     static client: QulacsNativeClassClient;
@@ -12,12 +14,19 @@ export abstract class QuantumGateBase {
     }
 
     /*
-    abstract get_matrix(): Complex[][];
+    to_matrix_gate(): QuantumGateMatrix {
 
-    abstract to_matrix_gate(): QuantumGateMatrix;
-
-    abstract update_quantum_state(state: QuantumState): void;
+    };
     */
+
+
+    get_matrix(): Complex[] {
+        return QuantumGateBase.client.gateBase.get_matrix(this);
+    };
+
+    update_quantum_state(state: QuantumState) {
+        state._operatorQueues = state._operatorQueues.concat(translateGateQueuesToOperatorQueue(this));
+    }
 }
 
 export abstract class OneQubitGate extends QuantumGateBase {
@@ -66,6 +75,22 @@ export class RX extends OneQubitRotationGate {
     _type = QuantumGateType.RX;
 }
 
+export class RY extends OneQubitRotationGate {
+    _type = QuantumGateType.RY;
+}
+
+export class RZ extends OneQubitRotationGate {
+    _type = QuantumGateType.RZ;
+}
+
 export class RotX extends OneQubitRotationGate {
     _type = QuantumGateType.RotX;
+}
+
+export class RotY extends OneQubitRotationGate {
+    _type = QuantumGateType.RotY;
+}
+
+export class RotZ extends OneQubitRotationGate {
+    _type = QuantumGateType.RotZ;
 }

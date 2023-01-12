@@ -1,8 +1,5 @@
-import { ToWasmOperator, ToWasmSerialInfo } from "../../emsciptenModule/QulacsWasmModule";
-import { OperatorQueue, OperatorQueueType, QuantumGateOperatorQueue } from "../../nativeType/helper/OperatorQueue";
-import { Identity } from "../../nativeType/QuantumGate/QuantumGateBase";
-import { QuantumGateType } from "../../type/QuantumGateType";
-import { WasmQuantumGateData } from "../../type/WasmGateType";
+import { ToWasmOperator, ToWasmSerialInfo } from "../../emsciptenModule/RequestType";
+import { OperatorQueue, OperatorQueueType } from "../../nativeType/helper/OperatorQueue";
 import { translateDefaultGateToWasmGate } from "../../util/toWasmUtil";
 
 /**
@@ -31,17 +28,3 @@ export function translateOperatorQueueToWasmSerialInfo(queues: OperatorQueue[], 
     });
     return info;
 }
-/*
-function createOperatorFromGateQueue(queue: QuantumGateOperatorQueue): ToWasmOperator {
-    const step: WasmQuantumGate[] = [];
-    const index = queue.queueData._index;
-    for (let i = 0; i < index+1; i++) {
-        if (i === index) {
-            step.push(translateDefaultGateToWasmGate(queue.queueData));
-        } else {
-            step.push(translateDefaultGateToWasmGate(new Identity(i)));
-        }
-    }
-    return [1, step];
-}
-*/

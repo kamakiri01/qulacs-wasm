@@ -2,9 +2,12 @@ import { QuantumState } from "../../nativeType/QuantumState";
 import { convertAlternateArrayToComplexArray, convertWasmVectorToArray } from "../../util/fromWasmUtil";
 import { Complex } from "../../type/common";
 import { translateOperatorQueueToWasmSerialInfo } from "./util";
-import { GetMarginalProbabilityInfo, GetZeroProbabilityInfo, QulacsWasmModule, ToWasmSamplingInfo } from "../../emsciptenModule/QulacsWasmModule";
 import { OperatorQueueType } from "../../nativeType/helper/OperatorQueue";
 import { StateActionType } from "../../type/StateAction";
+import { QuantumGateBase } from "../../nativeType/QuantumGate/QuantumGateBase";
+import { GateBaseGetMatrixInfo, GetMarginalProbabilityInfo, GetZeroProbabilityInfo, ToWasmSamplingInfo } from "../../emsciptenModule/RequestType";
+import { QulacsWasmModule } from "../../emsciptenModule/QulacsWasmModule";
+import { translateDefaultGateToWasmGate } from "../../util/toWasmUtil";
 
 export interface QulacsNativeClassClientParameterObjeect {
     module: QulacsWasmModule;
@@ -13,6 +16,7 @@ export interface QulacsNativeClassClientParameterObjeect {
 export class QulacsNativeClassClient {
     module: QulacsWasmModule;
     state: StateAPI;
+    gateBase: GateBaseAPI;
     // observable: ObservableAPI;
 
     constructor(param: QulacsNativeClassClientParameterObjeect) {
@@ -53,6 +57,15 @@ export class QulacsNativeClassClient {
                 return result.marginal_prob;
             }
         };
+        this.gateBase = {
+            get_matrix: (gate: QuantumGateBase) => {
+                const wasmGate = translateDefaultGateToWasmGate(gate);
+                const request: GateBaseGetMatrixInfo = { gate: wasmGate };
+                const result = this._callWasmWithThrowableException(() => this.module.gate_base_get_matrix(request));
+                const serialVec = convertAlternateArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
+                return serialVec;
+            }
+        };
     }
 
     _callWasmWithThrowableException<T>(moduleFunc: () => T): T {
@@ -74,4 +87,8 @@ interface StateAPI {
     sampling: (state: QuantumState, sampling_count: number) => number[];
     get_zero_probability: (state: QuantumState, target_qubit_index: number) => number;
     get_marginal_probability: (state: QuantumState, measured_values: number[]) => number;
+}
+
+interface GateBaseAPI {
+    get_matrix: (gate: QuantumGateBase) => Complex[];
 }

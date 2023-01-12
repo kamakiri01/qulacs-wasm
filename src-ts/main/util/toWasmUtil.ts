@@ -1,8 +1,16 @@
+import { OperatorQueueType, QuantumGateOperatorQueue } from "../nativeType/helper/OperatorQueue";
 import { OneControlOneTargetGate } from "../nativeType/QuantumGate/OneControlOneTargetGate";
 import { OneQubitGate, OneQubitRotationGate, QuantumGateBase } from "../nativeType/QuantumGate/QuantumGateBase";
 import { TwoControlOneTargetGate } from "../nativeType/QuantumGate/TwoControlOneTargetGate";
 import { OneControlOneTargetGateType, OneQubitGateType, OneQubitRotationGateType, QuantumGateType, TwoControlOneTargetGateType } from "../type/QuantumGateType";
 import { WasmOneControlOneTargetGateData, WasmOneQubitGateData, WasmOneQubitRotationGateData, WasmPauliGateData, WasmQuantumGateData, WasmTwoControlOneTargetGateData } from "../type/WasmGateType";
+
+export function translateGateQueuesToOperatorQueue(gate: QuantumGateBase): QuantumGateOperatorQueue {
+    return {
+        queueType: OperatorQueueType.Gate,
+        queueData: gate
+    };
+}
 
 export function translateDefaultGateToWasmGate(gate: QuantumGateBase): WasmQuantumGateData {
     if (!gate) return [QuantumGateType.I, 0] as WasmPauliGateData;

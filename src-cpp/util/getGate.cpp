@@ -16,7 +16,7 @@
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
 
-QuantumGateBase* getGate(std::string gateType, int qubitIndex, double gateParam, std::vector<int> controllIndexs);
+QuantumGateBase* getGate(std::vector<emscripten::val> gateData);
 
 QuantumGateBase* getSingleGate(std::string gateType, int qubitIndex) {
     // @see WasmQuantumGateType.ts
@@ -37,8 +37,7 @@ QuantumGateBase* getSingleGate(std::string gateType, int qubitIndex) {
     return gate;
 }
 
-QuantumGateBase* getRotationGate(std::string gateType, double gateParam, int qubitIndex) {
-    double angle = M_PI * gateParam;
+QuantumGateBase* getRotationGate(std::string gateType, int qubitIndex, double angle) {
     QuantumGateBase* gate;
     if (gateType == "rx") {
         gate = gate::RX(qubitIndex, angle);
@@ -46,12 +45,19 @@ QuantumGateBase* getRotationGate(std::string gateType, double gateParam, int qub
         gate = gate::RY(qubitIndex, angle);
     } else if (gateType == "rz") {
         gate = gate::RZ(qubitIndex, angle);
+    } else if (gateType == "rotx") {
+        gate = gate::RotX(qubitIndex, angle);
+    } else if (gateType == "roty") {
+        gate = gate::RotY(qubitIndex, angle);
+    } else if (gateType == "rotz") {
+        gate = gate::RotZ(qubitIndex, angle);
+    } else {
+        // throw
     }
     return gate;
 }
 
-QuantumGate_SingleParameter* getParametricGate(std::string gateType, int qubitIndex, double rad) {
-    double angle = M_PI * rad;
+QuantumGate_SingleParameter* getParametricGate(std::string gateType, int qubitIndex, double angle) {
     QuantumGate_SingleParameter* gate;
     if (gateType == "rx") {
         gate = gate::ParametricRX(qubitIndex, angle);
@@ -124,26 +130,4 @@ QuantumGateBase* getGate(std::vector<emscripten::val> gateData) {
         gate = getTwoControlOneTargetGate(gateType, targetQubitIndex, controlQubitIndex0, controlQubitIndex1);
     }
     return gate;
-}
-
-std::vector<double> translateCppcToVec(CPPCTYPE* raw_data_cpp, int vecSize) {
-    std::vector<double> data;
-    for (int i = 0; i < vecSize; i++) {
-        auto c = raw_data_cpp[i];
-        double real = c.real();
-        double imag = c.imag();
-        double a = 1.000000;
-        data.push_back(real);
-        data.push_back(imag);
-    }
-    return data;
-}
-
-std::vector<CPPCTYPE> transpaleCPPtoCPPVec(CPPCTYPE* raw_data_cpp, int vecSize) {
-    std::vector<CPPCTYPE> data;
-    for (int i = 0; i < vecSize; i++) {
-        auto c = raw_data_cpp[i];
-        data.push_back(c);
-    }
-    return data;
 }

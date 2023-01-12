@@ -4,6 +4,7 @@ import { QuantumCircuit } from "./nativeType/QuantumCircuit";
 import { QuantumState } from "./nativeType/QuantumState";
 import { QulacsNativeClassClient } from "./client/QulacsNativeClassClient/QulacsNativeClassClient";
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
+import { QuantumGateBase } from "./nativeType/QuantumGate/QuantumGateBase";
 
 export interface InitQulacsModuleOption {
     module?: WebAssembly.Module;
@@ -44,6 +45,7 @@ function initQulacsFromModule(compiledModule: WebAssembly.Module): Promise<Qulac
 
 function setStaticClient(client: QulacsNativeClassClient) {
     QuantumState.client = client;
+    QuantumGateBase.client = client;
     QuantumCircuit.client = client;
     Observable.client = client;
 }

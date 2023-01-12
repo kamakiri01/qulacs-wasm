@@ -25,7 +25,7 @@ Observable getObservable(const emscripten::val &observableInfo, int size) {
         for (size_t j = 0; j < operatorsCount; ++j) {
             std::string pauli = "";
             std::string op = operators[j].as<std::string>();
-            if (op == "0") {
+            if (op == "i") {
                 // do nothing
             } else if (op == "x") {
                 pauli += "X ";
