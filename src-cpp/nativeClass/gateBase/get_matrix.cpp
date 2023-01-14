@@ -18,7 +18,7 @@ struct GateBaseGetMatrixResult {
     std::vector<double> doubleVec;
 };
 
-std::vector<double> translateComplexMatrixToVec(ComplexMatrix mat) {
+std::vector<double> translateComplexMatrixToRowMajorVec(ComplexMatrix mat) {
     std::vector<double> data;
     for(int i=0;i<mat.rows();++i){
         for(int j=0;j<mat.cols();++j){
@@ -38,6 +38,6 @@ GateBaseGetMatrixResult get_matrix(const emscripten::val &gateBaseGetMatrixInfo)
     ComplexMatrix mat;
     gate->set_matrix(mat);
     return {
-        doubleVec: translateComplexMatrixToVec(mat)
+        doubleVec: translateComplexMatrixToRowMajorVec(mat)
     };
 }

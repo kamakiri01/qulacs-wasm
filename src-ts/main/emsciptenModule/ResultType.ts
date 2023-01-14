@@ -30,5 +30,5 @@ export interface GateBaseGetMatrixResult {
     /**
      * std::vector<double>
      */
-     doubleVec: WasmVector<number>;
+    doubleVec: WasmVector<number>;
 }
