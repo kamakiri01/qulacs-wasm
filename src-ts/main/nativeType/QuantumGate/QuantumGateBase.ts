@@ -1,6 +1,5 @@
 import { QulacsNativeClassClient } from "../../client/QulacsNativeClassClient/QulacsNativeClassClient";
 import { Complex } from "../../type/common";
-//import { QuantumGateMatrix } from "./QuantumGateMatrix";
 import { QuantumState } from "../QuantumState";
 import { OneControlOneTargetGateType, OneQubitGateType, OneQubitRotationGateType, QuantumGateType } from "../../type/QuantumGateType";
 import { translateGateQueuesToOperatorQueue } from "../../util/toWasmUtil";
@@ -20,12 +19,22 @@ export abstract class QuantumGateBase {
     */
 
 
-    get_matrix(): Complex[] {
-        return QuantumGateBase.client.gateBase.get_matrix(this);
+    /**
+     * ゲートの複素数行列をRowMajorにして2次元配列で返す
+     */
+    get_matrix(): Complex[][] {
+        return vecToRowMajorMatrixXcd(QuantumGateBase.client.gateBase.get_matrix(this));
     };
 
     update_quantum_state(state: QuantumState) {
         state._operatorQueues = state._operatorQueues.concat(translateGateQueuesToOperatorQueue(this));
+    }
+
+    /**
+     * ゲートの複素数行列を1次元配列で返す
+     */
+    _get_matrix_raw(): Complex[] {
+        return QuantumGateBase.client.gateBase.get_matrix(this);
     }
 }
 
@@ -93,4 +102,14 @@ export class RotY extends OneQubitRotationGate {
 
 export class RotZ extends OneQubitRotationGate {
     _type = QuantumGateType.RotZ;
+}
+
+function vecToRowMajorMatrixXcd(vec: Complex[]): Complex[][] {
+    const len = vec.length;
+    const n = Math.sqrt(vec.length) | 0; // 正方行列の行・列の長さは同じため、要素数の平方根nは整数を保証する。JITにintを解釈させるため `| 0` を付与する
+    const mat: Complex[][] = [];
+    for (let i = 0; i < len;i += n) {
+        mat.push(vec.slice(i, i + n));
+    }
+    return mat;
 }

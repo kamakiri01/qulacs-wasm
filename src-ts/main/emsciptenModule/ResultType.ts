@@ -31,4 +31,10 @@ export interface GateBaseGetMatrixResult {
      * std::vector<double>
      */
     doubleVec: WasmVector<number>;
+
+    /**
+     * 暫定
+     * ComplexMatrix = Eigen::MatrixXcd
+     */
+    cppMat: WasmVector<unknown>;
 }

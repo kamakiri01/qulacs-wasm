@@ -36,6 +36,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::register_vector<int>("vector<int>");
     emscripten::register_vector<long int>("vector<long int>");
 
+    emscripten::value_object<ComplexMatrix>("ComplexMatrix");
+
     emscripten::value_object<DataCppResult>("DataCppResult")
         .field("doubleVec", &DataCppResult::doubleVec)
         .field("cppVec", &DataCppResult::cppVec);
@@ -52,7 +54,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .field("marginal_prob", &GetMarginalProbabilityResult::marginal_prob);
 
     emscripten::value_object<GateBaseGetMatrixResult>("GateBaseGetMatrixResult")
-        .field("doubleVec", &GateBaseGetMatrixResult::doubleVec);
+        .field("doubleVec", &GateBaseGetMatrixResult::doubleVec)
+        .field("cppMat", &GateBaseGetMatrixResult::cppMat);
 
     emscripten::function("state_dataCpp", &state_dataCpp, emscripten::allow_raw_pointers());
     emscripten::function("state_sampling", &state_sampling, emscripten::allow_raw_pointers());
