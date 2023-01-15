@@ -9,7 +9,6 @@ import { GateBaseGetMatrixInfo, GateMatrixGetMatrixInfo, GetMarginalProbabilityI
 import { QulacsWasmModule } from "../../emsciptenModule/QulacsWasmModule";
 import { translateDefaultGateToWasmGate } from "../../util/toWasmUtil";
 import { QuantumGateMatrix } from "../../nativeType/QuantumGate/QuantumGateMatrix";
-import { GateMatrixOperatorQueueType, InitCppMatQueue } from "../../nativeType/helper/GateMatrixOperatorQueue";
 
 export interface QulacsNativeClassClientParameterObjeect {
     module: QulacsWasmModule;

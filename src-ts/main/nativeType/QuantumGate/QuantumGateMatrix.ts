@@ -2,10 +2,11 @@ import { Complex, WasmComplexMatrix } from "../../type/common";
 import { MatrixGateType } from "../../type/QuantumGateType";
 import { vecToRowMajorMatrixXcd } from "../../util/fromWasmUtil";
 import { convertComplexArrayToSerialComplexArray } from "../../util/toWasmUtil";
-import { GateMatrixOperatorQueue, GateMatrixOperatorQueueType, InitCppMatQueue, InitVecQueue } from "../helper/GateMatrixOperatorQueue";
+import { GateMatrixOperatorQueue, GateMatrixOperatorQueueType, InitVecQueue } from "../helper/GateMatrixOperatorQueue";
 import { QuantumGateBase } from "./QuantumGateBase";
+import { QuantumGateMatrixBase } from "./QuantumGateMatrixBase";
 
-export class QuantumGateMatrix extends QuantumGateBase {
+export class QuantumGateMatrix extends QuantumGateMatrixBase {
     _type: MatrixGateType; // NOTE: 非 abstract かつ extends するため値はコンストラクタで代入
     _queue: GateMatrixOperatorQueue[];
     _target_qubit_index_list: number[];
@@ -20,7 +21,7 @@ export class QuantumGateMatrix extends QuantumGateBase {
 
         this._target_qubit_index_list = Array.isArray(target_qubit_index_list) ? target_qubit_index_list : [target_qubit_index_list];
         this._control_qubit_index_list = control_qubit_index_list;
-        let initQueue: InitVecQueue | InitCppMatQueue;
+        let initQueue: InitVecQueue;
         if (Array.isArray(mat)) {
             let initMat: number[];
             if (isNumber(mat[0][0])) {
@@ -33,7 +34,8 @@ export class QuantumGateMatrix extends QuantumGateBase {
             initQueue = [GateMatrixOperatorQueueType.InitVec, this._target_qubit_index_list, initMat, this._control_qubit_index_list] as InitVecQueue;
         } else {
             // TODO: matがComplexMatrixかどうかの厳密な判定
-            initQueue = [GateMatrixOperatorQueueType.InitCppMat, this._target_qubit_index_list, mat, this._control_qubit_index_list] as InitCppMatQueue;
+            // initQueue = [GateMatrixOperatorQueueType.InitCppMat, this._target_qubit_index_list, mat, this._control_qubit_index_list] as InitCppMatQueue;
+            throw new Error("undefined constructor");
         }
 
         this._queue = [initQueue];
@@ -45,7 +47,6 @@ export class QuantumGateMatrix extends QuantumGateBase {
      get_matrix(): Complex[][] {
         const result = QuantumGateBase.client.gateMatrix.get_matrix(this);
         return vecToRowMajorMatrixXcd(result);
-
     };
 
 

@@ -1,9 +1,9 @@
 import { QulacsNativeClassClient } from "../client/QulacsNativeClassClient/QulacsNativeClassClient";
-import { OperatorQueueType, QuantumGateOperatorQueue } from "./helper/OperatorQueue";
-import { H, QuantumGateBase, X, Y, Z, T, S, RX, RY, RZ, RotX, RotY, RotZ } from "./QuantumGate/QuantumGateBase";
 import { CNOT, CZ } from "./QuantumGate/OneControlOneTargetGate";
 import { QuantumState } from "./QuantumState";
 import { translateGateQueuesToOperatorQueue } from "../util/toWasmUtil";
+import { QuantumGateBase } from "./QuantumGate/QuantumGateBase";
+import { X, Y, Z, H, T, S, RX, RY, RZ, RotX, RotY, RotZ } from "./QuantumGate/QuantumGate";
 
 export class QuantumCircuit {
     static client: QulacsNativeClassClient;

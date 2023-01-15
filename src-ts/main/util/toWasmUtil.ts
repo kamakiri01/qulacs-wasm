@@ -1,6 +1,7 @@
 import { OperatorQueueType, QuantumGateOperatorQueue } from "../nativeType/helper/OperatorQueue";
 import { OneControlOneTargetGate } from "../nativeType/QuantumGate/OneControlOneTargetGate";
-import { OneQubitGate, OneQubitRotationGate, QuantumGateBase } from "../nativeType/QuantumGate/QuantumGateBase";
+import { OneQubitGate, OneQubitRotationGate } from "../nativeType/QuantumGate/QuantumGate";
+import { QuantumGateBase } from "../nativeType/QuantumGate/QuantumGateBase";
 import { TwoControlOneTargetGate } from "../nativeType/QuantumGate/TwoControlOneTargetGate";
 import { Complex } from "../type/common";
 import { OneControlOneTargetGateType, OneQubitGateType, OneQubitRotationGateType, QuantumGateType, TwoControlOneTargetGateType } from "../type/QuantumGateType";
