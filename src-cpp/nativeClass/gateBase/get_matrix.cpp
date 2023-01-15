@@ -33,7 +33,7 @@ std::vector<double> translateComplexMatrixToRowMajorVec(ComplexMatrix mat) {
     return data;
 }
 
-GateBaseGetMatrixResult get_matrix(const emscripten::val &gateBaseGetMatrixInfo) {
+GateBaseGetMatrixResult gateBase_get_matrix(const emscripten::val &gateBaseGetMatrixInfo) {
     auto gateData = emscripten::vecFromJSArray<emscripten::val>(gateBaseGetMatrixInfo["gate"]);
     auto gate = getGate(gateData);
     ComplexMatrix mat;

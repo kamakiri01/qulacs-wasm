@@ -1,4 +1,4 @@
-import { Complex, WasmComplexMatrix } from "../../type/common";
+import { Complex } from "../../type/common";
 import { MatrixGateType } from "../../type/QuantumGateType";
 import { vecToRowMajorMatrixXcd } from "../../util/fromWasmUtil";
 import { convertComplexArrayToSerialComplexArray } from "../../util/toWasmUtil";
