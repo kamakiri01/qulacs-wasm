@@ -1,4 +1,5 @@
 import { TwoControlOneTargetGateType } from "../../type/QuantumGateType";
+import { vecToRowMajorMatrixXcd } from "../../util/fromWasmUtil";
 import { CNOT } from "./OneControlOneTargetGate";
 import { QuantumGateBase } from "./QuantumGateBase";
 import { QuantumGateMatrix } from "./QuantumGateMatrix";
@@ -16,7 +17,7 @@ export abstract class TwoControlOneTargetGate extends QuantumGateBase {
     }
 
     to_matrix_gate(): QuantumGateMatrix {
-        return new QuantumGateMatrix(this._targetIndex, this._get_matrix_raw(), [this._controlIndex0, this._controlIndex1]);
+        return new QuantumGateMatrix(this._targetIndex, vecToRowMajorMatrixXcd(this._get_matrix_raw()), [this._controlIndex0, this._controlIndex1]);
     };
 }
 

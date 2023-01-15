@@ -14,7 +14,7 @@ export class QuantumGateMatrix extends QuantumGateMatrixBase {
 
     constructor(
         target_qubit_index_list: number | number[], // wasmにコールしてgetterで返すほうがいいかも
-        mat: (Complex | number)[][] | WasmComplexMatrix<unknown>,
+        mat: (Complex | number)[][] /* | WasmComplexMatrix<unknown>*/,
         control_qubit_index_list: number[] = []) {
         super();
         this._type = MatrixGateType.QuantumGateMatrix;

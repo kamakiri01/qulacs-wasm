@@ -1,4 +1,5 @@
 import { OneQubitGateType, OneQubitRotationGateType, QuantumGateType } from "../../type/QuantumGateType";
+import { vecToRowMajorMatrixXcd } from "../../util/fromWasmUtil";
 import { QuantumGateBase } from "./QuantumGateBase";
 import { QuantumGateMatrix } from "./QuantumGateMatrix";
 import { QuantumGateMatrixBase } from "./QuantumGateMatrixBase";
@@ -12,7 +13,7 @@ export abstract class OneQubitGate extends QuantumGateBase {
     }
 
     to_matrix_gate(): QuantumGateMatrixBase {
-        return new QuantumGateMatrix(this._index, this._get_matrix_raw());
+        return new QuantumGateMatrix(this._index, vecToRowMajorMatrixXcd(this._get_matrix_raw()));
     };
 }
 
@@ -27,7 +28,7 @@ export abstract class OneQubitRotationGate extends QuantumGateBase {
     }
 
     to_matrix_gate(): QuantumGateMatrixBase {
-        return new QuantumGateMatrix(this._index, this._get_matrix_raw());
+        return new QuantumGateMatrix(this._index, vecToRowMajorMatrixXcd(this._get_matrix_raw()));
     };
 
 }
