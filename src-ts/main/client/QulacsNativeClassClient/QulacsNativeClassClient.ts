@@ -1,13 +1,15 @@
 import { QuantumState } from "../../nativeType/QuantumState";
-import { convertAlternateArrayToComplexArray, convertWasmVectorToArray } from "../../util/fromWasmUtil";
+import { convertSerialComplexArrayToComplexArray, convertWasmVectorToArray } from "../../util/fromWasmUtil";
 import { Complex } from "../../type/common";
 import { translateOperatorQueueToWasmSerialInfo } from "./util";
 import { OperatorQueueType } from "../../nativeType/helper/OperatorQueue";
 import { StateActionType } from "../../type/StateAction";
 import { QuantumGateBase } from "../../nativeType/QuantumGate/QuantumGateBase";
-import { GateBaseGetMatrixInfo, GetMarginalProbabilityInfo, GetZeroProbabilityInfo, ToWasmSamplingInfo } from "../../emsciptenModule/RequestType";
+import { GateBaseGetMatrixInfo, GateMatrixGetMatrixInfo, GetMarginalProbabilityInfo, GetZeroProbabilityInfo, ToWasmSamplingInfo } from "../../emsciptenModule/RequestType";
 import { QulacsWasmModule } from "../../emsciptenModule/QulacsWasmModule";
 import { translateDefaultGateToWasmGate } from "../../util/toWasmUtil";
+import { QuantumGateMatrix } from "../../nativeType/QuantumGate/QuantumGateMatrix";
+import { GateMatrixOperatorQueueType, InitCppMatQueue } from "../../nativeType/helper/GateMatrixOperatorQueue";
 
 export interface QulacsNativeClassClientParameterObjeect {
     module: QulacsWasmModule;
@@ -17,6 +19,7 @@ export class QulacsNativeClassClient {
     module: QulacsWasmModule;
     state: StateAPI;
     gateBase: GateBaseAPI;
+    gateMatrix: GateMatrixAPI;
     // observable: ObservableAPI;
 
     constructor(param: QulacsNativeClassClientParameterObjeect) {
@@ -27,7 +30,7 @@ export class QulacsNativeClassClient {
                 const request = translateOperatorQueueToWasmSerialInfo(state._operatorQueues, size);
                 const result = this._callWasmWithThrowableException(() => this.module.state_dataCpp(request));
                 state._operatorQueues = [{ queueType: OperatorQueueType.StateAction, queueData: [StateActionType.load_wasmVector, result.cppVec] }];
-                const stateVector = convertAlternateArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
+                const stateVector = convertSerialComplexArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
                 return stateVector;
             },
             get_amplitude: (state, index) => {
@@ -62,10 +65,25 @@ export class QulacsNativeClassClient {
                 const wasmGate = translateDefaultGateToWasmGate(gate);
                 const request: GateBaseGetMatrixInfo = { gate: wasmGate };
                 const result = this._callWasmWithThrowableException(() => this.module.gate_base_get_matrix(request));
-                const serialVec = convertAlternateArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
+                const serialVec = convertSerialComplexArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
                 return serialVec;
             }
-        };
+        },
+        this.gateMatrix = {
+            get_matrix: (gateMatrix: QuantumGateMatrix) => {
+                const request: GateMatrixGetMatrixInfo = { operators: gateMatrix._queue };
+                const result = this._callWasmWithThrowableException(() => this.module.gate_matrix_get_matrix(request));
+                const serialVec = convertSerialComplexArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
+                // NOTE: C++側のtarget/control qubitの更新をJS側に反映できるか確認できるまで、cppMatを利用したJS側のQuantumGateMatrixの更新は行わない
+                // QuantumGateMatrixから_target_qubit_index_list/_control_qubit_index_listを事後取得してJS側に返すことができれば可能？
+                /*
+                gateMatrix._queue = [
+                    [GateMatrixOperatorQueueType.InitCppMat, gateMatrix._target_qubit_index_list, result.cppMat, gateMatrix._control_qubit_index_list] as InitCppMatQueue
+                ];
+                */
+                return serialVec;
+            }
+        }
     }
 
     _callWasmWithThrowableException<T>(moduleFunc: () => T): T {
@@ -91,4 +109,8 @@ interface StateAPI {
 
 interface GateBaseAPI {
     get_matrix: (gate: QuantumGateBase) => Complex[];
+}
+
+interface GateMatrixAPI {
+    get_matrix: (gateMatrix: QuantumGateMatrix) => Complex[];
 }

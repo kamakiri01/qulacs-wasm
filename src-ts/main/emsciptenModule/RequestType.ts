@@ -1,4 +1,4 @@
-import { QuantumGateType } from "../type/QuantumGateType";
+import { GateMatrixOperatorQueue } from "../nativeType/helper/GateMatrixOperatorQueue";
 import { StateAction } from "../type/StateAction";
 import { WasmQuantumGateData } from "../type/WasmGateType";
 
@@ -28,4 +28,8 @@ export interface GetMarginalProbabilityInfo extends ToWasmSerialInfo {
 
 export interface GateBaseGetMatrixInfo {
     gate: WasmQuantumGateData;
+}
+
+export interface GateMatrixGetMatrixInfo {
+    operators: GateMatrixOperatorQueue[];
 }

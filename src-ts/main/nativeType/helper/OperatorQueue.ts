@@ -19,5 +19,7 @@ export type QuantumGateOperatorQueue = {
 
 /**
  * QuantumState の操作ログ
+ * 
+ * NOTE: オブジェクトではなく配列構造を検討する。そのままwasmに渡せるため
  */
 export type OperatorQueue = QuantumGateOperatorQueue | StateActionOperatorQueue;

@@ -1,6 +1,7 @@
 import { TwoControlOneTargetGateType } from "../../type/QuantumGateType";
 import { CNOT } from "./OneControlOneTargetGate";
 import { QuantumGateBase } from "./QuantumGateBase";
+import { QuantumGateMatrix } from "./QuantumGateMatrix";
 
 export abstract class TwoControlOneTargetGate extends QuantumGateBase {
     abstract _type: TwoControlOneTargetGateType;
@@ -13,6 +14,10 @@ export abstract class TwoControlOneTargetGate extends QuantumGateBase {
         this._controlIndex0 = control_qubit_index0;
         this._controlIndex1 = control_qubit_index1;
     }
+
+    to_matrix_gate(): QuantumGateMatrix {
+        return new QuantumGateMatrix(this._targetIndex, this._get_matrix_raw(), [this._controlIndex0, this._controlIndex1]);
+    };
 }
 
 export class CCNOT extends TwoControlOneTargetGate {

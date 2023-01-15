@@ -2,8 +2,19 @@ import { OperatorQueueType, QuantumGateOperatorQueue } from "../nativeType/helpe
 import { OneControlOneTargetGate } from "../nativeType/QuantumGate/OneControlOneTargetGate";
 import { OneQubitGate, OneQubitRotationGate, QuantumGateBase } from "../nativeType/QuantumGate/QuantumGateBase";
 import { TwoControlOneTargetGate } from "../nativeType/QuantumGate/TwoControlOneTargetGate";
+import { Complex } from "../type/common";
 import { OneControlOneTargetGateType, OneQubitGateType, OneQubitRotationGateType, QuantumGateType, TwoControlOneTargetGateType } from "../type/QuantumGateType";
 import { WasmOneControlOneTargetGateData, WasmOneQubitGateData, WasmOneQubitRotationGateData, WasmPauliGateData, WasmQuantumGateData, WasmTwoControlOneTargetGateData } from "../type/WasmGateType";
+
+export function convertComplexArrayToSerialComplexArray(arr: Complex[]): number[] {
+    const result: number[] = [];
+    const length = arr.length;
+    for (let i = 0; i < length; i++) {
+        result.push(arr[i].re);
+        result.push(arr[i].im);
+    }
+    return result;
+}
 
 export function translateGateQueuesToOperatorQueue(gate: QuantumGateBase): QuantumGateOperatorQueue {
     return {

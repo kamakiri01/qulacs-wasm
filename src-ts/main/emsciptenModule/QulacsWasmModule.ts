@@ -8,4 +8,5 @@ export interface QulacsWasmModule extends EmscriptenWasm.Module {
     state_get_zero_probability(request: GetZeroProbabilityInfo): StateGetZeroProbabilityResult;
     state_get_marginal_probability(request: GetMarginalProbabilityInfo): StateGetMarginalProbabilityResult;
     gate_base_get_matrix(request: GateBaseGetMatrixInfo): GateBaseGetMatrixResult;
+    gate_matrix_get_matrix(request: GateMatrixGetMatrixInfo): GateMatrixGetMatrixResult;
 }

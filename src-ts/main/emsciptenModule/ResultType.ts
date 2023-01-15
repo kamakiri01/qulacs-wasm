@@ -1,4 +1,4 @@
-import { WasmVector } from "../type/common";
+import { WasmComplexMatrix, WasmVector } from "../type/common";
 
 export interface StateDataCppResult {
     /**
@@ -33,8 +33,20 @@ export interface GateBaseGetMatrixResult {
     doubleVec: WasmVector<number>;
 
     /**
-     * 暫定
+     * TODO: to_matrixに利用する
      * ComplexMatrix = Eigen::MatrixXcd
      */
-    cppMat: WasmVector<unknown>;
+    cppMat: WasmComplexMatrix<unknown>;
+}
+
+export interface GateMatrixGetMatrixResult {
+    /**
+     * std::vector<double>
+     */
+     doubleVec: WasmVector<number>;
+
+     /**
+      * ComplexMatrix = Eigen::MatrixXcd
+      */
+     cppMat: WasmComplexMatrix<unknown>;
 }
