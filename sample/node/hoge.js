@@ -105,7 +105,11 @@ m.initQulacsModule({useWorker: false})
         state.set_computational_basis(1);
         const samples = state.sampling(10);
         console.log("samples", samples);
-
+        const gateX = new q.X(0);
+        state.set_Haar_random_state(0);
+        gateX.update_quantum_state(state);
+        const samples2 = state.sampling(10);
+        console.log("samples2", samples2);
         /*
         var n = 1;
         var avg = 0;
