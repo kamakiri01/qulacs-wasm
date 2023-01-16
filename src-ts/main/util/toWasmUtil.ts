@@ -1,3 +1,4 @@
+import { ToWasmOperator, ToWasmOperatorQueueType } from "../emsciptenModule/RequestType";
 import { OperatorQueueType, QuantumGateOperatorQueue } from "../nativeType/helper/OperatorQueue";
 import { OneControlOneTargetGate } from "../nativeType/QuantumGate/OneControlOneTargetGate";
 import { OneQubitGate, OneQubitRotationGate } from "../nativeType/QuantumGate/QuantumGate";
@@ -17,11 +18,8 @@ export function convertComplexArrayToSerialComplexArray(arr: Complex[]): number[
     return result;
 }
 
-export function translateGateQueuesToOperatorQueue(gate: QuantumGateBase): QuantumGateOperatorQueue {
-    return {
-        queueType: OperatorQueueType.Gate,
-        queueData: gate
-    };
+export function translateQuantumGateToOperatorQueue(gate: QuantumGateBase): ToWasmOperator {
+    return [ToWasmOperatorQueueType.Gate, translateDefaultGateToWasmGate(gate)];
 }
 
 export function translateDefaultGateToWasmGate(gate: QuantumGateBase): WasmQuantumGateData {

@@ -2,7 +2,7 @@ import { QulacsNativeClassClient } from "../../client/QulacsNativeClassClient/Qu
 import { Complex } from "../../type/common";
 import { QuantumState } from "../QuantumState";
 import { QuantumGateType } from "../../type/QuantumGateType";
-import { translateGateQueuesToOperatorQueue } from "../../util/toWasmUtil";
+import { translateQuantumGateToOperatorQueue } from "../../util/toWasmUtil";
 import { vecToRowMajorMatrixXcd } from "../../util/fromWasmUtil";
 import { QuantumGateMatrixBase } from "./QuantumGateMatrixBase";
 
@@ -16,7 +16,7 @@ export abstract class QuantumGateBase {
     abstract to_matrix_gate(): QuantumGateMatrixBase;
 
     update_quantum_state(state: QuantumState) {
-        state._operatorQueues = state._operatorQueues.concat(translateGateQueuesToOperatorQueue(this));
+        state._operatorQueues = state._operatorQueues.concat(translateQuantumGateToOperatorQueue(this));
     }
 
     /**

@@ -77,11 +77,11 @@ QuantumState* calcSerialInfoState(const emscripten::val &serialInfo) {
     int operatorsCount = operators.size();
     for (size_t i = 0; i < operatorsCount; ++i) {
         const auto op = emscripten::vecFromJSArray<emscripten::val>(operators[i]);
-        const int operatorType = op[0].as<int>();
+        const std::string operatorType = op[0].as<std::string>();
         const auto operatorData = emscripten::vecFromJSArray<emscripten::val>(op[1]);
-        if (operatorType == 0) { // stateAction
+        if (operatorType == "stateaction") { // stateAction
             applyStateAction(state, operatorData);
-        } else if (operatorType == 1) { // gate
+        } else if (operatorType == "gate") { // gate
             applyOperatorGate(state, operatorData);
         }
     }

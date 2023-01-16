@@ -3,7 +3,13 @@ import { StateAction } from "../type/StateAction";
 import { WasmQuantumGateData } from "../type/WasmGateType";
 
 // ゲート操作やstate setなどの単位の操作
-export type ToWasmOperator = [0, StateAction] | [1, WasmQuantumGateData]; // TODO: 0番目を型付け
+export const ToWasmOperatorQueueType = {
+    StateAction: "stateaction",
+    Gate: "gate"
+} as const;
+export type ToWasmOperatorQueueType = typeof ToWasmOperatorQueueType[keyof typeof ToWasmOperatorQueueType];
+
+export type ToWasmOperator = [typeof ToWasmOperatorQueueType.StateAction, StateAction] | [typeof ToWasmOperatorQueueType.Gate, WasmQuantumGateData];
 
 /**
  * QuantumState の操作ログを wasm に送るためのフォーマット

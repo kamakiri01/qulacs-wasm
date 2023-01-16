@@ -22,4 +22,4 @@ export type QuantumGateOperatorQueue = {
  * 
  * NOTE: オブジェクトではなく配列構造を検討する。そのままwasmに渡せるため
  */
-export type OperatorQueue = QuantumGateOperatorQueue | StateActionOperatorQueue;
+//export type OperatorQueue = QuantumGateOperatorQueue | StateActionOperatorQueue;

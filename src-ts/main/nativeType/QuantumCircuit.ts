@@ -1,7 +1,7 @@
 import { QulacsNativeClassClient } from "../client/QulacsNativeClassClient/QulacsNativeClassClient";
 import { CNOT, CZ } from "./QuantumGate/OneControlOneTargetGate";
 import { QuantumState } from "./QuantumState";
-import { translateGateQueuesToOperatorQueue } from "../util/toWasmUtil";
+import { translateQuantumGateToOperatorQueue } from "../util/toWasmUtil";
 import { QuantumGateBase } from "./QuantumGate/QuantumGateBase";
 import { X, Y, Z, H, T, S, RX, RY, RZ, RotX, RotY, RotZ } from "./QuantumGate/QuantumGate";
 
@@ -16,7 +16,7 @@ export class QuantumCircuit {
     }
 
     update_quantum_state(state: QuantumState) {
-        state._operatorQueues = state._operatorQueues.concat(this.gateQueues.map(translateGateQueuesToOperatorQueue));
+        state._operatorQueues = state._operatorQueues.concat(this.gateQueues.map(translateQuantumGateToOperatorQueue));
     }
 
     add_gate(gate: QuantumGateBase) {
