@@ -1,12 +1,13 @@
 import { QuantumState } from "../../nativeType/QuantumState";
 import { convertSerialComplexArrayToComplexArray, convertWasmVectorToArray } from "../../util/fromWasmUtil";
 import { Complex } from "../../type/common";
-import { StateActionType } from "../../type/StateAction";
+import { StateActionType } from "../../nativeType/helper/StateAction";
 import { QuantumGateBase } from "../../nativeType/QuantumGate/QuantumGateBase";
-import { GateBaseGetMatrixInfo, GateMatrixGetMatrixInfo, GetMarginalProbabilityInfo, GetZeroProbabilityInfo, ToWasmOperatorQueueType, ToWasmSamplingInfo, ToWasmSerialInfo } from "../../emsciptenModule/RequestType";
+import { GateBaseGetMatrixInfo, GateMatrixGetMatrixInfo, GetMarginalProbabilityInfo, GetZeroProbabilityInfo, ToWasmSamplingInfo, ToWasmSerialInfo } from "../../emsciptenModule/RequestType";
 import { QulacsWasmModule } from "../../emsciptenModule/QulacsWasmModule";
 import { translateDefaultGateToWasmGate } from "../../util/toWasmUtil";
 import { QuantumGateMatrix } from "../../nativeType/QuantumGate/QuantumGateMatrix";
+import { StateOperatorQueueType } from "../../nativeType/helper/StateOperatorQueue";
 
 export interface QulacsNativeClassClientParameterObjeect {
     module: QulacsWasmModule;
@@ -29,7 +30,7 @@ export class QulacsNativeClassClient {
                 };
                 const result = this._callWasmWithThrowableException(() => this.module.state_dataCpp(request));
                 state._operatorQueues = [
-                    [ToWasmOperatorQueueType.StateAction, [StateActionType.load_wasmVector, result.cppVec]]
+                    [StateOperatorQueueType.StateAction, [StateActionType.load_wasmVector, result.cppVec]]
                 ];
                 const stateVector = convertSerialComplexArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
                 return stateVector;
@@ -45,7 +46,7 @@ export class QulacsNativeClassClient {
                 const request: ToWasmSamplingInfo = {...info, ...{sampling_count}};
                 const result = this._callWasmWithThrowableException(() => this.module.state_sampling(request));
                 state._operatorQueues = [
-                    [ToWasmOperatorQueueType.StateAction, [StateActionType.load_wasmVector, result.cppVec]]
+                    [StateOperatorQueueType.StateAction, [StateActionType.load_wasmVector, result.cppVec]]
                 ];
                 const samplingResult = convertWasmVectorToArray(result.samplingVec);
                 return samplingResult;

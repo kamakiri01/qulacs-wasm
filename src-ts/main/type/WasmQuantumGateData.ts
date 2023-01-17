@@ -1,6 +1,6 @@
-import { OneControlOneTargetGateType, OneQubitGateType, OneQubitRotationGateType, PauliGateType, QuantumGateType, TwoControlOneTargetGateType } from "./QuantumGateType";
+import { OneControlOneTargetGateType, OneQubitGateType, OneQubitRotationGateType, PauliGateType, TwoControlOneTargetGateType } from "./QuantumGateType";
 
-// wasmとの通信に使う量子回路情報の型定義。一部の構造を配列化してwasmでの読み取りを簡単にする。
+// wasmとの通信に使う量子ゲートの表現。一部の構造を配列化してwasmでの読み取りを簡単にする。
 // 通常、本ライブラリのユーザがこの型を使う必要はない。
 
 /**
@@ -37,4 +37,6 @@ export type WasmOneControlOneTargetGateData = [OneControlOneTargetGateType, numb
  */
  export type WasmTwoControlOneTargetGateData = [TwoControlOneTargetGateType, number, number, number];
 
-export type WasmQuantumGateData = WasmPauliGateData | WasmOneQubitGateData | WasmOneQubitRotationGateData | WasmOneControlOneTargetGateData | WasmTwoControlOneTargetGateData;
+export type WasmQuantumGateData =
+    WasmPauliGateData | WasmOneQubitGateData | WasmOneQubitRotationGateData |
+    WasmOneControlOneTargetGateData | WasmTwoControlOneTargetGateData;

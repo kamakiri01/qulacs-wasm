@@ -1,4 +1,4 @@
-import { WasmVector } from "./common";
+import { WasmVector } from "../../type/common";
 
 /**
  * QuantumState.set~系操作をQunatumState#_operatorQueuesに積む際の表現定義
@@ -23,7 +23,5 @@ export type LoadWasmVectorStateAction = [typeof StateActionType.load_wasmVector,
 export type LoadComplexSerialVectorStateAction = [typeof StateActionType.load_ComplexSerialVector, number[]];
 
 export type StateAction =
-    SetZeroStateAction |
-    LoadWasmVectorStateAction | LoadComplexSerialVectorStateAction |
-    SetComputationalBasisAction |
-    SetHaarRandomStateNoSeed | SetHaarRandomStateSeed;
+    SetZeroStateAction | LoadWasmVectorStateAction | LoadComplexSerialVectorStateAction |
+    SetComputationalBasisAction | SetHaarRandomStateNoSeed | SetHaarRandomStateSeed;

@@ -1,7 +1,7 @@
 import { QulacsNativeClassClient } from "../client/QulacsNativeClassClient/QulacsNativeClassClient";
 import { Complex } from "../type/common";
-import { StateActionType } from "../type/StateAction";
-import { ToWasmOperator, ToWasmOperatorQueueType } from "../emsciptenModule/RequestType";
+import { StateActionType } from "./helper/StateAction";
+import { StateOperatorQueue, StateOperatorQueueType } from "./helper/StateOperatorQueue";
 
 export class QuantumState {
     static client: QulacsNativeClassClient;
@@ -11,7 +11,7 @@ export class QuantumState {
     /**
      * length === 0 を想定しない
      */
-    _operatorQueues: ToWasmOperator[] = [];
+    _operatorQueues: StateOperatorQueue[] = [];
 
     constructor(qubit_count: number) {
         this.qubit_count = qubit_count;
@@ -20,24 +20,24 @@ export class QuantumState {
 
     set_zero_state() {
         this._operatorQueues = [
-            [ToWasmOperatorQueueType.StateAction, [StateActionType.set_zero_state]]
+            [StateOperatorQueueType.StateAction, [StateActionType.set_zero_state]]
         ];
     };
 
     set_computational_basis(comp_basis: number) {
         this._operatorQueues = [
-            [ToWasmOperatorQueueType.StateAction, [StateActionType.set_computational_basis, comp_basis]]
+            [StateOperatorQueueType.StateAction, [StateActionType.set_computational_basis, comp_basis]]
         ];
     }
 
     set_Haar_random_state(seed?: number) {
         if (seed) {
             this._operatorQueues = [
-                [ToWasmOperatorQueueType.StateAction, [StateActionType.set_Haar_random_state_seed, seed]]
+                [StateOperatorQueueType.StateAction, [StateActionType.set_Haar_random_state_seed, seed]]
             ];
         } else {
             this._operatorQueues = [
-                [ToWasmOperatorQueueType.StateAction, [StateActionType.set_Haar_random_state_no_seed]]
+                [StateOperatorQueueType.StateAction, [StateActionType.set_Haar_random_state_no_seed]]
             ];
         }
     }
@@ -70,12 +70,12 @@ export class QuantumState {
             if (isComplexArray(stateOrArray)) {
                 this._operatorQueues =
                     [
-                        [ToWasmOperatorQueueType.StateAction, [StateActionType.load_ComplexSerialVector, complexArrayToSerialArray(stateOrArray)]]
+                        [StateOperatorQueueType.StateAction, [StateActionType.load_ComplexSerialVector, complexArrayToSerialArray(stateOrArray)]]
                     ];
             } else if (typeof stateOrArray[0] === "number") {
                 this._operatorQueues =
                     [
-                        [ToWasmOperatorQueueType.StateAction, [StateActionType.load_ComplexSerialVector, arrayToSerialArray(stateOrArray)]]
+                        [StateOperatorQueueType.StateAction, [StateActionType.load_ComplexSerialVector, arrayToSerialArray(stateOrArray)]]
                     ];
             }
         } else {
