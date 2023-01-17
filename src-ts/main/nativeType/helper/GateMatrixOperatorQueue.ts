@@ -1,5 +1,3 @@
-import { WasmComplexMatrix } from "../../type/common";
-
 export const GateMatrixOperatorQueueType = {
     InitVec: "initvec",
     InitCppMat: "initcppmat",

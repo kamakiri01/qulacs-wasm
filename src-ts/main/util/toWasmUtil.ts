@@ -1,5 +1,4 @@
 import { ToWasmOperator, ToWasmOperatorQueueType } from "../emsciptenModule/RequestType";
-import { OperatorQueueType, QuantumGateOperatorQueue } from "../nativeType/helper/OperatorQueue";
 import { OneControlOneTargetGate } from "../nativeType/QuantumGate/OneControlOneTargetGate";
 import { OneQubitGate, OneQubitRotationGate } from "../nativeType/QuantumGate/QuantumGate";
 import { QuantumGateBase } from "../nativeType/QuantumGate/QuantumGateBase";

@@ -9,7 +9,6 @@ export * from "./main/nativeType/QuantumGate/QuantumGateMatrixBase";
 export * from "./main/nativeType/QuantumGate/QuantumGateMatrix";
 export * from "./main/nativeType/QuantumGate/OneControlOneTargetGate";
 export * from "./main/nativeType/QuantumGate/TwoControlOneTargetGate";
-export * from "./main/nativeType/helper/OperatorQueue";
 export * from "./main/type/QuantumGateType";
 export * from "./main/type/StateAction";
 export * from "./main/type/WasmGateType";

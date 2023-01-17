@@ -79,9 +79,9 @@ QuantumState* calcSerialInfoState(const emscripten::val &serialInfo) {
         const auto op = emscripten::vecFromJSArray<emscripten::val>(operators[i]);
         const std::string operatorType = op[0].as<std::string>();
         const auto operatorData = emscripten::vecFromJSArray<emscripten::val>(op[1]);
-        if (operatorType == "stateaction") { // stateAction
+        if (operatorType == "stateaction") {
             applyStateAction(state, operatorData);
-        } else if (operatorType == "gate") { // gate
+        } else if (operatorType == "gate") {
             applyOperatorGate(state, operatorData);
         }
     }
