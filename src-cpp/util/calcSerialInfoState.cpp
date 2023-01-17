@@ -25,42 +25,26 @@ std::vector<CPPCTYPE> transpaleComplexAltVectoCPPVec(std::vector<double> vec) {
 }
 
 void applyStateAction(QuantumState* state, std::vector<emscripten::val> stateAction) {
-    const int stateActionTye = stateAction[0].as<int>();
-    switch (stateActionTye) {
-        case 0:
-            // empty
-            break;
-        case 1:
-            state->set_zero_state();
-            break;
-        case 2:
-            {
-                int comp_basis = stateAction[1].as<int>();
-                state->set_computational_basis(comp_basis);
-                break;
-            }
-        case 3:
-            state->set_Haar_random_state();
-            break;
-        case 4:
-            {
-                auto seed = stateAction[1].as<UINT>();
-                state->set_Haar_random_state(seed);
-                break;
-            }
-        case 5:
-            {
-                auto wasmVec = stateAction[1].as<std::vector<CPPCTYPE>>();
-                state->load(wasmVec);
-                break;
-            }
-        case 6:
-            {
-                auto complexAltVec = emscripten::vecFromJSArray<double>(stateAction[1]);
-                auto wasmVec = transpaleComplexAltVectoCPPVec(complexAltVec);
-                state->load(wasmVec);
-                break;
-            }
+    const std::string stateActionTye = stateAction[0].as<std::string>();
+    if (stateActionTye == "empty") {
+        // do nothing
+    } else if (stateActionTye == "setzerostate") {
+        state->set_zero_state();
+    } else if (stateActionTye == "setcomputationalbasis") {
+        int comp_basis = stateAction[1].as<int>();
+        state->set_computational_basis(comp_basis);
+    } else if (stateActionTye == "sethaarrandomstatenoseed") {
+        state->set_Haar_random_state();
+    } else if (stateActionTye == "sethaarrandomstateseed") {
+        auto seed = stateAction[1].as<UINT>();
+        state->set_Haar_random_state(seed);
+    } else if (stateActionTye == "loadwasmvector") {
+        auto wasmVec = stateAction[1].as<std::vector<CPPCTYPE>>();
+        state->load(wasmVec);
+    } else if (stateActionTye == "loadcomplexserialvector") {
+        auto complexAltVec = emscripten::vecFromJSArray<double>(stateAction[1]);
+        auto wasmVec = transpaleComplexAltVectoCPPVec(complexAltVec);
+        state->load(wasmVec);
     }
 }
 
