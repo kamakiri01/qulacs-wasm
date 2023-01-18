@@ -20,7 +20,7 @@ struct GetMarginalProbabilityResult {
 
 GetMarginalProbabilityResult get_marginal_probability(const emscripten::val &getMarginalProbabilityInfo) {
     auto state = calcSerialInfoState(getMarginalProbabilityInfo);
-    const std::vector<UINT> measured_values = emscripten::vecFromJSArray<UINT>(getMarginalProbabilityInfo["measured_values"]);
+    std::vector<UINT> measured_values = emscripten::vecFromJSArray<UINT>(getMarginalProbabilityInfo["measured_values"]);
     auto marginal_prob = state->get_marginal_probability(measured_values);
     return {
         marginal_prob: marginal_prob

@@ -1,13 +1,14 @@
 import { QulacsNativeClassClient } from "../client/QulacsNativeClassClient/QulacsNativeClassClient";
-import { QuantumGateType } from "../type/QuantumGateType";
-import { IndexedToWasmDefaultQuantumGate } from "./helper/IndexedToWasmDefaultQuantumGate";
-import { OperatorQueue, OperatorQueueType } from "./helper/OperatorQueue";
+import { CNOT, CZ } from "./QuantumGate/OneControlOneTargetGate";
 import { QuantumState } from "./QuantumState";
+import { translateQuantumGateToOperatorQueue } from "../util/toWasmUtil";
+import { QuantumGateBase } from "./QuantumGate/QuantumGateBase";
+import { X, Y, Z, H, T, S, RX, RY, RZ, RotX, RotY, RotZ } from "./QuantumGate/QuantumGate";
 
 export class QuantumCircuit {
     static client: QulacsNativeClassClient;
     qubit_count: number;
-    gateQueues: IndexedToWasmDefaultQuantumGate[];
+    gateQueues: QuantumGateBase[];
 
     constructor(qubit_count: number) {
         this.qubit_count = qubit_count;
@@ -15,45 +16,66 @@ export class QuantumCircuit {
     }
 
     update_quantum_state(state: QuantumState) {
-        state._operatorQueues = state._operatorQueues.concat(translateGateQueuesToOperatorQueues(this.gateQueues));
+        state._operatorQueues = state._operatorQueues.concat(this.gateQueues.map(translateQuantumGateToOperatorQueue));
+    }
+
+    add_gate(gate: QuantumGateBase) {
+        this.gateQueues.push(gate);
     }
 
     add_X_gate(index: number) {
-        this.gateQueues.push({ type: QuantumGateType.X, index });
+        this.gateQueues.push(new X(index));
     }
 
     add_Y_gate(index: number) {
-        this.gateQueues.push({ type: QuantumGateType.Y, index });
+        this.gateQueues.push(new Y(index));
     }
 
     add_Z_gate(index: number) {
-        this.gateQueues.push({ type: QuantumGateType.Z, index });
+        this.gateQueues.push(new Z(index));
     }
 
     add_H_gate(index: number) {
-        this.gateQueues.push({ type: QuantumGateType.H, index });
+        this.gateQueues.push(new H(index));
     }
 
     add_T_gate(index: number) {
-        this.gateQueues.push({ type: QuantumGateType.T, index });
+        this.gateQueues.push(new T(index));
     }
 
     add_S_gate(index: number) {
-        this.gateQueues.push({ type: QuantumGateType.S, index });
+        this.gateQueues.push(new S(index));
+    }
+
+    add_RX_gate(index: number, angle: number) {
+        this.gateQueues.push(new RX(index, angle));
+    }
+
+    add_RY_gate(index: number, angle: number) {
+        this.gateQueues.push(new RY(index, angle));
+    }
+
+    add_RZ_gate(index: number, angle: number) {
+        this.gateQueues.push(new RZ(index, angle));
+    }
+
+    add_RotX_gate(index: number, angle: number) {
+        this.gateQueues.push(new RotX(index, angle));
+    }
+
+    add_RotY_gate(index: number, angle: number) {
+        this.gateQueues.push(new RotY(index, angle));
+    }
+
+    add_RotZ_gate(index: number, angle: number) {
+        this.gateQueues.push(new RotZ(index, angle));
     }
 
     add_CNOT_gate(control: number, index: number) {
-        this.gateQueues.push({ type: QuantumGateType.CNOT, index, controllQubitIndex: [control]});
+        this.gateQueues.push(new CNOT(control, index));
     }
 
-    
-}
-
-function translateGateQueuesToOperatorQueues(gateQueues: IndexedToWasmDefaultQuantumGate[]): OperatorQueue[] {
-    return gateQueues.map(queueData => {
-        return {
-            queueType: OperatorQueueType.Gate,
-            queueData
-        };
-    });
+    add_CZ_gate(control: number, index: number) {
+        this.gateQueues.push(new CZ(control, index));
+    }
 }

@@ -12,9 +12,9 @@
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
 
-std::vector<CPPCTYPE> transpaleComplexAltVectoCPPVec(std::vector<double> vec) {
+std::vector<CPPCTYPE> transpaleComplexAltVectoCPPVec(const std::vector<double> vec) {
     std::vector<CPPCTYPE> data;
-    const auto vecSize = vec.size(); // 偶数を暗黙に仮定する
+    auto vecSize = vec.size(); // 偶数を暗黙に仮定する
     for (int i = 0; i < vecSize; i+=2) {
         auto real = vec[i];
         auto imag = vec[i+1];
@@ -24,72 +24,48 @@ std::vector<CPPCTYPE> transpaleComplexAltVectoCPPVec(std::vector<double> vec) {
     return data;
 }
 
-void applyStateAction(QuantumState* state, std::vector<emscripten::val> stateAction) {
-    const int stateActionTye = stateAction[0].as<int>();
-    switch (stateActionTye) {
-        case 0:
-            // empty
-            break;
-        case 1:
-            state->set_zero_state();
-            break;
-        case 2:
-            {
-                int comp_basis = stateAction[1].as<int>();
-                state->set_computational_basis(comp_basis);
-                break;
-            }
-        case 3:
-            state->set_Haar_random_state();
-            break;
-        case 4:
-            {
-                auto seed = stateAction[1].as<UINT>();
-                state->set_Haar_random_state(seed);
-                break;
-            }
-        case 5:
-            {
-                auto wasmVec = stateAction[1].as<std::vector<CPPCTYPE>>();
-                state->load(wasmVec);
-                break;
-            }
-        case 6:
-            {
-                auto complexAltVec = emscripten::vecFromJSArray<double>(stateAction[1]);
-                auto wasmVec = transpaleComplexAltVectoCPPVec(complexAltVec);
-                state->load(wasmVec);
-                break;
-            }
+void applyStateAction(QuantumState* state, const std::vector<emscripten::val> stateAction) {
+    std::string stateActionTye = stateAction[0].as<std::string>();
+    if (stateActionTye == "empty") {
+        // do nothing
+    } else if (stateActionTye == "setzerostate") {
+        state->set_zero_state();
+    } else if (stateActionTye == "setcomputationalbasis") {
+        int comp_basis = stateAction[1].as<int>();
+        state->set_computational_basis(comp_basis);
+    } else if (stateActionTye == "sethaarrandomstatenoseed") {
+        state->set_Haar_random_state();
+    } else if (stateActionTye == "sethaarrandomstateseed") {
+        auto seed = stateAction[1].as<UINT>();
+        state->set_Haar_random_state(seed);
+    } else if (stateActionTye == "loadwasmvector") {
+        auto wasmVec = stateAction[1].as<std::vector<CPPCTYPE>>();
+        state->load(wasmVec);
+    } else if (stateActionTye == "loadcomplexserialvector") {
+        auto complexAltVec = emscripten::vecFromJSArray<double>(stateAction[1]);
+        auto wasmVec = transpaleComplexAltVectoCPPVec(complexAltVec);
+        state->load(wasmVec);
     }
 }
 
-void applyOperatorGate(QuantumState* state, std::vector<emscripten::val> gates) {
-    const int gatesCount = gates.size();
-    for (int j = 0; j < gatesCount; ++j) { // j は量子ビットindex
-        const auto gateRaw = emscripten::vecFromJSArray<emscripten::val>(gates[j]); // ToWasmRawQuantumGate
-        std::string gateType = gateRaw[0].as<std::string>();
-        if (gateType == "0") continue; // empty gate
-        double gateParam = gateRaw[1].as<double>();
-        std::vector<int> indexs = emscripten::vecFromJSArray<int>(gateRaw[2]);
-        QuantumGateBase* gate = getGate(gateType, j, gateParam, indexs);
-        gate->update_quantum_state(state);
-        delete gate;
-    }
+void applyOperatorGate(QuantumState* state, const std::vector<emscripten::val> gateData) {
+    QuantumGateBase* gate = getGate(gateData);
+    gate->update_quantum_state(state);
+    delete gate;
 }
 
 QuantumState* calcSerialInfoState(const emscripten::val &serialInfo) {
-    const auto size = serialInfo["size"].as<int>();
+    auto size = serialInfo["size"].as<int>();
     QuantumState* state = new QuantumState(size);
-    const auto operators = emscripten::vecFromJSArray<emscripten::val>(serialInfo["operators"]);
+    auto operators = emscripten::vecFromJSArray<emscripten::val>(serialInfo["operators"]);
     int operatorsCount = operators.size();
     for (size_t i = 0; i < operatorsCount; ++i) {
-        const auto op = emscripten::vecFromJSArray<emscripten::val>(operators[i]);
-        const int operatorType = op[0].as<int>();
-        const auto operatorData = emscripten::vecFromJSArray<emscripten::val>(op[1]);
-        if (operatorType == 0) { // stateAction
+        auto op = emscripten::vecFromJSArray<emscripten::val>(operators[i]);
+        std::string operatorType = op[0].as<std::string>();
+        auto operatorData = emscripten::vecFromJSArray<emscripten::val>(op[1]);
+        if (operatorType == "stateaction") {
             applyStateAction(state, operatorData);
-        } else if (operatorType == 1) { // gate
+        } else if (operatorType == "gate") {
             applyOperatorGate(state, operatorData);
         }
     }

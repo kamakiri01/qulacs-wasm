@@ -13,21 +13,21 @@ npm install qulacs-wasm
 ```javascript
 import { initQulacsModule, QuantumState, QuantumCircuit } from "qulacs-wasm";
 
-initQulacsModule(S).then(_ => {
-    const state = new QuantumState(2);
+initQulacsModule().then(_ => {
+  const qubitCount = 2;
+    const state = new QuantumState(qubitCount);
     state.set_zero_state();
-    const circuit = new QuantumCircuit(2);
+    const circuit = new QuantumCircuit(qubitCount);
     circuit.add_H_gate(0);
     circuit.add_CNOT_gate(0, 1);
     circuit.update_quantum_state(state);
-    console.log("getVec", state.get_vector());
-    console.log("sampling", state.sampling(10));
-
+    console.log("state vector ", state.get_vector());
+    console.log("sampling", state.sampling(10)); // sampling may return 0th or 3th state with equal probability
 });
 ```
 
 ```
-get_vector [
+state vector [
   { re: 0.7071067811865475, im: 0 },
   { re: 0, im: 0 },
   { re: 0, im: 0 },
@@ -39,7 +39,7 @@ sampling [
 ]
 ```
 
-See more details, `sample` dir.
+See more usage details, `sample` dir.
 
 ## Build from source
 

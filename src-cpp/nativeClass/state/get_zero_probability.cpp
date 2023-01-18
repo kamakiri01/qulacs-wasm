@@ -20,7 +20,7 @@ struct GetZeroProbabilityResult {
 
 GetZeroProbabilityResult get_zero_probability(const emscripten::val &getZeroProbabilityInfo) {
     auto state = calcSerialInfoState(getZeroProbabilityInfo);
-    const auto index = getZeroProbabilityInfo["target_qubit_index"].as<int>();
+    auto index = getZeroProbabilityInfo["target_qubit_index"].as<int>();
     auto prob = state->get_zero_probability(index);
     return {
         prob: prob

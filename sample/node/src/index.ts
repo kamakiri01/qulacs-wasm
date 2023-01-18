@@ -9,7 +9,7 @@ if (USE_WORKER) {
         .then(module => {
             const worker = new Worker(path.join(__dirname, "./calculate.worker.js"));
             worker.on("message", (event: any) => {
-                console.log("getVec", event);
+                console.log("state vector", event);
                 worker.terminate().then(_ => process.exit(0));
             });
             worker.postMessage(module);
@@ -17,6 +17,6 @@ if (USE_WORKER) {
 } else {
     initQulacsModule().then(_ => {
         const state = new QuantumState(3);
-        console.log("getVec", state.get_vector());
+        console.log("state vector", state.get_vector());
     });
 }

@@ -1,17 +1,17 @@
-import { WasmVector } from "./common";
+import { WasmVector } from "../../type/common";
 
 /**
  * QuantumState.set~系操作をQunatumState#_operatorQueuesに積む際の表現定義
  * set系はゲート系ほどユーザが直接操作しないものとし、ToWasm型に分離しない
  */
 export const StateActionType = {
-    EMPTY: 0,
-    "set_zero_state": 1,
-    "set_computational_basis": 2,
-    "set_Haar_random_state_no_seed": 3,
-    "set_Haar_random_state_seed": 4,
-    "load_wasmVector": 5, // WasmVector をロードする
-    "load_ComplexSerialVector": 6, // Complex の直列化配列をロードする
+    "empty": "empty",
+    "set_zero_state": "setzerostate",
+    "set_computational_basis": "setcomputationalbasis",
+    "set_Haar_random_state_no_seed": "sethaarrandomstatenoseed",
+    "set_Haar_random_state_seed": "sethaarrandomstateseed",
+    "load_wasmVector": "loadwasmvector", // WasmVector をロードする
+    "load_ComplexSerialVector": "loadcomplexserialvector", // Complex の直列化配列をロードする
 } as const;
 export type StateActionType = typeof StateActionType[keyof typeof StateActionType];
 
@@ -23,7 +23,5 @@ export type LoadWasmVectorStateAction = [typeof StateActionType.load_wasmVector,
 export type LoadComplexSerialVectorStateAction = [typeof StateActionType.load_ComplexSerialVector, number[]];
 
 export type StateAction =
-    SetZeroStateAction |
-    LoadWasmVectorStateAction | LoadComplexSerialVectorStateAction |
-    SetComputationalBasisAction |
-    SetHaarRandomStateNoSeed | SetHaarRandomStateSeed;
+    SetZeroStateAction | LoadWasmVectorStateAction | LoadComplexSerialVectorStateAction |
+    SetComputationalBasisAction | SetHaarRandomStateNoSeed | SetHaarRandomStateSeed;

@@ -11,3 +11,8 @@ export interface WasmVector<T> {
     get: (index: number) => T;
     size: () => number;
 }
+
+/**
+ * ComplexMatrix(Eigen::MatrixXcd) の型
+ */
+export interface WasmComplexMatrix<T> {}
