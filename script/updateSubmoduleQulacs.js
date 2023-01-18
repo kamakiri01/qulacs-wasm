@@ -7,7 +7,7 @@ const PATH_CMAKELIST = path.join(PATH_QULACS_DIR, "CMakeLists.txt");
 const PATH_BUILD_GCC = path.join(PATH_QULACS_DIR, "script", "build_gcc.sh");
 
 
-const cMakeLists = fs.readFileSync(PATH_CMAKELIST,{ encoding: 'utf8' });
+const cMakeLists = fs.readFileSync(PATH_CMAKELIST, { encoding: 'utf8' });
 const replacedCMakeLists =  cMakeLists
     .replace("set(DEFAULT_USE_OMP Yes)", "set(DEFAULT_USE_OMP No)")
     .replace("set(DEFAULT_USE_PYTHON Yes)", "set(DEFAULT_USE_PYTHON No)")
