@@ -6,13 +6,13 @@ if (USE_WORKER) {
         .then(module => {
             const worker = new Worker("./calculate.worker.js");
             worker.onmessage = function(event: unknown) {
-                console.log("getVec", (<MessageEvent>event).data);
+                console.log("state vector", (<MessageEvent>event).data);
             };
             worker.postMessage(module);
         });
 } else {
     initQulacsModule().then(_ => {
         const state = new QuantumState(3);
-        console.log("getVec", state.get_vector());
+        console.log("state vector", state.get_vector());
     });
 }

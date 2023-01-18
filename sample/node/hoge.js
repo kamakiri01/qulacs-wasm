@@ -3,7 +3,7 @@ var m = require("../../lib/index");
 var m2 = require("../../lib/main/nativeType/QuantumState");
 var m3 = require("../../lib/main/nativeType/QuantumCircuit");
 var m4 = require("../../lib/main/nativeType/QuantumGate/QuantumGateBase");
-var q = require("qulacs-wasm");
+var q = require("qulacs-wasm"); // need to use npm link
 
 m.initQulacsModule({useWorker: false})
     .then((client => {

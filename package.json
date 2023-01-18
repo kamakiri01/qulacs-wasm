@@ -1,7 +1,7 @@
 {
   "name": "qulacs-wasm",
   "version": "0.0.1",
-  "description": "",
+  "description": "Qulacs WebAssembly version",
   "main": "lib/index.js",
   "scripts": {
     "init": "npm run submodule:clone-recursive && npm run submodule:qulacs:wasm-optimization",
