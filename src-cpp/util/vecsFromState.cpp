@@ -17,7 +17,7 @@ struct VecsFromState {
     std::vector<CPPCTYPE> cppVec;
 };
 
-std::vector<double> translateCppcToVec(CPPCTYPE* raw_data_cpp, int vecSize) {
+std::vector<double> translateCppcToVec(CPPCTYPE* raw_data_cpp, const int vecSize) {
     std::vector<double> data;
     for (int i = 0; i < vecSize; i++) {
         auto c = raw_data_cpp[i];
@@ -29,7 +29,7 @@ std::vector<double> translateCppcToVec(CPPCTYPE* raw_data_cpp, int vecSize) {
     return data;
 }
 
-std::vector<CPPCTYPE> translateCPPtoCPPVec(CPPCTYPE* raw_data_cpp, int vecSize) {
+std::vector<CPPCTYPE> translateCPPtoCPPVec(CPPCTYPE* raw_data_cpp, const int vecSize) {
     std::vector<CPPCTYPE> data;
     for (int i = 0; i < vecSize; i++) {
         auto c = raw_data_cpp[i];
@@ -38,9 +38,9 @@ std::vector<CPPCTYPE> translateCPPtoCPPVec(CPPCTYPE* raw_data_cpp, int vecSize) 
     return data;
 }
 
-VecsFromState vecsFromState(QuantumState* state, int size) {
-    const auto raw_data_cpp = state->data_cpp();
-    const int vecSize = pow(2, size);
+VecsFromState vecsFromState(QuantumState* state, const int size) {
+    auto raw_data_cpp = state->data_cpp();
+    int vecSize = pow(2, size);
     std::vector<double> data = translateCppcToVec(raw_data_cpp, vecSize);
     std::vector<CPPCTYPE> cppData = translateCPPtoCPPVec(raw_data_cpp, vecSize);
     return {

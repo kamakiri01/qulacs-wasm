@@ -18,7 +18,7 @@
 
 QuantumGateBase* getGate(std::vector<emscripten::val> gateData);
 
-QuantumGateBase* getSingleGate(std::string gateType, int qubitIndex) {
+QuantumGateBase* getSingleGate(const std::string gateType, const int qubitIndex) {
     // @see WasmQuantumGateType.ts
     QuantumGateBase* gate;
     if (gateType == "x") {
@@ -37,7 +37,7 @@ QuantumGateBase* getSingleGate(std::string gateType, int qubitIndex) {
     return gate;
 }
 
-QuantumGateBase* getRotationGate(std::string gateType, int qubitIndex, double angle) {
+QuantumGateBase* getRotationGate(const std::string gateType, const int qubitIndex, const double angle) {
     QuantumGateBase* gate;
     if (gateType == "rx") {
         gate = gate::RX(qubitIndex, angle);
@@ -57,7 +57,7 @@ QuantumGateBase* getRotationGate(std::string gateType, int qubitIndex, double an
     return gate;
 }
 
-QuantumGate_SingleParameter* getParametricGate(std::string gateType, int qubitIndex, double angle) {
+QuantumGate_SingleParameter* getParametricGate(const std::string gateType, const int qubitIndex, const double angle) {
     QuantumGate_SingleParameter* gate;
     if (gateType == "rx") {
         gate = gate::ParametricRX(qubitIndex, angle);
@@ -71,7 +71,7 @@ QuantumGate_SingleParameter* getParametricGate(std::string gateType, int qubitIn
     return gate;
 }
 
-QuantumGateBase* getOneControlOneTargetGate(std::string gateType, int targetQubitIndex, int controlQubitIndex) {
+QuantumGateBase* getOneControlOneTargetGate(const std::string gateType, const int targetQubitIndex, const int controlQubitIndex) {
     QuantumGateBase* gate;
     if (gateType == "cnot") {
         gate = gate::CNOT(controlQubitIndex, targetQubitIndex);
@@ -83,7 +83,7 @@ QuantumGateBase* getOneControlOneTargetGate(std::string gateType, int targetQubi
     return gate;
 }
 
-QuantumGateBase* getTwoControlOneTargetGate(std::string gateType, int targetQubitIndex, int controlQubitIndex0, int controlQubitIndex1) {
+QuantumGateBase* getTwoControlOneTargetGate(const std::string gateType, const int targetQubitIndex, const int controlQubitIndex0, const int controlQubitIndex1) {
     QuantumGateBase* gate;
     if (gateType == "ccnot") {
         // @see https://github.com/corryvrequan/qulacs/blob/a1eb7cd2fb62243d28fc1ebd4da9fbd8126cf126/python/cppsim_wrapper.cpp#L308
@@ -99,34 +99,34 @@ QuantumGateBase* getTwoControlOneTargetGate(std::string gateType, int targetQubi
     return gate;
 }
 
-int getIndex(std::list<std::string> ls, std::string key) {
-    auto it = std::find(ls.cbegin(), ls.cend(), key);
-    if (it == ls.end()) return -1;
-    auto index = std::distance(ls.cbegin(), it);
+int getIndex(const std::list<std::string> list, const std::string key) {
+    auto it = std::find(list.cbegin(), list.cend(), key);
+    if (it == list.end()) return -1;
+    auto index = std::distance(list.cbegin(), it);
     return index;
 }
 
-QuantumGateBase* getGate(std::vector<emscripten::val> gateData) {
+QuantumGateBase* getGate(const std::vector<emscripten::val> gateData) {
     std::string gateType = gateData[0].as<std::string>();
-    const int targetQubitIndex = gateData[1].as<int>();
+    int targetQubitIndex = gateData[1].as<int>();
 
     QuantumGateBase* gate;
     // @see WasmQuantumGateType.ts
-    const std::list<std::string> singleGateTypes{"i", "x", "y", "z", "h", "t", "s"};
-    const std::list<std::string> rotationGateTypes{"rx", "ry", "rz",};
-    const std::list<std::string> oneControlOneTargetGateTypes{"cnot", "cz"};
-    const std::list<std::string> twoControlOneTargetGateTypes{"ccnot"};
+    std::list<std::string> singleGateTypes{"i", "x", "y", "z", "h", "t", "s"};
+    std::list<std::string> rotationGateTypes{"rx", "ry", "rz",};
+    std::list<std::string> oneControlOneTargetGateTypes{"cnot", "cz"};
+    std::list<std::string> twoControlOneTargetGateTypes{"ccnot"};
     if (getIndex(singleGateTypes, gateType) > -1) {
         gate = getSingleGate(gateType, targetQubitIndex);
     } else if (getIndex(rotationGateTypes, gateType) > -1) {
-        const double angle = gateData[2].as<double>();
+        double angle = gateData[2].as<double>();
         gate = getRotationGate(gateType, targetQubitIndex, angle);
     } else if (getIndex(oneControlOneTargetGateTypes, gateType) > -1) {
-        const int controlQubitIndex = gateData[2].as<int>();
+        int controlQubitIndex = gateData[2].as<int>();
         gate = getOneControlOneTargetGate(gateType, targetQubitIndex, controlQubitIndex);
     } else if (getIndex(twoControlOneTargetGateTypes, gateType) > -1) {
-        const int controlQubitIndex0 = gateData[2].as<int>();
-        const int controlQubitIndex1 = gateData[3].as<int>();
+        int controlQubitIndex0 = gateData[2].as<int>();
+        int controlQubitIndex1 = gateData[3].as<int>();
         gate = getTwoControlOneTargetGate(gateType, targetQubitIndex, controlQubitIndex0, controlQubitIndex1);
     }
     return gate;

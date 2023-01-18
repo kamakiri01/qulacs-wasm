@@ -12,9 +12,9 @@
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
 
-std::vector<CPPCTYPE> transpaleComplexAltVectoCPPVec(std::vector<double> vec) {
+std::vector<CPPCTYPE> transpaleComplexAltVectoCPPVec(const std::vector<double> vec) {
     std::vector<CPPCTYPE> data;
-    const auto vecSize = vec.size(); // 偶数を暗黙に仮定する
+    auto vecSize = vec.size(); // 偶数を暗黙に仮定する
     for (int i = 0; i < vecSize; i+=2) {
         auto real = vec[i];
         auto imag = vec[i+1];
@@ -24,8 +24,8 @@ std::vector<CPPCTYPE> transpaleComplexAltVectoCPPVec(std::vector<double> vec) {
     return data;
 }
 
-void applyStateAction(QuantumState* state, std::vector<emscripten::val> stateAction) {
-    const std::string stateActionTye = stateAction[0].as<std::string>();
+void applyStateAction(QuantumState* state, const std::vector<emscripten::val> stateAction) {
+    std::string stateActionTye = stateAction[0].as<std::string>();
     if (stateActionTye == "empty") {
         // do nothing
     } else if (stateActionTye == "setzerostate") {
@@ -48,21 +48,21 @@ void applyStateAction(QuantumState* state, std::vector<emscripten::val> stateAct
     }
 }
 
-void applyOperatorGate(QuantumState* state, std::vector<emscripten::val> gateData) {
+void applyOperatorGate(QuantumState* state, const std::vector<emscripten::val> gateData) {
     QuantumGateBase* gate = getGate(gateData);
     gate->update_quantum_state(state);
     delete gate;
 }
 
 QuantumState* calcSerialInfoState(const emscripten::val &serialInfo) {
-    const auto size = serialInfo["size"].as<int>();
+    auto size = serialInfo["size"].as<int>();
     QuantumState* state = new QuantumState(size);
-    const auto operators = emscripten::vecFromJSArray<emscripten::val>(serialInfo["operators"]);
+    auto operators = emscripten::vecFromJSArray<emscripten::val>(serialInfo["operators"]);
     int operatorsCount = operators.size();
     for (size_t i = 0; i < operatorsCount; ++i) {
-        const auto op = emscripten::vecFromJSArray<emscripten::val>(operators[i]);
-        const std::string operatorType = op[0].as<std::string>();
-        const auto operatorData = emscripten::vecFromJSArray<emscripten::val>(op[1]);
+        auto op = emscripten::vecFromJSArray<emscripten::val>(operators[i]);
+        std::string operatorType = op[0].as<std::string>();
+        auto operatorData = emscripten::vecFromJSArray<emscripten::val>(op[1]);
         if (operatorType == "stateaction") {
             applyStateAction(state, operatorData);
         } else if (operatorType == "gate") {

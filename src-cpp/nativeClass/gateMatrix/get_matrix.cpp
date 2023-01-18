@@ -25,8 +25,8 @@ GateMatrixGetMatrixResult gateMatrix_get_matrix(const emscripten::val &gateMatri
 
     int operatorsCount = operators.size();
     for (size_t i = 0; i < operatorsCount; ++i) {
-        const auto op = emscripten::vecFromJSArray<emscripten::val>(operators[i]);
-        const std::string operatorType = op[0].as<std::string>();
+        auto op = emscripten::vecFromJSArray<emscripten::val>(operators[i]);
+        std::string operatorType = op[0].as<std::string>();
         if (operatorType == "initvec") {
             std::vector<UINT> targetIndex = emscripten::vecFromJSArray<UINT>(op[1]);
             std::vector<UINT> controlndex = emscripten::vecFromJSArray<UINT>(op[3]);

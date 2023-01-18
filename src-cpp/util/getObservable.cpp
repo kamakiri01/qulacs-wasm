@@ -12,15 +12,15 @@
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
 
-Observable getObservable(const emscripten::val &observableInfo, int size) {
+Observable getObservable(const emscripten::val &observableInfo, const int size) {
     Observable observable(size);
     auto observableSteps = emscripten::vecFromJSArray<emscripten::val>(observableInfo["observable"]); // ToWasmObservableData
     int observableStepsCount = observableSteps.size();
     for (size_t i = 0; i < observableStepsCount; ++i) {
-        const auto step = observableSteps[i]; // ToWasmObservableStep
-        const double coefficient = step["coefficient"].as<double>();
-        const auto operators = emscripten::vecFromJSArray<emscripten::val>(step["operators"]); // GateType[]
-        const int operatorsCount = operators.size();
+        auto step = observableSteps[i]; // ToWasmObservableStep
+        double coefficient = step["coefficient"].as<double>();
+        auto operators = emscripten::vecFromJSArray<emscripten::val>(step["operators"]); // GateType[]
+        int operatorsCount = operators.size();
         std::string Pauli_string = "";
         for (size_t j = 0; j < operatorsCount; ++j) {
             std::string pauli = "";

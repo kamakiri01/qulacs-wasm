@@ -39,7 +39,6 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::register_vector<long int>("vector<long int>");
 
     emscripten::value_object<ComplexMatrix>("ComplexMatrix");
-
     emscripten::value_object<DataCppResult>("DataCppResult")
         .field("doubleVec", &DataCppResult::doubleVec)
         .field("cppVec", &DataCppResult::cppVec);

@@ -8,9 +8,7 @@ export class QuantumState {
 
     qubit_count: number;
 
-    /**
-     * length === 0 を想定しない
-     */
+    // 必ず初期化するため length === 0 を想定しない
     _operatorQueues: StateOperatorQueue[] = [];
 
     constructor(qubit_count: number) {
@@ -77,9 +75,11 @@ export class QuantumState {
                     [
                         [StateOperatorQueueType.StateAction, [StateActionType.load_ComplexSerialVector, arrayToSerialArray(stateOrArray)]]
                     ];
+            } else {
+                throw new Error("invalid QuantumState#load() data");
             }
         } else {
-            throw new Error("invalid load data");
+            throw new Error("invalid QuantumState#load() data");
         }
     }
 

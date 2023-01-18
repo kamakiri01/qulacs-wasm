@@ -8,10 +8,7 @@ import { QuantumGateMatrixBase } from "./QuantumGateMatrixBase";
 
 export abstract class QuantumGateBase {
     static client: QulacsNativeClassClient;
-    // NOTE: 便宜上の量子ゲートの作用する位置。CZやSWAPは_indexと対称なcontrollIndexを持つ
      abstract _type: QuantumGateType;
-    constructor() {
-    }
 
     abstract to_matrix_gate(): QuantumGateMatrixBase;
 

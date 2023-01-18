@@ -21,11 +21,11 @@ struct DataCppResult {
 };
 
 DataCppResult data_cpp(const emscripten::val &serialInfo) {
-    const auto size = serialInfo["size"].as<int>();
+    auto size = serialInfo["size"].as<int>();
     auto state = calcSerialInfoState(serialInfo);
-    const auto raw_data_cpp = state->data_cpp();
-    const int vecSize = pow(2, size);
-    const auto vecs = vecsFromState(state, size);
+    auto raw_data_cpp = state->data_cpp();
+    int vecSize = pow(2, size);
+    auto vecs = vecsFromState(state, size);
     return {
         doubleVec: vecs.doubleVec,
         cppVec: vecs.cppVec
