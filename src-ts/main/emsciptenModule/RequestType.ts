@@ -10,7 +10,6 @@ export interface StateQueuesDump {
     size: number;
 }
 
-
 export interface StateGetVectorRequest extends StateQueuesDump {};
 
 export interface StateSamplingRequest extends StateQueuesDump {
@@ -25,10 +24,10 @@ export interface StateGetMarginalProbabilityRequest extends StateQueuesDump {
     measured_values: number[];
 }
 
-export interface GateBaseGetMatrixInfo {
+export interface GateBaseGetMatrixRequest {
     gate: WasmQuantumGateData;
 }
 
-export interface GateMatrixGetMatrixInfo {
+export interface GateMatrixGetMatrixRequest {
     operators: GateMatrixOperatorQueue[];
 }
