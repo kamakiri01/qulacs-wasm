@@ -3,7 +3,7 @@ import { convertSerialComplexArrayToComplexArray, convertWasmVectorToArray } fro
 import { Complex } from "../../type/common";
 import { StateActionType } from "../../nativeType/helper/StateAction";
 import { QuantumGateBase } from "../../nativeType/QuantumGate/QuantumGateBase";
-import { GateBaseGetMatrixInfo, GateMatrixGetMatrixInfo, GetMarginalProbabilityInfo, GetZeroProbabilityInfo, ToWasmSamplingInfo, ToWasmSerialInfo } from "../../emsciptenModule/RequestType";
+import { GateBaseGetMatrixRequest, GateMatrixGetMatrixRequest, StateGetMarginalProbabilityRequest, SateGetZeroProbabilityRequest, StateSamplingRequest, StateGetVectorRequest } from "../../emsciptenModule/RequestType";
 import { QulacsWasmModule } from "../../emsciptenModule/QulacsWasmModule";
 import { translateDefaultGateToWasmGate } from "../../util/toWasmUtil";
 import { QuantumGateMatrix } from "../../nativeType/QuantumGate/QuantumGateMatrix";
@@ -24,7 +24,7 @@ export class QulacsNativeClassClient {
         this.module = param.module;
         this.state = {
             get_vector: (state) => {
-                const request: ToWasmSerialInfo = {
+                const request: StateGetVectorRequest = {
                     operators: state._operatorQueues,
                     size: state.qubit_count
                 };
@@ -39,11 +39,11 @@ export class QulacsNativeClassClient {
                 return this.state.get_vector(state)[index];
             },
             sampling: (state, sampling_count) => {
-                const info: ToWasmSerialInfo = {
+                const request: StateSamplingRequest = {
                     operators: state._operatorQueues,
-                    size: state.qubit_count
+                    size: state.qubit_count,
+                    sampling_count
                 };
-                const request: ToWasmSamplingInfo = {...info, ...{sampling_count}};
                 const result = this._callWasmWithThrowableException(() => this.module.state_sampling(request));
                 state._operatorQueues = [
                     [StateOperatorQueueType.StateAction, [StateActionType.load_wasmVector, result.cppVec]]
@@ -52,28 +52,27 @@ export class QulacsNativeClassClient {
                 return samplingResult;
             },
             get_zero_probability: (state, target_qubit_index) => {
-                const info: ToWasmSerialInfo = {
+                const request: SateGetZeroProbabilityRequest = {
                     operators: state._operatorQueues,
-                    size: state.qubit_count
+                    size: state.qubit_count,
+                    target_qubit_index
                 };
-                const request: GetZeroProbabilityInfo = {...info, ...{target_qubit_index}};
                 const result = this._callWasmWithThrowableException(() => this.module.state_get_zero_probability(request));
                 return result.prob;
             },
             get_marginal_probability: (state: QuantumState, measured_values: number[]) => {
-                const info: ToWasmSerialInfo = {
+                const request: StateGetMarginalProbabilityRequest = {
                     operators: state._operatorQueues,
-                    size: state.qubit_count
+                    size: state.qubit_count,
+                    measured_values
                 };
-                const request: GetMarginalProbabilityInfo = {...info, ...{measured_values}};
                 const result = this._callWasmWithThrowableException(() => this.module.state_get_marginal_probability(request));
                 return result.marginal_prob;
             }
         };
         this.gateBase = {
             get_matrix: (gate: QuantumGateBase) => {
-                const wasmGate = translateDefaultGateToWasmGate(gate);
-                const request: GateBaseGetMatrixInfo = { gate: wasmGate };
+                const request: GateBaseGetMatrixRequest = { gate: translateDefaultGateToWasmGate(gate) };
                 const result = this._callWasmWithThrowableException(() => this.module.gate_base_get_matrix(request));
                 const serialVec = convertSerialComplexArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
                 return serialVec;
@@ -81,10 +80,10 @@ export class QulacsNativeClassClient {
         },
         this.gateMatrix = {
             get_matrix: (gateMatrix: QuantumGateMatrix) => {
-                const request: GateMatrixGetMatrixInfo = { operators: gateMatrix._queue };
+                const request: GateMatrixGetMatrixRequest = { operators: gateMatrix._queue };
                 const result = this._callWasmWithThrowableException(() => this.module.gate_matrix_get_matrix(request));
                 const serialVec = convertSerialComplexArrayToComplexArray(convertWasmVectorToArray(result.doubleVec));
-                // NOTE: C++側のtarget/control qubitの更新をJS側に反映できるか確認できるまで、cppMatを利用したJS側のQuantumGateMatrixの更新は行わない
+                // NOTE: C++側のtarget/control qubitの更新をJS側に反映できるか確認できるまで、cppMatを利用したJS側のQuantumGateMatrixのqueue更新は行わない
                 // QuantumGateMatrixから_target_qubit_index_list/_control_qubit_index_listを事後取得してJS側に返すことができれば可能？
                 /*
                 gateMatrix._queue = [

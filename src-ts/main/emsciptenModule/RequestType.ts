@@ -4,22 +4,24 @@ import { WasmQuantumGateData } from "../type/WasmQuantumGateData";
 
 /**
  * QuantumState の操作ログを wasm に送るためのフォーマット
- * ToWasmOperator は StateAction を含むため、量子回路の表現型である ToWasmCircuitInfo と共通化はしない
  */
-export interface ToWasmSerialInfo {
+export interface StateQueuesDump {
     operators: StateOperatorQueue[];
     size: number;
 }
 
-export interface ToWasmSamplingInfo extends ToWasmSerialInfo {
+
+export interface StateGetVectorRequest extends StateQueuesDump {};
+
+export interface StateSamplingRequest extends StateQueuesDump {
     sampling_count: number;
 }
 
-export interface GetZeroProbabilityInfo extends ToWasmSerialInfo {
+export interface SateGetZeroProbabilityRequest extends StateQueuesDump {
     target_qubit_index: number;
 }
 
-export interface GetMarginalProbabilityInfo extends ToWasmSerialInfo {
+export interface StateGetMarginalProbabilityRequest extends StateQueuesDump {
     measured_values: number[];
 }
 
