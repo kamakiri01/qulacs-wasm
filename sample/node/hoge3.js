@@ -1,9 +1,4 @@
-/*
-const { initQulacsModule } = require("../../lib/main/index");
-const { QuantumState } = require("../../lib/main/nativeType/QuantumState");
-const { QuantumCircuit } = require("../../lib/main/nativeType/QuantumCircuit");
-*/
-const { initQulacsModule, QuantumState, QuantumCircuit } = require("qulacs-wasm");
+const { initQulacsModule, QuantumState, QuantumCircuit } = require("../../");
 
 (async () => {
     const timeFromInit = Date.now();
