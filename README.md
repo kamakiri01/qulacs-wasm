@@ -45,16 +45,16 @@ See more usage details, `sample` dir.
 
 - [x] X/Y/Z/H/T/S/RX/RY/RZ/RotX/RotY/RotZ/CNOT/CZ/Toffoli/QuantumGateMatrix
   - [x] get_matrix/to_matrix_gate/update_quantum_state/
-  - [ ] add_control_qubit/copy/set_matrix/multiply_scalar/set_gate_property/
-- [ ] invGates/DenseMatrix/SparseMatrix
+  - [ ] add_control_qubit/copy/set_matrix/multiply_scalar/set_gate_property/etc
+- [ ] invGates/DenseMatrix/SparseMatrix/etc
 - [x] QuantumCircuit
   - [x] update_quantum_state/add_gate/add_{}_gate
-  - [ ] calculate_depth/add_parametric_{}_gate
-- [ ] ParametricQuantumCircuit
-- [x]QuantumState
+  - [ ] calculate_depth/add_parametric_{}_gate/etc
+- [ ] ParametricQuantumCircuit/etc
+- [x] QuantumState
   - [x] set_zero_state/set_computational_basis/set_Haar_random_state/get_vector/get_amplitude/get_qubit_count/get_zero_probability/load/allocate_buffer/sampling
-  - [ ] add_state/multiply_coef/multiply_elementwise_function/get_squared_norm/normalize/set_classical_value/set_classical_value
-- [ ] Observable/NoiseSimulator/CausalConeSimulator/
+  - [ ] add_state/multiply_coef/multiply_elementwise_function/get_squared_norm/normalize/set_classical_value/set_classical_value/etc
+- [ ] Observable/NoiseSimulator/CausalConeSimulator/etc
 
 ## Build from source
 
