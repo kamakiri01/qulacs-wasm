@@ -1,10 +1,15 @@
 # Qulacs Wasm browser sample
 
-## usage
+## Build
 
 ```
 $ npm install
 $ npm run build
 $ npm run pack
-$ npm run start # see http://localhost
+```
+
+# Usage
+
+```
+$ npm run start # or host /dist, see http://localhost
 ```

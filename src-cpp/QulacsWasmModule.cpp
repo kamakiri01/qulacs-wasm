@@ -27,7 +27,7 @@ extern "C" {
     GateBaseGetMatrixResult gate_base_get_matrix(const emscripten::val &gateBaseGetMatrixInfo) { return gateBase_get_matrix(gateBaseGetMatrixInfo); }
     GateMatrixGetMatrixResult gate_matrix_get_matrix(const emscripten::val &gateMatrixGetMatrixInfo) { return gateMatrix_get_matrix(gateMatrixGetMatrixInfo); }
 
-    // @see https://emscripten.org/docs/porting/Debugging.html#handling-c-exceptions-from-javascriptd
+    // @see https://emscripten.org/docs/porting/Debugging.html#handling-c-exceptions-from-javascript
     std::string getExceptionMessage(intptr_t exceptionPtr) { return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what()); }
 }
 
