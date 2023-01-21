@@ -2,7 +2,7 @@
     "terminal.integrated.profiles.windows": {
         "wsl": {
             "path": [
-                "C:\\WINDOWS\\System32\\wsl.exe"
+                "C:\\WINDOWS\\System32\\wsl.exe" // conda activate emsdk && ./emsdk install latest && source ./emsdk_env.sh
               ]
         }
     }
