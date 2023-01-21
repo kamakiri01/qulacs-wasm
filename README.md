@@ -41,7 +41,7 @@ sampling [
 
 See more usage details, `sample` dir.
 
-## Available class and method
+## Available Classes and Methods
 
 - [x] X/Y/Z/H/T/S/RX/RY/RZ/RotX/RotY/RotZ/CNOT/CZ/Toffoli/QuantumGateMatrix
   - [x] get_matrix/to_matrix_gate/update_quantum_state/
@@ -62,7 +62,7 @@ Building qulacs-wasm involves building Qulacs and Boost, so those requirements m
 
 ### Requirements
 
-- [Qulacs requirements](https://github.com/qulacs/qulacs#requirements)
+- [Qulacs(v0.5.2) requirements](https://github.com/qulacs/qulacs#requirements)
 - Emscripten (tested on v3.1.22)
 - Node.js/npm (tested on Node.js v18.3.0/npm 8.11.0)
   - some version included in Emscripten environment
