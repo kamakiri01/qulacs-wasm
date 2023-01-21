@@ -19,7 +19,6 @@
 QuantumGateBase* getGate(std::vector<emscripten::val> gateData);
 
 QuantumGateBase* getSingleGate(const std::string gateType, const int qubitIndex) {
-    // @see WasmQuantumGateType.ts
     QuantumGateBase* gate;
     if (gateType == "x") {
         gate = gate::X(qubitIndex);
@@ -111,9 +110,8 @@ QuantumGateBase* getGate(const std::vector<emscripten::val> gateData) {
     int targetQubitIndex = gateData[1].as<int>();
 
     QuantumGateBase* gate;
-    // @see WasmQuantumGateType.ts
     std::list<std::string> singleGateTypes{"i", "x", "y", "z", "h", "t", "s"};
-    std::list<std::string> rotationGateTypes{"rx", "ry", "rz",};
+    std::list<std::string> rotationGateTypes{"rx", "ry", "rz", "rotx", "roty", "rotz"};
     std::list<std::string> oneControlOneTargetGateTypes{"cnot", "cz"};
     std::list<std::string> twoControlOneTargetGateTypes{"ccnot"};
     if (getIndex(singleGateTypes, gateType) > -1) {
