@@ -10,85 +10,21 @@
 #include <iostream>
 #include <emscripten/html5.h>
 #include <cppsim/circuit.hpp>
-#include <inttypes.h>
 #include <vqcsim/parametric_circuit.hpp>
 #include <vqcsim/parametric_gate.hpp>
 #include <vqcsim/parametric_gate_factory.hpp>
+
+#include "emjs.cpp"
+#include "complex.cpp"
+#include "util.cpp"
 
 extern "C" {
     // @see https://emscripten.org/docs/porting/Debugging.html#handling-c-exceptions-from-javascript
     std::string getExceptionMessage(intptr_t exceptionPtr) { return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what()); }
 }
 
-template<typename Complex> struct ComplexAccess {
-  static emscripten::val getReal(const Complex &v) { return emscripten::val(v.real()); }
-  static emscripten::val getImag(const Complex &v) { return emscripten::val(v.imag()); }
-
-  static bool setReal(Complex &v, const typename Complex::value_type &value) {
-    v.real(value);
-    return true;
-  }
-
-  static bool setImag(Complex &v, const typename Complex::value_type &value) {
-    v.imag(value);
-    return true;
-  }
-};
-
-template<typename T> emscripten::class_<std::complex<T>> register_complex(const char *name) {
-  typedef std::complex<T> C;
-
-  return emscripten::class_<std::complex<T>>(name)
-    .template constructor<>()
-    .property("real", &ComplexAccess<C>::getReal, &ComplexAccess<C>::setReal)
-    .property("imag", &ComplexAccess<C>::getImag, &ComplexAccess<C>::setImag);
-}
-
-// 戻り型に自作structやstd::stringなどJSプリミティブでない型を渡すと、引数のintの処理が変わってしまう、getValueで正しい値も得られなくなる。型の指定によってオンメモリの扱いが変わる？
-EM_JS(emscripten::EM_VAL, convertArray, (double* arr, int vecSize), {
-    var result = [];
-    const bit = 8;
-    for (let i = 0; i < vecSize; i++) {
-      var real = getValue(arr + i*2 *bit, "double"); // NOTE もっと効率よく取れるはず。HEAP32
-      var imag = getValue(arr + i*2 *bit + bit, "double");
-      result.push({
-        re: real,
-        im: imag
-      });
-    }
-    return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
-});
-
-EM_JS(emscripten::EM_VAL, convertMatrix, (double* arr, int vecSize), {
-    var size = Math.sqrt(vecSize);
-    var result = [];
-    const bit = 8;
-    for (let y = 0; y < size; y++) {
-        result[y] = [];
-        for (let x = 0; x < size; x++) {
-            var p = y*size+x;
-            result[y].push({
-                re: getValue(arr + p*2 *bit, "double"), // NOTE もっと効率よく取れるはず。HEAP32
-                im: getValue(arr + p*2 *bit + bit, "double")
-            });
-        }
-    }
-    return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
-});
-
-EM_JS(emscripten::EM_VAL, convertVecToJSArray, (int* arr, int vecSize), {
-    var result = [];
-    const byte = 4; // ITYPE = (un)signed long long
-    for (let i = 0; i < vecSize; i++) {
-      result.push(getValue(arr + i *byte, "i32"));
-    }
-    return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
-});
-
-
-
 using namespace gate;
-using namespace state;
+//using namespace state;
 EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("getExceptionMessage", &getExceptionMessage);
 
@@ -111,12 +47,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*, UINT)>(&QuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
         .function("update_quantum_state", emscripten::select_overload<void(QuantumStateBase*)>(&QuantumCircuit::update_quantum_state), emscripten::allow_raw_pointers())
         .function("update_quantum_state", emscripten::select_overload<void(QuantumStateBase*, UINT, UINT)>(&QuantumCircuit::update_quantum_state), emscripten::allow_raw_pointers())
-        /*
         // bad pattern. state.data_cpp()[0].real() overwrite 0 with unknown reason...
-        .function("update_quantum_state", emscripten::optional_override([](QuantumCircuit& self, QuantumState state) {
-            self.update_quantum_state(&state);
-        }))
-        */
+        // .function("update_quantum_state", emscripten::optional_override([](QuantumCircuit& self, QuantumState state) { self.update_quantum_state(&state); }))
         .function("calculate_depth", &QuantumCircuit::calculate_depth)
         .function("add_X_gate", &QuantumCircuit::add_X_gate)
         .function("add_H_gate", &QuantumCircuit::add_H_gate)
@@ -159,21 +91,11 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("data_cpp", &QuantumState::data_cpp, emscripten::allow_raw_pointers())
         .function("sampling", emscripten::optional_override([](QuantumState& self, UINT sampling_count, UINT random_seed) {
             std::vector<ITYPE> samples = self.sampling(sampling_count, random_seed);
-            int size = samples.size();
-            int arr[size];
-            for (int i = 0; i < size; i++) {
-                arr[i] = (int) samples[i]; // NOTE: long long intをintに丸めている。JSで (un)signed long long intを取得する方法を検討
-            }
-            return emscripten::val::take_ownership(convertVecToJSArray(arr, size));
+            return emscripten::val::take_ownership(convertIntArrayToJSArray(transpaleITYPEVecToIntArray(samples), samples.size()));
         }), emscripten::allow_raw_pointers())
         .function("sampling", emscripten::optional_override([](QuantumState& self, UINT sampling_count) {
             std::vector<ITYPE> samples = self.sampling(sampling_count);
-            int size = samples.size();
-            int arr[size];
-            for (int i = 0; i < size; i++) {
-                arr[i] = (int) samples[i]; // NOTE: long long intをintに丸めている。JSで (un)signed long long intを取得する方法を検討
-            }
-            return emscripten::val::take_ownership(convertVecToJSArray(arr, size));
+            return emscripten::val::take_ownership(convertIntArrayToJSArray(transpaleITYPEVecToIntArray(samples), samples.size()));
         }), emscripten::allow_raw_pointers());
 
     emscripten::class_<DensityMatrix, emscripten::base<QuantumStateBase>>("DensityMatrix")
@@ -188,7 +110,6 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             auto raw_data_cpp = state.data_cpp();
             int vecSize = state.dim * state.dim;
             double arr[vecSize*2];
-
             CTYPE* ptr = state.data_c();
             for (ITYPE y = 0; y < state.dim; ++y) {
                 for (ITYPE x = 0; x < state.dim; ++x) {
@@ -208,21 +129,11 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         }), emscripten::allow_raw_pointers())
         .function("sampling", emscripten::optional_override([](DensityMatrix& self, UINT sampling_count, UINT random_seed) {
             std::vector<ITYPE> samples = self.sampling(sampling_count, random_seed);
-            int size = samples.size();
-            int arr[size];
-            for (int i = 0; i < size; i++) {
-                arr[i] = (int) samples[i]; // NOTE: long long intをintに丸めている。JSで (un)signed long long intを取得する方法を検討
-            }
-            return emscripten::val::take_ownership(convertVecToJSArray(arr, size));
+            return emscripten::val::take_ownership(convertIntArrayToJSArray(transpaleITYPEVecToIntArray(samples), samples.size()));
         }), emscripten::allow_raw_pointers())
         .function("sampling", emscripten::optional_override([](DensityMatrix& self, UINT sampling_count) {
             std::vector<ITYPE> samples = self.sampling(sampling_count);
-            int size = samples.size();
-            int arr[size];
-            for (int i = 0; i < size; i++) {
-                arr[i] = (int) samples[i]; // NOTE: long long intをintに丸めている。JSで (un)signed long long intを取得する方法を検討
-            }
-            return emscripten::val::take_ownership(convertVecToJSArray(arr, size));
+            return emscripten::val::take_ownership(convertIntArrayToJSArray(transpaleITYPEVecToIntArray(samples), samples.size()));
         }), emscripten::allow_raw_pointers());
 
     emscripten::class_<ClsOneQubitGate, emscripten::base<QuantumGateBase>>("ClsOneQubitGate")
@@ -243,14 +154,13 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("CNOT", &CNOT, emscripten::allow_raw_pointers());
     emscripten::function("RX", &RX, emscripten::allow_raw_pointers());
 
-    // emscripten::function("__ScriptEngine_returnFromJS", bridgeReturnFromJS); // https://github.com/emscripten-core/emscripten/issues/11497
-
+    // NOTE: https://github.com/emscripten-core/emscripten/issues/11497
     emscripten::function("partial_trace", emscripten::optional_override([](const QuantumState* state, const emscripten::val &trace) {
                 std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(trace);
-                return partial_trace(state, traceVec);
+                return state::partial_trace(state, traceVec);
             }), emscripten::allow_raw_pointers());
     emscripten::function("partial_trace", emscripten::optional_override([](const DensityMatrix* state, const emscripten::val &target_traceout) {
                 std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(target_traceout);
-                return partial_trace(state, traceVec);
+                return state::partial_trace(state, traceVec);
             }), emscripten::allow_raw_pointers());
 };
