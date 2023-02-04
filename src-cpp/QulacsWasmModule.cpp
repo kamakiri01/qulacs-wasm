@@ -23,8 +23,6 @@ extern "C" {
     std::string getExceptionMessage(intptr_t exceptionPtr) { return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what()); }
 }
 
-using namespace gate;
-//using namespace state;
 EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("getExceptionMessage", &getExceptionMessage);
 
@@ -145,14 +143,24 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::class_<ClsOneControlOneTargetGate, emscripten::base<QuantumGateBase>>("ClsOneControlOneTargetGate")
         .function("update_quantum_state", &ClsOneControlOneTargetGate::update_quantum_state, emscripten::allow_raw_pointers());
 
-    emscripten::function("X", &X, emscripten::allow_raw_pointers());
-    emscripten::function("Y", &Y, emscripten::allow_raw_pointers());
-    emscripten::function("Z", &Z, emscripten::allow_raw_pointers());
-    emscripten::function("H", &H, emscripten::allow_raw_pointers());
-    emscripten::function("S", &S, emscripten::allow_raw_pointers());
-    emscripten::function("T", &T, emscripten::allow_raw_pointers());
-    emscripten::function("CNOT", &CNOT, emscripten::allow_raw_pointers());
-    emscripten::function("RX", &RX, emscripten::allow_raw_pointers());
+    emscripten::function("X", &gate::X, emscripten::allow_raw_pointers());
+    emscripten::function("Y", &gate::Y, emscripten::allow_raw_pointers());
+    emscripten::function("Z", &gate::Z, emscripten::allow_raw_pointers());
+    emscripten::function("H", &gate::H, emscripten::allow_raw_pointers());
+    emscripten::function("S", &gate::S, emscripten::allow_raw_pointers());
+    emscripten::function("T", &gate::T, emscripten::allow_raw_pointers());
+    emscripten::function("RX", &gate::RX, emscripten::allow_raw_pointers());
+    emscripten::function("RY", &gate::RY, emscripten::allow_raw_pointers());
+    emscripten::function("RZ", &gate::RZ, emscripten::allow_raw_pointers());
+    emscripten::function("RotInvX", &gate::RotInvX, emscripten::allow_raw_pointers());
+    emscripten::function("RotInvY", &gate::RotInvY, emscripten::allow_raw_pointers());
+    emscripten::function("RotInvZ", &gate::RotInvZ, emscripten::allow_raw_pointers());
+    emscripten::function("RotX", &gate::RotX, emscripten::allow_raw_pointers());
+    emscripten::function("RotY", &gate::RotY, emscripten::allow_raw_pointers());
+    emscripten::function("RotZ", &gate::RotZ, emscripten::allow_raw_pointers());
+    emscripten::function("CNOT", &gate::CNOT, emscripten::allow_raw_pointers());
+    emscripten::function("CZ", &gate::CZ, emscripten::allow_raw_pointers());
+    emscripten::function("SWAP", &gate::SWAP, emscripten::allow_raw_pointers());
 
     // NOTE: https://github.com/emscripten-core/emscripten/issues/11497
     emscripten::function("partial_trace", emscripten::optional_override([](const QuantumState* state, const emscripten::val &trace) {
