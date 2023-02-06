@@ -8,8 +8,8 @@ EM_JS(emscripten::EM_VAL, convertArray, (double* arr, int vecSize), {
       var real = getValue(arr + i*2 *bit, "double"); // NOTE もっと効率よく取れるはず。HEAP32
       var imag = getValue(arr + i*2 *bit + bit, "double");
       result.push({
-        re: real,
-        im: imag
+        real,
+        imag
       });
     }
     return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro

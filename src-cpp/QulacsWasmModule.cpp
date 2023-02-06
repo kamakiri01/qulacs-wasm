@@ -37,27 +37,6 @@ EMSCRIPTEN_BINDINGS(Bindings) {
 
     emscripten::class_<QuantumStateBase>("QuantumStateBase");
 
-    emscripten::class_<QuantumCircuit>("QuantumCircuit")
-        .constructor<int>()
-        .function("copy", &QuantumCircuit::copy, emscripten::allow_raw_pointers())
-        .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*)>(&QuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
-        .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*, UINT)>(&QuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
-        .function("update_quantum_state", emscripten::select_overload<void(QuantumStateBase*)>(&QuantumCircuit::update_quantum_state), emscripten::allow_raw_pointers())
-        .function("update_quantum_state", emscripten::select_overload<void(QuantumStateBase*, UINT, UINT)>(&QuantumCircuit::update_quantum_state), emscripten::allow_raw_pointers())
-        // bad pattern. state.data_cpp()[0].real() overwrite 0 with unknown reason...
-        // .function("update_quantum_state", emscripten::optional_override([](QuantumCircuit& self, QuantumState state) { self.update_quantum_state(&state); }))
-        .function("calculate_depth", &QuantumCircuit::calculate_depth)
-        .function("add_X_gate", &QuantumCircuit::add_X_gate)
-        .function("add_H_gate", &QuantumCircuit::add_H_gate)
-        .function("add_CNOT_gate", &QuantumCircuit::add_CNOT_gate);
-
-    emscripten::class_<ParametricQuantumCircuit, emscripten::base<QuantumCircuit>>("ParametricQuantumCircuit")
-        .constructor<int>()
-        .function("copy", &ParametricQuantumCircuit::copy, emscripten::allow_raw_pointers())
-        .function("add_parametric_gate", emscripten::select_overload<void(QuantumGate_SingleParameter*)>(&ParametricQuantumCircuit::add_parametric_gate_copy), emscripten::allow_raw_pointers())
-        .function("add_parametric_gate", emscripten::select_overload<void(QuantumGate_SingleParameter*, UINT)>(&ParametricQuantumCircuit::add_parametric_gate_copy), emscripten::allow_raw_pointers())
-        .function("add_parametric_RX_gate", &ParametricQuantumCircuit::add_parametric_RX_gate);
-
     emscripten::class_<QuantumState, emscripten::base<QuantumStateBase>>("QuantumState")
         .constructor<int>()
         .function("set_zero_state", &QuantumState::set_zero_state, emscripten::allow_raw_pointers())
@@ -190,18 +169,28 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     .function("is_parametric", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
     .function("is_diagonal", &QuantumGateBase::to_string, emscripten::allow_raw_pointers());
 
-    /*
     emscripten::class_<ClsOneQubitGate, emscripten::base<QuantumGateBase>>("ClsOneQubitGate");
     emscripten::class_<ClsTwoQubitGate, emscripten::base<QuantumGateBase>>("ClsTwoQubitGate");
     emscripten::class_<ClsOneControlOneTargetGate, emscripten::base<QuantumGateBase>>("ClsOneControlOneTargetGate");
+
+    emscripten::class_<QuantumGateMatrix, emscripten::base<QuantumGateBase>>("QuantumGateMatrix");
+    /*
+        .function("update_quantum_state", &QuantumGateMatrix::update_quantum_state, emscripten::allow_raw_pointers())
+        .function("add_control_qubit", &QuantumGateMatrix::add_control_qubit, emscripten::allow_raw_pointers())
+        .function("multiply_scalar", &QuantumGateMatrix::multiply_scalar, emscripten::allow_raw_pointers())
+        .function("copy", &QuantumGateMatrix::copy, emscripten::allow_raw_pointers())
+        .function("to_string", &QuantumGateMatrix::to_string, emscripten::allow_raw_pointers())
     */
 
+    emscripten::function("Identity", &gate::Identity, emscripten::allow_raw_pointers());
     emscripten::function("X", &gate::X, emscripten::allow_raw_pointers());
     emscripten::function("Y", &gate::Y, emscripten::allow_raw_pointers());
     emscripten::function("Z", &gate::Z, emscripten::allow_raw_pointers());
     emscripten::function("H", &gate::H, emscripten::allow_raw_pointers());
     emscripten::function("S", &gate::S, emscripten::allow_raw_pointers());
+    emscripten::function("Sdag", &gate::Sdag, emscripten::allow_raw_pointers());
     emscripten::function("T", &gate::T, emscripten::allow_raw_pointers());
+    emscripten::function("Tdag", &gate::Tdag, emscripten::allow_raw_pointers());
     emscripten::function("RX", &gate::RX, emscripten::allow_raw_pointers());
     emscripten::function("RY", &gate::RY, emscripten::allow_raw_pointers());
     emscripten::function("RZ", &gate::RZ, emscripten::allow_raw_pointers());
@@ -214,14 +203,59 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("CNOT", &gate::CNOT, emscripten::allow_raw_pointers());
     emscripten::function("CZ", &gate::CZ, emscripten::allow_raw_pointers());
     emscripten::function("SWAP", &gate::SWAP, emscripten::allow_raw_pointers());
+    emscripten::function("TOFFOLI", emscripten::optional_override([](UINT control_index1, UINT control_index2, UINT target_index) {
+            // @see https://github.com/corryvrequan/qulacs/blob/a1eb7cd2fb62243d28fc1ebd4da9fbd8126cf126/python/cppsim_wrapper.cpp#L308
+            auto ptr = gate::X(target_index);
+            if (ptr == NULL) throw std::invalid_argument("Invalid argument passed to TOFFOLI.");
+            auto toffoli = gate::to_matrix_gate(ptr);
+            toffoli->add_control_qubit(control_index1, 1);
+            toffoli->add_control_qubit(control_index2, 1);
+            delete ptr;
+            return toffoli;
+        }), emscripten::allow_raw_pointers());
+
+    emscripten::class_<QuantumCircuit>("QuantumCircuit")
+        .constructor<int>()
+        .function("copy", &QuantumCircuit::copy, emscripten::allow_raw_pointers())
+        .function("add_gate_consume", emscripten::select_overload<void(QuantumGateBase*)>(&QuantumCircuit::add_gate), emscripten::allow_raw_pointers())
+        .function("add_gate_consume", emscripten::select_overload<void(QuantumGateBase*, UINT)>(&QuantumCircuit::add_gate), emscripten::allow_raw_pointers())
+        .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*)>(&QuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
+        .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*, UINT)>(&QuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
+        .function("remove_gate", &QuantumCircuit::remove_gate)
+        .function("update_quantum_state", emscripten::select_overload<void(QuantumStateBase*)>(&QuantumCircuit::update_quantum_state), emscripten::allow_raw_pointers())
+        .function("update_quantum_state", emscripten::select_overload<void(QuantumStateBase*, UINT, UINT)>(&QuantumCircuit::update_quantum_state), emscripten::allow_raw_pointers())
+        // bad pattern. state.data_cpp()[0].real() overwrite 0 with unknown reason...
+        // .function("update_quantum_state", emscripten::optional_override([](QuantumCircuit& self, QuantumState state) { self.update_quantum_state(&state); }))
+        .function("calculate_depth", &QuantumCircuit::calculate_depth)
+        .function("add_X_gate", &QuantumCircuit::add_X_gate)
+        .function("add_Y_gate", &QuantumCircuit::add_Y_gate)
+        .function("add_Z_gate", &QuantumCircuit::add_Z_gate)
+        .function("add_H_gate", &QuantumCircuit::add_H_gate)
+        .function("add_S_gate", &QuantumCircuit::add_H_gate)
+        .function("add_Sdag_gate", &QuantumCircuit::add_Sdag_gate)
+        .function("add_T_gate", &QuantumCircuit::add_T_gate)
+        .function("add_Tdag_gate", &QuantumCircuit::add_Tdag_gate)
+        .function("add_CNOT_gate", &QuantumCircuit::add_CNOT_gate)
+        .function("add_CZ_gate", &QuantumCircuit::add_CZ_gate)
+        .function("add_SWAP_gate", &QuantumCircuit::add_SWAP_gate)
+        .function("add_RX_gate", &QuantumCircuit::add_RX_gate)
+        .function("add_RY_gate", &QuantumCircuit::add_RY_gate)
+        .function("add_RZ_gate", &QuantumCircuit::add_RZ_gate);
+
+    emscripten::class_<ParametricQuantumCircuit, emscripten::base<QuantumCircuit>>("ParametricQuantumCircuit")
+        .constructor<int>()
+        .function("copy", &ParametricQuantumCircuit::copy, emscripten::allow_raw_pointers())
+        .function("add_parametric_gate", emscripten::select_overload<void(QuantumGate_SingleParameter*)>(&ParametricQuantumCircuit::add_parametric_gate_copy), emscripten::allow_raw_pointers())
+        .function("add_parametric_gate", emscripten::select_overload<void(QuantumGate_SingleParameter*, UINT)>(&ParametricQuantumCircuit::add_parametric_gate_copy), emscripten::allow_raw_pointers())
+        .function("add_parametric_RX_gate", &ParametricQuantumCircuit::add_parametric_RX_gate);
 
     // NOTE: https://github.com/emscripten-core/emscripten/issues/11497
     emscripten::function("partial_trace", emscripten::optional_override([](const QuantumState* state, const emscripten::val &trace) {
-                std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(trace);
-                return state::partial_trace(state, traceVec);
-            }), emscripten::allow_raw_pointers());
+            std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(trace);
+            return state::partial_trace(state, traceVec);
+        }), emscripten::allow_raw_pointers());
     emscripten::function("partial_trace", emscripten::optional_override([](const DensityMatrix* state, const emscripten::val &target_traceout) {
-                std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(target_traceout);
-                return state::partial_trace(state, traceVec);
-            }), emscripten::allow_raw_pointers());
+            std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(target_traceout);
+            return state::partial_trace(state, traceVec);
+        }), emscripten::allow_raw_pointers());
 };
