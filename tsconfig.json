@@ -9,7 +9,6 @@
       "skipLibCheck": true,
       "esModuleInterop": true,
       "forceConsistentCasingInFileNames": true
-
     },
     "files": [
         "./typings/ModuleQulacsWasm.d.ts",

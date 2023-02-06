@@ -33,6 +33,7 @@ export interface QuantumCircuitImpl {
 }
 
 export interface ParametricQuantumCircuitImpl extends QuantumCircuitImpl {
+    add_parametric_RX_gate(target_index: number, initial_angle: number): void;
 }
 
 export interface DensityMatrixImpl {

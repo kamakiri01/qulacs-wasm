@@ -1,7 +1,6 @@
-var ModuleQulacsWasm = require("../wasm/module.js");
+const ModuleQulacsWasm = require("../wasm/module.js");
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 import { applyModule } from "./instance";
-//var inst = require("./instance");
 
 export interface InitQulacsModuleOption {
     module?: WebAssembly.Module;
