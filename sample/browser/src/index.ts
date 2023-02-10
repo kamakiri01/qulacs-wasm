@@ -1,4 +1,4 @@
-import { initQulacsModule, QuantumState } from "qulacs-wasm";
+import { initQulacsModule } from "qulacs-wasm";
 
 const USE_WORKER = true;
 if (USE_WORKER) {
@@ -11,8 +11,10 @@ if (USE_WORKER) {
             worker.postMessage(module);
         });
 } else {
-    initQulacsModule().then(_ => {
-        const state = new QuantumState(3);
-        console.log("state vector", state.get_vector());
-    });
-}
+    initQulacsModule()
+        .then(() => import("qulacs-wasm"))
+        .then(({ QuantumState }) => {
+            const state = new QuantumState(3);
+            console.log("state vector", state.get_vector());
+        });
+};
