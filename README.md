@@ -11,18 +11,20 @@ npm install qulacs-wasm
 ```
 
 ```javascript
-import { initQulacsModule, QuantumState, QuantumCircuit } from "qulacs-wasm";
+import { initQulacsModule } from "qulacs-wasm";
 
-initQulacsModule().then(_ => {
-    const qubitCount = 2;
-    const state = new QuantumState(qubitCount);
-    state.set_zero_state();
-    const circuit = new QuantumCircuit(qubitCount);
-    circuit.add_H_gate(0);
-    circuit.add_CNOT_gate(0, 1);
-    circuit.update_quantum_state(state);
-    console.log("state vector ", state.get_vector());
-    console.log("sampling", state.sampling(10)); // sampling may return 0th/3th base state with equal probability
+initQulacsModule()
+  .then(() => import("qulacs-wasm")) // need dynamic import to get native class
+  .then({ QuantumState, QuantumCircuit } => {
+      const qubitCount = 2;
+      const state = new QuantumState(qubitCount);
+      state.set_zero_state();
+      const circuit = new QuantumCircuit(qubitCount);
+      circuit.add_H_gate(0);
+      circuit.add_CNOT_gate(0, 1);
+      circuit.update_quantum_state(state);
+      console.log("state vector ", state.get_vector());
+      console.log("sampling", state.sampling(10)); // sampling may return 0th/3th base state with equal probability
 });
 ```
 
@@ -43,15 +45,15 @@ See more usage details, `sample` dir.
 
 ## Available Classes and Methods
 
-- [x] X/Y/Z/H/T/S/RX/RY/RZ/RotX/RotY/RotZ/CNOT/CZ/Toffoli/QuantumGateMatrix
-  - [x] get_matrix/to_matrix_gate/update_quantum_state/
-  - [ ] add_control_qubit/copy/set_matrix/multiply_scalar/set_gate_property/etc
-- [ ] invGates/DenseMatrix/SparseMatrix/etc
+- [x] Identity/X/Y/Z/H/S/Sdag/T/Tdag/RX/RY/RZ/RotX/RotY/RotZ/RotInvX/RotInvY/RotInvZ/CNOT/CZ/SWAP/TOFFOLI/QuantumGateMatrix
+  - [x] update_quantum_state/copy/to_string/get_matrix
+  - [ ] to_matrix_gate/add_control_qubit/copy/set_matrix/multiply_scalar/set_gate_property/etc
+- [ ] DenseMatrix/SparseMatrix
 - [x] QuantumCircuit
   - [x] update_quantum_state/add_gate/add_{}_gate
   - [ ] calculate_depth/add_parametric_{}_gate/etc
-- [ ] ParametricQuantumCircuit/etc
-- [x] QuantumState
+- [x] ParametricQuantumCircuit
+- [x] QuantumState/DensityMatrix
   - [x] set_zero_state/set_computational_basis/set_Haar_random_state/get_vector/get_amplitude/get_qubit_count/get_zero_probability/load/allocate_buffer/sampling
   - [ ] add_state/multiply_coef/multiply_elementwise_function/get_squared_norm/normalize/set_classical_value/set_classical_value/etc
 - [ ] Observable/NoiseSimulator/CausalConeSimulator/etc
@@ -77,4 +79,3 @@ npm run submodule:build
 npm install
 npm run build
 ```
-
