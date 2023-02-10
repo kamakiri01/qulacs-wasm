@@ -2,6 +2,7 @@ import { QuantumState } from "../instance";
 import { Complex } from "./common";
 
 export type QuantumStateImpl = {
+    new (qubit_count: number): QuantumStateImpl;
     set_zero_state(): void;
     set_Haar_random_state(seed?: number): void;
     set_computational_basis(comp_basis: number): void;
@@ -24,11 +25,8 @@ export type QuantumStateImpl = {
     get_vector(): Complex[];
 };
 
-export interface QuantumGateBase {
-    update_quantum_state(state: QuantumState): void;
-}
-
 export interface QuantumCircuitImpl {
+    new (qubit_count: number): QuantumCircuitImpl;
     update_quantum_state(state: QuantumState): void;
 }
 
@@ -36,8 +34,12 @@ export interface ParametricQuantumCircuitImpl extends QuantumCircuitImpl {
     add_parametric_RX_gate(target_index: number, initial_angle: number): void;
 }
 
-export interface DensityMatrixImpl {
+export interface DensityMatrixImpl extends QuantumStateImpl {
     set_zero_state(): void;
+}
+
+export interface QuantumGateBase {
+    update_quantum_state(state: QuantumState): void;
 }
 
 export interface ClsOneQubitGate extends QuantumGateBase {
