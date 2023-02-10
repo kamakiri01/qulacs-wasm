@@ -158,16 +158,16 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             }
             return emscripten::val::take_ownership(convertMatrix(arr, arrSize));
         }), emscripten::allow_raw_pointers())
-    .function("to__repr___string", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-    .function("get_target_index_list", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-    .function("get_control_index_list", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-    .function("get_name", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-    .function("is_commute", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-    .function("is_Pauli", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-    .function("is_Clifford", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-    .function("is_Gaussian", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-    .function("is_parametric", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-    .function("is_diagonal", &QuantumGateBase::to_string, emscripten::allow_raw_pointers());
+        .function("to__repr___string", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
+        .function("get_target_index_list", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
+        .function("get_control_index_list", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
+        .function("get_name", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
+        .function("is_commute", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
+        .function("is_Pauli", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
+        .function("is_Clifford", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
+        .function("is_Gaussian", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
+        .function("is_parametric", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
+        .function("is_diagonal", &QuantumGateBase::to_string, emscripten::allow_raw_pointers());
 
     emscripten::class_<ClsOneQubitGate, emscripten::base<QuantumGateBase>>("ClsOneQubitGate");
     emscripten::class_<ClsTwoQubitGate, emscripten::base<QuantumGateBase>>("ClsTwoQubitGate");
@@ -204,15 +204,15 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("CZ", &gate::CZ, emscripten::allow_raw_pointers());
     emscripten::function("SWAP", &gate::SWAP, emscripten::allow_raw_pointers());
     emscripten::function("TOFFOLI", emscripten::optional_override([](UINT control_index1, UINT control_index2, UINT target_index) {
-            // @see https://github.com/corryvrequan/qulacs/blob/a1eb7cd2fb62243d28fc1ebd4da9fbd8126cf126/python/cppsim_wrapper.cpp#L308
-            auto ptr = gate::X(target_index);
-            if (ptr == NULL) throw std::invalid_argument("Invalid argument passed to TOFFOLI.");
-            auto toffoli = gate::to_matrix_gate(ptr);
-            toffoli->add_control_qubit(control_index1, 1);
-            toffoli->add_control_qubit(control_index2, 1);
-            delete ptr;
-            return toffoli;
-        }), emscripten::allow_raw_pointers());
+        // @see https://github.com/corryvrequan/qulacs/blob/a1eb7cd2fb62243d28fc1ebd4da9fbd8126cf126/python/cppsim_wrapper.cpp#L308
+        auto ptr = gate::X(target_index);
+        if (ptr == NULL) throw std::invalid_argument("Invalid argument passed to TOFFOLI.");
+        auto toffoli = gate::to_matrix_gate(ptr);
+        toffoli->add_control_qubit(control_index1, 1);
+        toffoli->add_control_qubit(control_index2, 1);
+        delete ptr;
+        return toffoli;
+    }), emscripten::allow_raw_pointers());
 
     emscripten::class_<QuantumCircuit>("QuantumCircuit")
         .constructor<int>()
@@ -251,11 +251,11 @@ EMSCRIPTEN_BINDINGS(Bindings) {
 
     // NOTE: https://github.com/emscripten-core/emscripten/issues/11497
     emscripten::function("partial_trace", emscripten::optional_override([](const QuantumState* state, const emscripten::val &trace) {
-            std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(trace);
-            return state::partial_trace(state, traceVec);
-        }), emscripten::allow_raw_pointers());
+        std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(trace);
+        return state::partial_trace(state, traceVec);
+    }), emscripten::allow_raw_pointers());
     emscripten::function("partial_trace", emscripten::optional_override([](const DensityMatrix* state, const emscripten::val &target_traceout) {
-            std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(target_traceout);
-            return state::partial_trace(state, traceVec);
-        }), emscripten::allow_raw_pointers());
+        std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(target_traceout);
+        return state::partial_trace(state, traceVec);
+    }), emscripten::allow_raw_pointers());
 };
