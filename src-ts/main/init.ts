@@ -1,16 +1,12 @@
-var ModuleQulacsWasm = require("../wasm/module.js");
-import { Observable } from "./nativeType/Observable";
-import { QuantumCircuit } from "./nativeType/QuantumCircuit";
-import { QuantumState } from "./nativeType/QuantumState";
-import { QulacsNativeClassClient } from "./client/QulacsNativeClassClient/QulacsNativeClassClient";
+const ModuleQulacsWasm = require("../wasm/module.js");
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
-import { QuantumGateBase } from "./nativeType/QuantumGate/QuantumGateBase";
+import { applyModule } from "./instance";
 
 export interface InitQulacsModuleOption {
     module?: WebAssembly.Module;
 }
 
-export async function initQulacsModule(option: InitQulacsModuleOption = {}): Promise<void> {
+export async function initQulacsModule(option: InitQulacsModuleOption = {}): Promise<QulacsWasmModule> {
     let qulacsModule: QulacsWasmModule;
     if (option.module) {
         qulacsModule = await initQulacsFromModule(option.module);
@@ -18,8 +14,8 @@ export async function initQulacsModule(option: InitQulacsModuleOption = {}): Pro
         qulacsModule = await initQulacs();
     }
 
-    const nativeClient = new QulacsNativeClassClient({module: qulacsModule});
-    setStaticClient(nativeClient);
+    applyModule(qulacsModule);
+    return qulacsModule;
 }
 
 function initQulacs(): Promise<QulacsWasmModule> {
@@ -41,11 +37,4 @@ function initQulacsFromModule(compiledModule: WebAssembly.Module): Promise<Qulac
             })
             .catch((e: any) => reject(e));
         });
-}
-
-function setStaticClient(client: QulacsNativeClassClient) {
-    QuantumState.client = client;
-    QuantumGateBase.client = client;
-    QuantumCircuit.client = client;
-    Observable.client = client;
 }

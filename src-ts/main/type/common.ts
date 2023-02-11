@@ -1,6 +1,6 @@
 export interface Complex {
-    re: number;
-    im: number;
+    real: number;
+    imag: number;
 }
 
 /**
@@ -11,8 +11,3 @@ export interface WasmVector<T> {
     get: (index: number) => T;
     size: () => number;
 }
-
-/**
- * ComplexMatrix(Eigen::MatrixXcd) の型
- */
-export interface WasmComplexMatrix<T> {}
