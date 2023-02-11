@@ -217,8 +217,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::class_<QuantumCircuit>("QuantumCircuit")
         .constructor<int>()
         .function("copy", &QuantumCircuit::copy, emscripten::allow_raw_pointers())
-        .function("add_gate_consume", emscripten::select_overload<void(QuantumGateBase*)>(&QuantumCircuit::add_gate), emscripten::allow_raw_pointers())
-        .function("add_gate_consume", emscripten::select_overload<void(QuantumGateBase*, UINT)>(&QuantumCircuit::add_gate), emscripten::allow_raw_pointers())
+        //.function("add_gate_consume", emscripten::select_overload<void(QuantumGateBase*)>(&QuantumCircuit::add_gate), emscripten::allow_raw_pointers())
+        //.function("add_gate_consume", emscripten::select_overload<void(QuantumGateBase*, UINT)>(&QuantumCircuit::add_gate), emscripten::allow_raw_pointers())
         .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*)>(&QuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
         .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*, UINT)>(&QuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
         .function("remove_gate", &QuantumCircuit::remove_gate)
@@ -240,7 +240,13 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("add_SWAP_gate", &QuantumCircuit::add_SWAP_gate)
         .function("add_RX_gate", &QuantumCircuit::add_RX_gate)
         .function("add_RY_gate", &QuantumCircuit::add_RY_gate)
-        .function("add_RZ_gate", &QuantumCircuit::add_RZ_gate);
+        .function("add_RZ_gate", &QuantumCircuit::add_RZ_gate)
+        .function("add_RotInvX_gate", &QuantumCircuit::add_RX_gate)
+        .function("add_RotInvY_gate", &QuantumCircuit::add_RY_gate)
+        .function("add_RotInvZ_gate", &QuantumCircuit::add_RZ_gate)
+        .function("add_RotX_gate", &QuantumCircuit::add_RX_gate)
+        .function("add_RotY_gate", &QuantumCircuit::add_RY_gate)
+        .function("add_RotZ_gate", &QuantumCircuit::add_RZ_gate);
 
     emscripten::class_<ParametricQuantumCircuit, emscripten::base<QuantumCircuit>>("ParametricQuantumCircuit")
         .constructor<int>()
@@ -259,5 +265,4 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         return state::partial_trace(state, traceVec);
     }), emscripten::allow_raw_pointers());
     emscripten::function("to_matrix_gate", &gate::to_matrix_gate, emscripten::allow_raw_pointers());
-
 };

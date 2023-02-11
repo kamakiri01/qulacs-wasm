@@ -27,11 +27,37 @@ export type QuantumStateImpl = {
 
 export interface QuantumCircuitImpl {
     new (qubit_count: number): QuantumCircuitImpl;
-    update_quantum_state(state: QuantumState): void;
+    update_quantum_state(state: QuantumState, start_index?: number, end_index?: number): void;
+    copy(): QuantumCircuitImpl;
+    add_gate(gate: QuantumGateBase, index?: number): void;
+    remove_gate(index: number): void;
+    calculate_depth(): number;
+    add_X_gate(target_index: number): void;
+    add_Y_gate(target_index: number): void;
+    add_Z_gate(target_index: number): void;
+    add_H_gate(target_index: number): void;
+    add_S_gate(target_index: number): void;
+    add_Sdag_gate(target_index: number): void;
+    add_T_gate(target_index: number): void;
+    add_Tdag_gate(target_index: number): void;
+    add_CNOT_gate(control_index: number, target_index: number): void;
+    add_CZ_gate(control_index: number, target_index: number): void;
+    add_SWAP_gate(target_index1: number, target_index2: number): void;
+    add_RX_gate(target_index: number, angle: number): void;
+    add_RY_gate(target_index: number, angle: number): void;
+    add_RZ_gate(target_index: number, angle: number): void;
+    add_RotInvX_gate(target_index: number, angle: number): void;
+    add_RotInvY_gate(target_index: number, angle: number): void;
+    add_RotInvZ_gate(target_index: number, angle: number): void;
+    add_RotX_gate(target_index: number, angle: number): void;
+    add_RotY_gate(target_index: number, angle: number): void;
+    add_RotZ_gate(target_index: number, angle: number): void;
 }
 
 export interface ParametricQuantumCircuitImpl extends QuantumCircuitImpl {
     add_parametric_RX_gate(target_index: number, initial_angle: number): void;
+    copy(): ParametricQuantumCircuitImpl;
+
 }
 
 export interface DensityMatrixImpl extends QuantumStateImpl {

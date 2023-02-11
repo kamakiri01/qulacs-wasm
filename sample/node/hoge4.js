@@ -2,7 +2,7 @@
 const { QuantumState, initQulacsModule } = require("../../");
 
 initQulacsModule().then(module => {
-    const { QuantumState, X, Y,Z, H, CNOT,QuantumCircuit, ParametricQuantumCircuit, DensityMatrix, partial_trace, getExceptionMessage } = require("../../"); // require after init, or use module.QuantumState
+    const { QuantumState, X, Y,Z, H, RX, CNOT,QuantumCircuit, ParametricQuantumCircuit, DensityMatrix, partial_trace, getExceptionMessage } = require("../../"); // require after init, or use module.QuantumState
     console.log("---test qulacs I/F---");
 
     /*
@@ -28,7 +28,9 @@ initQulacsModule().then(module => {
     const s2 = new QuantumState(qubits);
     console.log("allocate_buffer", s2.allocate_buffer())
     console.log("copy", s2.copy())
-    const gateH = H(0);
+    console.log("RX", RX);
+    const gateH = RX(0, -Math.PI/2);
+    //const gateH = X(0);
     gateH.update_quantum_state(s2);
     console.log("g2", s2.get_vector());
 

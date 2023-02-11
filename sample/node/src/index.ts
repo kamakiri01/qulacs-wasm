@@ -17,8 +17,11 @@ if (USE_WORKER) {
 } else {
     initQulacsModule()
         .then(() => import("qulacs-wasm"))
-        .then(({ QuantumState }) => {
+        .then(({ QuantumState, QuantumCircuit }) => {
             const state = new QuantumState(3);
+            const circuit = new QuantumCircuit(3);
+            circuit.add_X_gate(0);
+            circuit.update_quantum_state(state);
             console.log("state vector", state.get_vector());
         });
 };
