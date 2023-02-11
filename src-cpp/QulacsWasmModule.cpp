@@ -253,7 +253,16 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("copy", &ParametricQuantumCircuit::copy, emscripten::allow_raw_pointers())
         .function("add_parametric_gate", emscripten::select_overload<void(QuantumGate_SingleParameter*)>(&ParametricQuantumCircuit::add_parametric_gate_copy), emscripten::allow_raw_pointers())
         .function("add_parametric_gate", emscripten::select_overload<void(QuantumGate_SingleParameter*, UINT)>(&ParametricQuantumCircuit::add_parametric_gate_copy), emscripten::allow_raw_pointers())
-        .function("add_parametric_RX_gate", &ParametricQuantumCircuit::add_parametric_RX_gate);
+        .function("add_parametric_RX_gate", &ParametricQuantumCircuit::add_parametric_RX_gate)
+        .function("add_parametric_RY_gate", &ParametricQuantumCircuit::add_parametric_RY_gate)
+        .function("add_parametric_RZ_gate", &ParametricQuantumCircuit::add_parametric_RZ_gate)
+        .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*)>(&ParametricQuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
+        .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*, UINT)>(&ParametricQuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
+        .function("get_parameter_count", &ParametricQuantumCircuit::get_parameter_count, emscripten::allow_raw_pointers())
+        .function("get_parameter", &ParametricQuantumCircuit::get_parameter, emscripten::allow_raw_pointers())
+        .function("set_parameter", &ParametricQuantumCircuit::set_parameter, emscripten::allow_raw_pointers())
+        .function("get_parametric_gate_position", &ParametricQuantumCircuit::get_parametric_gate_position, emscripten::allow_raw_pointers())
+        .function("remove_gate", &ParametricQuantumCircuit::remove_gate, emscripten::allow_raw_pointers());
 
     // NOTE: https://github.com/emscripten-core/emscripten/issues/11497
     emscripten::function("partial_trace", emscripten::optional_override([](const QuantumState* state, const emscripten::val &trace) {
