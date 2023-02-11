@@ -24,8 +24,8 @@ EM_JS(emscripten::EM_VAL, convertMatrix, (double* arr, int vecSize), {
         for (let x = 0; x < size; x++) {
             var p = y*size+x;
             result[y].push({
-                re: getValue(arr + p*2 *bit, "double"), // NOTE もっと効率よく取れるはず。HEAP32
-                im: getValue(arr + p*2 *bit + bit, "double")
+                real: getValue(arr + p*2 *bit, "double"), // NOTE もっと効率よく取れるはず。HEAP32
+                imag: getValue(arr + p*2 *bit + bit, "double")
             });
         }
     }

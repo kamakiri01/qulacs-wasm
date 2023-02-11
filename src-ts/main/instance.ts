@@ -1,5 +1,5 @@
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
-import type { ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, DensityMatrixImpl, ParametricQuantumCircuitImpl, QuantumCircuitImpl, QuantumGateMatrix, QuantumStateImpl } from "./type/QulacsClass";
+import type { ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, DensityMatrixImpl, ParametricQuantumCircuitImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateMatrix, QuantumStateImpl } from "./type/QulacsClass";
 
 export type QuantumState = QuantumStateImpl;
 export type QuantumCircuit = QuantumCircuitImpl;
@@ -36,6 +36,7 @@ export var SWAP: ClsOneControlOneTargetGate;
 export var TOFFOLI: QuantumGateMatrix;
 
 export var partial_trace: (state: DensityMatrix, target_traceout: number[]) => DensityMatrix;
+export var to_matrix_gate: (gate: QuantumGateBase) => QuantumGateMatrix;
 
 export function applyModule(qulacsModule: QulacsWasmModule) {
     Object.keys(module.exports).forEach(key => {

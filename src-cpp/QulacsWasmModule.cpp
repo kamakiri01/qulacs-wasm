@@ -171,8 +171,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
 
     emscripten::class_<ClsOneQubitGate, emscripten::base<QuantumGateBase>>("ClsOneQubitGate");
     emscripten::class_<ClsTwoQubitGate, emscripten::base<QuantumGateBase>>("ClsTwoQubitGate");
+    emscripten::class_<ClsOneQubitRotationGate, emscripten::base<QuantumGateBase>>("ClsOneQubitRotationGate");
     emscripten::class_<ClsOneControlOneTargetGate, emscripten::base<QuantumGateBase>>("ClsOneControlOneTargetGate");
-
     emscripten::class_<QuantumGateMatrix, emscripten::base<QuantumGateBase>>("QuantumGateMatrix");
     /*
         .function("update_quantum_state", &QuantumGateMatrix::update_quantum_state, emscripten::allow_raw_pointers())
@@ -258,4 +258,6 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(target_traceout);
         return state::partial_trace(state, traceVec);
     }), emscripten::allow_raw_pointers());
+    emscripten::function("to_matrix_gate", &gate::to_matrix_gate, emscripten::allow_raw_pointers());
+
 };
