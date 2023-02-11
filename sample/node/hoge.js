@@ -2,8 +2,8 @@
 const { initQulacsModule } = require("../../");
 
 initQulacsModule()
-    .then(() => import("qulacs-wasm"))
-    .then(({ QuantumState, QuantumCircuit, X, Y, RY, to_matrix_gate }) => {
+    .then(() => {
+        const { QuantumState, QuantumCircuit, X, Y, RY, to_matrix_gate } = require("../../");
         console.log("---test qulacs I/F---");
         const qubits_count = 2;
 
