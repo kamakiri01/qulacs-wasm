@@ -158,29 +158,26 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             }
             return emscripten::val::take_ownership(convertMatrix(arr, arrSize));
         }), emscripten::allow_raw_pointers())
-        .function("to__repr___string", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("get_target_index_list", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("get_control_index_list", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("get_name", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_commute", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_Pauli", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_Clifford", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_Gaussian", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_parametric", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_diagonal", &QuantumGateBase::to_string, emscripten::allow_raw_pointers());
+        //.function("to__repr___string", &QuantumGateBase::to__repr___string, emscripten::allow_raw_pointers())
+        .function("get_target_index_list", &QuantumGateBase::get_target_index_list, emscripten::allow_raw_pointers())
+        .function("get_control_index_list", &QuantumGateBase::get_control_index_list, emscripten::allow_raw_pointers())
+        .function("get_name", &QuantumGateBase::get_name, emscripten::allow_raw_pointers())
+        .function("is_commute", &QuantumGateBase::is_commute, emscripten::allow_raw_pointers())
+        .function("is_Pauli", &QuantumGateBase::is_Pauli, emscripten::allow_raw_pointers())
+        .function("is_Clifford", &QuantumGateBase::is_Clifford, emscripten::allow_raw_pointers())
+        .function("is_Gaussian", &QuantumGateBase::is_Gaussian, emscripten::allow_raw_pointers())
+        .function("is_parametric", &QuantumGateBase::is_parametric, emscripten::allow_raw_pointers())
+        .function("is_diagonal", &QuantumGateBase::is_diagonal, emscripten::allow_raw_pointers());
 
     emscripten::class_<ClsOneQubitGate, emscripten::base<QuantumGateBase>>("ClsOneQubitGate");
     emscripten::class_<ClsTwoQubitGate, emscripten::base<QuantumGateBase>>("ClsTwoQubitGate");
     emscripten::class_<ClsOneQubitRotationGate, emscripten::base<QuantumGateBase>>("ClsOneQubitRotationGate");
     emscripten::class_<ClsOneControlOneTargetGate, emscripten::base<QuantumGateBase>>("ClsOneControlOneTargetGate");
-    emscripten::class_<QuantumGateMatrix, emscripten::base<QuantumGateBase>>("QuantumGateMatrix");
-    /*
-        .function("update_quantum_state", &QuantumGateMatrix::update_quantum_state, emscripten::allow_raw_pointers())
-        .function("add_control_qubit", &QuantumGateMatrix::add_control_qubit, emscripten::allow_raw_pointers())
-        .function("multiply_scalar", &QuantumGateMatrix::multiply_scalar, emscripten::allow_raw_pointers())
-        .function("copy", &QuantumGateMatrix::copy, emscripten::allow_raw_pointers())
+    emscripten::class_<QuantumGateMatrix, emscripten::base<QuantumGateBase>>("QuantumGateMatrix")
         .function("to_string", &QuantumGateMatrix::to_string, emscripten::allow_raw_pointers())
-    */
+        .function("copy", &QuantumGateMatrix::copy, emscripten::allow_raw_pointers())
+        .function("multiply_scalar", &QuantumGateMatrix::multiply_scalar, emscripten::allow_raw_pointers())
+        .function("add_control_qubit", &QuantumGateMatrix::add_control_qubit, emscripten::allow_raw_pointers());
 
     emscripten::function("Identity", &gate::Identity, emscripten::allow_raw_pointers());
     emscripten::function("X", &gate::X, emscripten::allow_raw_pointers());
@@ -191,6 +188,9 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("Sdag", &gate::Sdag, emscripten::allow_raw_pointers());
     emscripten::function("T", &gate::T, emscripten::allow_raw_pointers());
     emscripten::function("Tdag", &gate::Tdag, emscripten::allow_raw_pointers());
+    emscripten::function("U1", &gate::U1, emscripten::allow_raw_pointers());
+    emscripten::function("U2", &gate::U2, emscripten::allow_raw_pointers());
+    emscripten::function("U3", &gate::U3, emscripten::allow_raw_pointers());
     emscripten::function("RX", &gate::RX, emscripten::allow_raw_pointers());
     emscripten::function("RY", &gate::RY, emscripten::allow_raw_pointers());
     emscripten::function("RZ", &gate::RZ, emscripten::allow_raw_pointers());
@@ -238,6 +238,9 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("add_CNOT_gate", &QuantumCircuit::add_CNOT_gate)
         .function("add_CZ_gate", &QuantumCircuit::add_CZ_gate)
         .function("add_SWAP_gate", &QuantumCircuit::add_SWAP_gate)
+        .function("add_U1_gate", &QuantumCircuit::add_U1_gate)
+        .function("add_U2_gate", &QuantumCircuit::add_U2_gate)
+        .function("add_U3_gate", &QuantumCircuit::add_U3_gate)
         .function("add_RX_gate", &QuantumCircuit::add_RX_gate)
         .function("add_RY_gate", &QuantumCircuit::add_RY_gate)
         .function("add_RZ_gate", &QuantumCircuit::add_RZ_gate)
@@ -256,6 +259,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("add_parametric_RX_gate", &ParametricQuantumCircuit::add_parametric_RX_gate)
         .function("add_parametric_RY_gate", &ParametricQuantumCircuit::add_parametric_RY_gate)
         .function("add_parametric_RZ_gate", &ParametricQuantumCircuit::add_parametric_RZ_gate)
+        .function("add_parametric_multi_Pauli_rotation_gate", &ParametricQuantumCircuit::add_parametric_multi_Pauli_rotation_gate)
         .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*)>(&ParametricQuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
         .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*, UINT)>(&ParametricQuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
         .function("get_parameter_count", &ParametricQuantumCircuit::get_parameter_count, emscripten::allow_raw_pointers())
@@ -274,4 +278,11 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         return state::partial_trace(state, traceVec);
     }), emscripten::allow_raw_pointers());
     emscripten::function("to_matrix_gate", &gate::to_matrix_gate, emscripten::allow_raw_pointers());
+    emscripten::function("inner_product", &state::inner_product, emscripten::allow_raw_pointers());
+    emscripten::function("tensor_product", emscripten::select_overload<QuantumState*(const QuantumState*, const QuantumState*)>(&state::tensor_product), emscripten::allow_raw_pointers());
+    emscripten::function("tensor_product", emscripten::select_overload<DensityMatrix*(const DensityMatrix*, const DensityMatrix*)>(&state::tensor_product), emscripten::allow_raw_pointers());
+    emscripten::function("make_superposition", &state::make_superposition, emscripten::allow_raw_pointers());
+    emscripten::function("make_mixture", &state::make_mixture, emscripten::allow_raw_pointers());
+
+
 };
