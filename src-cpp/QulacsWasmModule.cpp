@@ -14,6 +14,7 @@
 #include <vqcsim/parametric_gate.hpp>
 #include <vqcsim/parametric_gate_factory.hpp>
 
+#include "vector.cpp"
 #include "emjs.cpp"
 #include "complex.cpp"
 #include "util.cpp"
@@ -27,14 +28,17 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("getExceptionMessage", &getExceptionMessage);
 
     register_complex<double>("complex128");
+    // @see ./vector.cpp
+    /*
     emscripten::register_vector<double>("vector<double>");
     emscripten::register_vector<CPPCTYPE>("vector<CPPCTYPE>");
     emscripten::register_vector<ITYPE>("vector<ITYPE>");
     emscripten::register_vector<int>("vector<int>");
     emscripten::register_vector<UINT>("vector<UINT>");
     emscripten::register_vector<long int>("vector<long int>");
-    emscripten::value_object<ComplexMatrix>("ComplexMatrix");
+    */
 
+    emscripten::value_object<ComplexMatrix>("ComplexMatrix");
     emscripten::class_<QuantumStateBase>("QuantumStateBase");
 
     emscripten::class_<QuantumState, emscripten::base<QuantumStateBase>>("QuantumState")
