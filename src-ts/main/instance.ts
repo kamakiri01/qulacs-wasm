@@ -44,18 +44,36 @@ export function applyModule(qulacsModule: QulacsWasmModule) {
         if (wasmExportedClass) module.exports[key] = wasmExportedClass;
         console.log("key", key, !!wasmExportedClass);
     });
+    applyQuantumStateOverload();
+    applyDensityMatrixOverload();
+}
 
+function applyQuantumStateOverload() {
     QuantumState.prototype.load = function(arg: any) {
         const that = this;
-        console.log("QuantumState.prototype.load");
         console.log(
             Object.getPrototypeOf(arg).isPrototypeOf(QuantumState),
             Object.getPrototypeOf(arg).isPrototypeOf(Object.getPrototypeOf(QuantumState))
         );
-        if (Array.isArray(arg)) return QuantumState.prototype.load_Vector.call(that, arg); // TODO: 暫定。Complexとnumberを考慮する必要がある
-        //if (arg && arg.$$ && arg.$$.ptrType && arg.$$.ptrType.name === "")
-        //if (Object.getPrototypeOf(arg).isPrototypeOf(Object.getPrototypeOf(QuantumState))) return QuantumState.prototype.load_QuantumState(arg); // 暫定
-        return QuantumState.prototype.load_QuantumState.call(that, arg);
-        //throw new Error("illegal arg type" + arg);
+        if (Array.isArray(arg)) return QuantumState.prototype.load_Vector.call(that, arg);
+        return QuantumState.prototype.load_QuantumStateBase.call(that, arg);
+    }
+}
+
+function applyDensityMatrixOverload() {
+    DensityMatrix.prototype.load = function(arg: any) {
+        const that = this;
+        console.log(
+            Object.getPrototypeOf(arg).isPrototypeOf(DensityMatrix),
+            Object.getPrototypeOf(arg).isPrototypeOf(Object.getPrototypeOf(DensityMatrix))
+        );
+        if (Array.isArray(arg)) {
+            if (Array.isArray(arg[0])) {
+                return DensityMatrix.prototype.load_Matrix.call(that, arg);
+            } else {
+                return DensityMatrix.prototype.load_Vector.call(that, arg);
+            }
+        }
+        return DensityMatrix.prototype.load_QuantumStateBase.call(that, arg);
     }
 }
