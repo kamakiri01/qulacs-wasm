@@ -38,9 +38,3 @@ ComplexMatrix translateJSMatrixtoComplexMatrix(const emscripten::val &val, UINT 
     }
     return mat;
 }
-
-template <typename Of, typename What>
-inline bool instanceof(const What w)
-{
-  return dynamic_cast<const Of*>(w) != 0;
-} 
