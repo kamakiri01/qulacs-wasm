@@ -54,8 +54,114 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("normalize", &QuantumState::normalize, emscripten::allow_raw_pointers())
         .function("allocate_buffer", &QuantumState::allocate_buffer, emscripten::allow_raw_pointers())
         .function("copy", &QuantumState::copy, emscripten::allow_raw_pointers())
-        .function("load", emscripten::select_overload<void(const QuantumStateBase*)>(&QuantumState::load), emscripten::allow_raw_pointers())
-        // .function("load", emscripten::select_overload<void(const QuantumState)>(&QuantumState::load), emscripten::allow_raw_pointers()) // add (const std::vector<CPPCTYPE>&) optional_override
+        //.function("load", emscripten::select_overload<void(const QuantumStateBase*)>(&QuantumState::load), emscripten::allow_raw_pointers())
+        //.function("load", emscripten::select_overload<void(const std::vector<CPPCTYPE>&)>(&QuantumState::load), emscripten::allow_raw_pointers())
+        //.function("load", &QuantumState::load, emscripten::allow_raw_pointers())
+        //.function("load", emscripten::select_overload<void(const QuantumStateBase*)>(&QuantumState::load), emscripten::allow_raw_pointers())
+        //.function("load", emscripten::select_overload<void(const QuantumState)>(&QuantumState::load), emscripten::allow_raw_pointers()) // add (const std::vector<CPPCTYPE>&) optional_override
+                /*
+        .function("load", emscripten::optional_override([](QuantumState& self, const QuantumStateBase* state) {
+            printf("load1\n");
+            //self.load(state);
+        }), emscripten::allow_raw_pointers())
+
+        .function("load", emscripten::optional_override([](QuantumState& self, const QuantumStateBase state) {
+            printf("load1-1\n");
+            //self.load(state);
+        }), emscripten::allow_raw_pointers())
+*/
+        .function("load2", emscripten::optional_override([](QuantumState& self,  const QuantumStateBase &state) {
+            uintptr_t ptr = (uintptr_t)&state;
+            QuantumStateBase *s = (QuantumStateBase*)ptr;
+            printf("load2. ptr %" PRIdPTR "\n", ptr);
+            printf("load2. pointer:%p PRIdPTR:%" PRIdPTR " long:%ld uintptr_t:%lx\n", &state, (uintptr_t)&state, (long)&state, (uintptr_t)&state);
+            printf("load2. pointer:%p PRIdPTR:%" PRIdPTR " long:%ld uintptr_t:%lx\n", &s, (uintptr_t)&s, (long)&s, (uintptr_t)&s);
+            printf("qubit count: %d\n", s->qubit_count);
+            printf("qubit dim: %d\n", s->dim);
+            //printf("qubit toString: %s\n", s->to_string().c_str());
+        }), emscripten::allow_raw_pointers())
+
+        .function("load", emscripten::optional_override([](QuantumState& self,  const emscripten::val &v) {
+            printf("load.\n");
+            printf("load: %p\n", &v);
+
+            auto vv = emscripten::vecFromJSArray<emscripten::val>(v);
+            printf("vec test %d\n", vv.size());
+            if (vv.size() == 0) {
+                printf("load-state\n");
+                uintptr_t ptr = (uintptr_t)&v;
+                QuantumStateBase *s = (QuantumStateBase*)ptr;
+                printf("load. pointer:%p PRIdPTR:%" PRIdPTR " long:%ld uintptr_t:%lx\n", &v, (uintptr_t)&v, (long)&v, (uintptr_t)&v);
+                printf("load. pointer:%p PRIdPTR:%" PRIdPTR " long:%ld uintptr_t:%lx\n", &s, (uintptr_t)&s, (long)&s, (uintptr_t)&s);
+
+                //QuantumStateBase& state = dynamic_cast<QuantumStateBase&>(&v);
+                printf("qubit count: %d\n", s->qubit_count);
+                //printf("qubit toString: %s\n", s->to_string().c_str());
+                //printf("qubit toString: %s\n", state->to_string().c_str());
+                //QuantumStateBase qb = v.as<QuantumStateBase>();
+                //QuantumStateBase* qb = reinterpret_cast<QuantumStateBase*>(v);
+                self.load(s);
+            } else {
+                std::vector<CPPCTYPE> vec = translateJSArraytoCPPVec(v);
+                printf("load-vec %d\n", vec.size());
+                self.load(vec);
+            }
+        }), emscripten::allow_raw_pointers())
+
+
+        .function("load_QuantumState", emscripten::optional_override([](QuantumState& self, const QuantumStateBase &state) {
+            //printf("load_QuantumState.\n");
+            //printf("load_QuantumState: %p\n", &state);
+            self.load(&state);
+        }), emscripten::allow_raw_pointers())
+
+        .function("load_Vector", emscripten::optional_override([](QuantumState& self,  const emscripten::val &v) {
+            //printf("load_Vector.\n");
+            //printf("load_Vector: %p\n", &v);
+            auto vv = emscripten::vecFromJSArray<emscripten::val>(v);
+            //printf("vec test %d\n", vv.size());
+            std::vector<CPPCTYPE> vec = translateJSArraytoCPPVec(v);
+            //printf("load-vec %d\n", vec.size());
+            self.load(vec);
+            
+        }), emscripten::allow_raw_pointers())
+
+        /*
+        .function("load", emscripten::optional_override([](QuantumState& self, const emscripten::val &v) {
+            auto vv = emscripten::vecFromJSArray<emscripten::val>(v);
+            printf("load1-3\n");
+            if (vv.size() > 0) {
+                printf("this is vec\n");
+                self.load(vv);
+            } else {
+                QuantumGateBase state = reinterpret_cast<QuantumStateBase*>(v*);
+            }
+            //printf("v size%zu\n", v.size());
+            //printf("vec test %d\n", vv.size());
+            //auto *real = static_cast<QuantumStateBase*>(dynamic_cast<void*>(&v));
+            //QuantumStateBase* v2 = dynamic_cast<QuantumStateBase>(v);
+            auto s = dynamic_cast<QuantumStateBase>(v);
+            //printf("load1-3-2\n");
+
+        }), emscripten::allow_raw_pointers())
+        */
+        /*
+        .function("load", emscripten::optional_override([](MyClass& self, const emscripten::val &v) {
+            // 配列が渡されたらvector変換してメソッドに渡す
+            auto vec = emscripten::vecFromJSArray<emscripten::val>(v);
+            self.load(vec); // virtual void load(const std::vector<double>& state)
+
+            // 抽象クラスAの継承クラスAB/AC/AD...が渡されたら
+            A instance = dynamic_cast<A>(v);
+            self.load(instance); // virtual void load(const A* state)
+        }), emscripten::allow_raw_pointers())
+        */
+
+
+
+
+        //.function("load", emscripten::select_overload<void(const QuantumStateBase*)>(&QuantumState::load), emscripten::allow_raw_pointers())
+
         .function("get_device_name", &QuantumState::get_device_name, emscripten::allow_raw_pointers())
         .function("add_state", &QuantumState::add_state, emscripten::allow_raw_pointers())
         .function("multiply_coef", &QuantumState::multiply_coef, emscripten::allow_raw_pointers())
@@ -63,6 +169,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("get_classical_value", &QuantumState::get_classical_value, emscripten::allow_raw_pointers())
         .function("set_classical_value", &QuantumState::set_classical_value, emscripten::allow_raw_pointers())
         .function("to_string", &QuantumState::to_string, emscripten::allow_raw_pointers())
+        // NOTE: ITYPEをJSArrayにそのまま渡せないためoptional_overrideを使う
         .function("sampling", emscripten::optional_override([](QuantumState& self, UINT sampling_count, UINT random_seed) {
             std::vector<ITYPE> samples = self.sampling(sampling_count, random_seed);
             return emscripten::val::take_ownership(convertIntArrayToJSArray(transpaleITYPEVecToIntArray(samples), samples.size()));
@@ -103,9 +210,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             std::vector<UINT> values = emscripten::vecFromJSArray<UINT>(measured_values);
             return state.get_marginal_probability(values);
         }), emscripten::allow_raw_pointers())
-        .function("get_qubit_count", emscripten::optional_override([](DensityMatrix& self) {
-            return self.qubit_count;
-        }), emscripten::allow_raw_pointers())
+        .function("get_qubit_count", emscripten::optional_override([](DensityMatrix& self) { return self.qubit_count; }), emscripten::allow_raw_pointers())
         .function("get_entropy", &DensityMatrix::get_entropy, emscripten::allow_raw_pointers())
         .function("get_squared_norm", &DensityMatrix::get_squared_norm, emscripten::allow_raw_pointers())
         .function("normalize", &DensityMatrix::normalize, emscripten::allow_raw_pointers())

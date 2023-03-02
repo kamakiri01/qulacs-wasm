@@ -1,4 +1,5 @@
 // @see https://github.com/emscripten-core/emscripten/issues/11070#issuecomment-717675128
+// std::vectorをJSで受ける際に自動的にArray変換するようカスタムマーシャリングする
 namespace emscripten {
     namespace internal {
         template <typename T, typename Allocator> struct BindingType<std::vector<T, Allocator>> {
