@@ -54,6 +54,10 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("normalize", &QuantumState::normalize, emscripten::allow_raw_pointers())
         .function("allocate_buffer", &QuantumState::allocate_buffer, emscripten::allow_raw_pointers())
         .function("copy", &QuantumState::copy, emscripten::allow_raw_pointers())
+        // NOTE: QuantumState#loadは引数1つにvectorとQuantumStateが渡るオーバーロードがあるが、
+        // embindはoverloadTableをargの数でテーブル管理しているため、同時にこのオーバーロードを持つことができない。
+        // https://github.com/emscripten-core/emscripten/issues/3436
+        // そのため、load_XXXとしてバインドを露出し、JavaScript側クラスのprototype.loadでバインドを呼び分けることでユーザ向けにオーバーロード相当を実現する。
         .function("load_QuantumStateBase", emscripten::optional_override([](QuantumState& self, const QuantumStateBase &state) {
             self.load(&state);
         }), emscripten::allow_raw_pointers())

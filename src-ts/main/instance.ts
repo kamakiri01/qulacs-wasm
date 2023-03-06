@@ -50,30 +50,21 @@ export function applyModule(qulacsModule: QulacsWasmModule) {
 
 function applyQuantumStateOverload() {
     QuantumState.prototype.load = function(arg: any) {
-        const that = this;
-        console.log(
-            Object.getPrototypeOf(arg).isPrototypeOf(QuantumState),
-            Object.getPrototypeOf(arg).isPrototypeOf(Object.getPrototypeOf(QuantumState))
-        );
-        if (Array.isArray(arg)) return QuantumState.prototype.load_Vector.call(that, arg);
-        return QuantumState.prototype.load_QuantumStateBase.call(that, arg);
+        if (Array.isArray(arg)) return QuantumState.prototype.load_Vector.call(this, arg);
+        return QuantumState.prototype.load_QuantumStateBase.call(this, arg);
     }
 }
 
 function applyDensityMatrixOverload() {
     DensityMatrix.prototype.load = function(arg: any) {
         const that = this;
-        console.log(
-            Object.getPrototypeOf(arg).isPrototypeOf(DensityMatrix),
-            Object.getPrototypeOf(arg).isPrototypeOf(Object.getPrototypeOf(DensityMatrix))
-        );
         if (Array.isArray(arg)) {
             if (Array.isArray(arg[0])) {
-                return DensityMatrix.prototype.load_Matrix.call(that, arg);
+                return DensityMatrix.prototype.load_Matrix.call(this, arg);
             } else {
-                return DensityMatrix.prototype.load_Vector.call(that, arg);
+                return DensityMatrix.prototype.load_Vector.call(this, arg);
             }
         }
-        return DensityMatrix.prototype.load_QuantumStateBase.call(that, arg);
+        return DensityMatrix.prototype.load_QuantumStateBase.call(this, arg);
     }
 }
