@@ -1,7 +1,7 @@
 
-const { initQulacsModule } = require("../../");
+const { initQulacs } = require("../../");
 
-initQulacsModule()
+initQulacs()
     .then(() => {
         const { QuantumState, QuantumCircuit, X, Y, RY, to_matrix_gate } = require("../../");
         console.log("---test qulacs I/F---");
@@ -91,6 +91,6 @@ initQulacsModule()
         console.log("unique gate to_matrix_gate()", mat, mat.get_matrix());
 });
 
-initQulacsModule().then(_ => {
+initQulacs().then(_ => {
 
 });

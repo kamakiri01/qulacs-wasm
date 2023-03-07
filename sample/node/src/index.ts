@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { Worker } from "worker_threads";
-import { initQulacsModule } from "qulacs-wasm";
+import { initQulacs } from "qulacs-wasm";
 
 const USE_WORKER = false;
 if (USE_WORKER) {
@@ -15,7 +15,7 @@ if (USE_WORKER) {
             worker.postMessage(module);
     })
 } else {
-    initQulacsModule()
+    initQulacs()
         .then(() => import("qulacs-wasm"))
         .then(({ QuantumState, QuantumCircuit }) => {
             const state = new QuantumState(3);

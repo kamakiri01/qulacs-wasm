@@ -1,9 +1,9 @@
-import { initQulacsModule } from "qulacs-wasm";
+import { initQulacs } from "qulacs-wasm";
 import { parentPort } from "worker_threads";
 
 parentPort!.on("message", (message: any) => {
     const module = message.data;
-    initQulacsModule({module})
+    initQulacs({module})
     .then(() => import("qulacs-wasm"))
     .then(({ QuantumState }) => {
         const state = new QuantumState(3);

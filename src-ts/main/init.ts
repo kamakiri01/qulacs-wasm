@@ -2,27 +2,27 @@ const ModuleQulacsWasm = require("../wasm/module.js");
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 import { applyModule } from "./instance";
 
-export interface InitQulacsModuleOption {
+export interface InitQulacsOption {
     module?: WebAssembly.Module;
 }
 
-export async function initQulacsModule(option: InitQulacsModuleOption = {}): Promise<QulacsWasmModule> {
+export async function initQulacs(option: InitQulacsOption = {}): Promise<QulacsWasmModule> {
     let qulacsModule: QulacsWasmModule;
     if (option.module) {
-        qulacsModule = await initQulacsFromModule(option.module);
+        qulacsModule = await _initQulacsFromModule(option.module);
     } else {
-        qulacsModule = await initQulacs();
+        qulacsModule = await _initQulacs();
     }
 
     applyModule(qulacsModule);
     return qulacsModule;
 }
 
-function initQulacs(): Promise<QulacsWasmModule> {
+function _initQulacs(): Promise<QulacsWasmModule> {
     return Promise.resolve(ModuleQulacsWasm());
 }
 
-function initQulacsFromModule(compiledModule: WebAssembly.Module): Promise<QulacsWasmModule> {
+function _initQulacsFromModule(compiledModule: WebAssembly.Module): Promise<QulacsWasmModule> {
     return new Promise((resolve, reject) => {
         function onInstantiateWasm(importObject: WebAssembly.Imports, successCallback: (module: WebAssembly.Module) => void) {
             WebAssembly.instantiate(compiledModule, importObject)

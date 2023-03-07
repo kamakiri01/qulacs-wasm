@@ -1,4 +1,5 @@
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
+import { Complex } from "./type/common";
 import type { ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, DensityMatrixImpl, ParametricQuantumCircuitImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateMatrix, QuantumStateImpl } from "./type/QulacsClass";
 
 export type QuantumState = QuantumStateImpl;
@@ -37,6 +38,10 @@ export var TOFFOLI: QuantumGateMatrix;
 
 export var partial_trace: (state: DensityMatrix, target_traceout: number[]) => DensityMatrix;
 export var to_matrix_gate: (gate: QuantumGateBase) => QuantumGateMatrix;
+export var inner_product: (state_bra: QuantumState, state_ket: QuantumState) => Complex; // NOTE: 変換が必要？
+export var tensor_product: (state_left: QuantumState, state_right: QuantumState) => QuantumState;
+export var make_superposition: (coef1: Complex, state1: QuantumState, coef2: Complex, state2: QuantumState) => QuantumState;
+export var make_mixture: (prob1: Complex, state1: QuantumState, prob2: Complex, state2: QuantumState) => DensityMatrix;
 
 export function applyModule(qulacsModule: QulacsWasmModule) {
     Object.keys(module.exports).forEach(key => {

@@ -11,9 +11,9 @@ npm install qulacs-wasm
 ```
 
 ```javascript
-import { initQulacsModule } from "qulacs-wasm";
+import { initQulacs } from "qulacs-wasm";
 
-initQulacsModule()
+initQulacs()
   .then(() => import("qulacs-wasm")) // need dynamic import to get native class
   .then({ QuantumState, QuantumCircuit } => {
       const qubitCount = 2;

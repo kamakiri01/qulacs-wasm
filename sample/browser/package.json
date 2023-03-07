@@ -8,7 +8,8 @@
     "build:tsc": "tsc -p .",
     "build:webpack": "webpack",
     "build:cpx": "cpx node_modules/qulacs-wasm/lib/wasm/*.wasm dist",
-    "start": "http-server dist"
+    "start": "http-server dist",
+    "start2": "http-server -p 8082 dist"
   },
   "keywords": [],
   "author": "",

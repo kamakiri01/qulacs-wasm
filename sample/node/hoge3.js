@@ -1,8 +1,8 @@
-const { initQulacsModule, QuantumState, QuantumCircuit } = require("../../");
+const { initQulacs, QuantumState, QuantumCircuit } = require("../../");
 
 (async () => {
     const timeFromInit = Date.now();
-    await initQulacsModule({useWorker: false});
+    await initQulacs({useWorker: false});
     const state = new QuantumState(5);
     const circuit = new QuantumCircuit(5);
     circuit.add_H_gate(0);
