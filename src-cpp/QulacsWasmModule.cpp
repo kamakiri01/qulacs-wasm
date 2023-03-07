@@ -289,20 +289,15 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("remove_gate", &ParametricQuantumCircuit::remove_gate, emscripten::allow_raw_pointers());
 
     // NOTE: https://github.com/emscripten-core/emscripten/issues/11497
-    emscripten::function("partial_trace", emscripten::optional_override([](const QuantumState* state, const emscripten::val &trace) {
-        std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(trace);
-        return state::partial_trace(state, traceVec);
-    }), emscripten::allow_raw_pointers());
     emscripten::function("partial_trace", emscripten::optional_override([](const DensityMatrix* state, const emscripten::val &target_traceout) {
         std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(target_traceout);
         return state::partial_trace(state, traceVec);
     }), emscripten::allow_raw_pointers());
     emscripten::function("to_matrix_gate", &gate::to_matrix_gate, emscripten::allow_raw_pointers());
     emscripten::function("inner_product", &state::inner_product, emscripten::allow_raw_pointers());
+    // NOTE: オーバーロード実装必要？
     emscripten::function("tensor_product", emscripten::select_overload<QuantumState*(const QuantumState*, const QuantumState*)>(&state::tensor_product), emscripten::allow_raw_pointers());
     emscripten::function("tensor_product", emscripten::select_overload<DensityMatrix*(const DensityMatrix*, const DensityMatrix*)>(&state::tensor_product), emscripten::allow_raw_pointers());
     emscripten::function("make_superposition", &state::make_superposition, emscripten::allow_raw_pointers());
     emscripten::function("make_mixture", &state::make_mixture, emscripten::allow_raw_pointers());
-
-
 };
