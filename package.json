@@ -19,7 +19,11 @@
     "build:emscripten:cp": "cpx \"./lib-cpp/**\" \"./lib/wasm/\" --clean",
     "lint": "eslint \"./src-ts/**/*.ts\""
   },
-  "keywords": [],
+  "keywords": [
+    "WebAssembly",
+    "qulacs",
+    "quantum"
+  ],
   "author": "kamakiri01",
   "license": "MIT",
   "devDependencies": {
@@ -30,5 +34,13 @@
     "cpx": "^1.5.0",
     "eslint": "^8.32.0",
     "typescript": "^4.8.4"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kamakiri01/qulacs-wasm.git"
   }
 }

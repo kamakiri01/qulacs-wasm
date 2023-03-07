@@ -14,6 +14,7 @@
 #include <vqcsim/parametric_gate.hpp>
 #include <vqcsim/parametric_gate_factory.hpp>
 
+#include "vector.cpp"
 #include "emjs.cpp"
 #include "complex.cpp"
 #include "util.cpp"
@@ -27,14 +28,17 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("getExceptionMessage", &getExceptionMessage);
 
     register_complex<double>("complex128");
+    // @see ./vector.cpp
+    /*
     emscripten::register_vector<double>("vector<double>");
     emscripten::register_vector<CPPCTYPE>("vector<CPPCTYPE>");
     emscripten::register_vector<ITYPE>("vector<ITYPE>");
     emscripten::register_vector<int>("vector<int>");
     emscripten::register_vector<UINT>("vector<UINT>");
     emscripten::register_vector<long int>("vector<long int>");
-    emscripten::value_object<ComplexMatrix>("ComplexMatrix");
+    */
 
+    emscripten::value_object<ComplexMatrix>("ComplexMatrix");
     emscripten::class_<QuantumStateBase>("QuantumStateBase");
 
     emscripten::class_<QuantumState, emscripten::base<QuantumStateBase>>("QuantumState")
@@ -50,8 +54,17 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("normalize", &QuantumState::normalize, emscripten::allow_raw_pointers())
         .function("allocate_buffer", &QuantumState::allocate_buffer, emscripten::allow_raw_pointers())
         .function("copy", &QuantumState::copy, emscripten::allow_raw_pointers())
-        .function("load", emscripten::select_overload<void(const QuantumStateBase*)>(&QuantumState::load), emscripten::allow_raw_pointers())
-        // .function("load", emscripten::select_overload<void(const QuantumState)>(&QuantumState::load), emscripten::allow_raw_pointers()) // add (const std::vector<CPPCTYPE>&) optional_override
+        // NOTE: QuantumState#loadは引数1つにvectorとQuantumStateが渡るオーバーロードがあるが、
+        // embindはoverloadTableをargの数でテーブル管理しているため、同時にこのオーバーロードを持つことができない。
+        // https://github.com/emscripten-core/emscripten/issues/3436
+        // そのため、load_XXXとしてバインドを露出し、JavaScript側クラスのprototype.loadでバインドを呼び分けることでユーザ向けにオーバーロード相当を実現する。
+        .function("load_QuantumStateBase", emscripten::optional_override([](QuantumState& self, const QuantumStateBase &state) {
+            self.load(&state);
+        }), emscripten::allow_raw_pointers())
+        .function("load_Vector", emscripten::optional_override([](QuantumState& self,  const emscripten::val &v) {
+            std::vector<CPPCTYPE> vec = translateJSArraytoCPPVec(v);
+            self.load(vec);
+        }), emscripten::allow_raw_pointers())
         .function("get_device_name", &QuantumState::get_device_name, emscripten::allow_raw_pointers())
         .function("add_state", &QuantumState::add_state, emscripten::allow_raw_pointers())
         .function("multiply_coef", &QuantumState::multiply_coef, emscripten::allow_raw_pointers())
@@ -59,6 +72,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("get_classical_value", &QuantumState::get_classical_value, emscripten::allow_raw_pointers())
         .function("set_classical_value", &QuantumState::set_classical_value, emscripten::allow_raw_pointers())
         .function("to_string", &QuantumState::to_string, emscripten::allow_raw_pointers())
+        // NOTE: ITYPEをJSArrayにそのまま渡せないためoptional_overrideを使う
         .function("sampling", emscripten::optional_override([](QuantumState& self, UINT sampling_count, UINT random_seed) {
             std::vector<ITYPE> samples = self.sampling(sampling_count, random_seed);
             return emscripten::val::take_ownership(convertIntArrayToJSArray(transpaleITYPEVecToIntArray(samples), samples.size()));
@@ -99,17 +113,23 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             std::vector<UINT> values = emscripten::vecFromJSArray<UINT>(measured_values);
             return state.get_marginal_probability(values);
         }), emscripten::allow_raw_pointers())
-        .function("get_qubit_count", emscripten::optional_override([](DensityMatrix& self) {
-            return self.qubit_count;
-        }), emscripten::allow_raw_pointers())
+        .function("get_qubit_count", emscripten::optional_override([](DensityMatrix& self) { return self.qubit_count; }), emscripten::allow_raw_pointers())
         .function("get_entropy", &DensityMatrix::get_entropy, emscripten::allow_raw_pointers())
         .function("get_squared_norm", &DensityMatrix::get_squared_norm, emscripten::allow_raw_pointers())
         .function("normalize", &DensityMatrix::normalize, emscripten::allow_raw_pointers())
         .function("allocate_buffer", &DensityMatrix::allocate_buffer, emscripten::allow_raw_pointers())
         .function("copy", &DensityMatrix::copy, emscripten::allow_raw_pointers())
-        .function("load", emscripten::select_overload<void(const QuantumStateBase*)>(&DensityMatrix::load), emscripten::allow_raw_pointers())
-        // load (const std::vector<CPPCTYPE>&))
-        // load (const ComplexMatrix&)
+        .function("load_QuantumStateBase", emscripten::optional_override([](DensityMatrix& self, const QuantumStateBase &state) {
+            self.load(&state);
+        }), emscripten::allow_raw_pointers())
+        .function("load_Vector", emscripten::optional_override([](DensityMatrix& self,  const emscripten::val &v) {
+            std::vector<CPPCTYPE> vec = translateJSArraytoCPPVec(v);
+            self.load(vec);
+        }), emscripten::allow_raw_pointers())
+        .function("load_Matrix", emscripten::optional_override([](DensityMatrix& self,  const emscripten::val &v) {
+            ComplexMatrix mat = translateJSMatrixtoComplexMatrix(v, self.dim);
+            self.load(mat);
+        }), emscripten::allow_raw_pointers())
         .function("get_device_name", &DensityMatrix::get_device_name, emscripten::allow_raw_pointers())
         .function("add_state", &DensityMatrix::add_state, emscripten::allow_raw_pointers())
         .function("multiply_coef", &DensityMatrix::multiply_coef, emscripten::allow_raw_pointers())
@@ -158,29 +178,26 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             }
             return emscripten::val::take_ownership(convertMatrix(arr, arrSize));
         }), emscripten::allow_raw_pointers())
-        .function("to__repr___string", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("get_target_index_list", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("get_control_index_list", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("get_name", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_commute", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_Pauli", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_Clifford", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_Gaussian", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_parametric", &QuantumGateBase::to_string, emscripten::allow_raw_pointers())
-        .function("is_diagonal", &QuantumGateBase::to_string, emscripten::allow_raw_pointers());
+        //.function("to__repr___string", &QuantumGateBase::to__repr___string, emscripten::allow_raw_pointers())
+        .function("get_target_index_list", &QuantumGateBase::get_target_index_list, emscripten::allow_raw_pointers())
+        .function("get_control_index_list", &QuantumGateBase::get_control_index_list, emscripten::allow_raw_pointers())
+        .function("get_name", &QuantumGateBase::get_name, emscripten::allow_raw_pointers())
+        .function("is_commute", &QuantumGateBase::is_commute, emscripten::allow_raw_pointers())
+        .function("is_Pauli", &QuantumGateBase::is_Pauli, emscripten::allow_raw_pointers())
+        .function("is_Clifford", &QuantumGateBase::is_Clifford, emscripten::allow_raw_pointers())
+        .function("is_Gaussian", &QuantumGateBase::is_Gaussian, emscripten::allow_raw_pointers())
+        .function("is_parametric", &QuantumGateBase::is_parametric, emscripten::allow_raw_pointers())
+        .function("is_diagonal", &QuantumGateBase::is_diagonal, emscripten::allow_raw_pointers());
 
     emscripten::class_<ClsOneQubitGate, emscripten::base<QuantumGateBase>>("ClsOneQubitGate");
     emscripten::class_<ClsTwoQubitGate, emscripten::base<QuantumGateBase>>("ClsTwoQubitGate");
     emscripten::class_<ClsOneQubitRotationGate, emscripten::base<QuantumGateBase>>("ClsOneQubitRotationGate");
     emscripten::class_<ClsOneControlOneTargetGate, emscripten::base<QuantumGateBase>>("ClsOneControlOneTargetGate");
-    emscripten::class_<QuantumGateMatrix, emscripten::base<QuantumGateBase>>("QuantumGateMatrix");
-    /*
-        .function("update_quantum_state", &QuantumGateMatrix::update_quantum_state, emscripten::allow_raw_pointers())
-        .function("add_control_qubit", &QuantumGateMatrix::add_control_qubit, emscripten::allow_raw_pointers())
-        .function("multiply_scalar", &QuantumGateMatrix::multiply_scalar, emscripten::allow_raw_pointers())
-        .function("copy", &QuantumGateMatrix::copy, emscripten::allow_raw_pointers())
+    emscripten::class_<QuantumGateMatrix, emscripten::base<QuantumGateBase>>("QuantumGateMatrix")
         .function("to_string", &QuantumGateMatrix::to_string, emscripten::allow_raw_pointers())
-    */
+        .function("copy", &QuantumGateMatrix::copy, emscripten::allow_raw_pointers())
+        .function("multiply_scalar", &QuantumGateMatrix::multiply_scalar, emscripten::allow_raw_pointers())
+        .function("add_control_qubit", &QuantumGateMatrix::add_control_qubit, emscripten::allow_raw_pointers());
 
     emscripten::function("Identity", &gate::Identity, emscripten::allow_raw_pointers());
     emscripten::function("X", &gate::X, emscripten::allow_raw_pointers());
@@ -191,6 +208,9 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("Sdag", &gate::Sdag, emscripten::allow_raw_pointers());
     emscripten::function("T", &gate::T, emscripten::allow_raw_pointers());
     emscripten::function("Tdag", &gate::Tdag, emscripten::allow_raw_pointers());
+    emscripten::function("U1", &gate::U1, emscripten::allow_raw_pointers());
+    emscripten::function("U2", &gate::U2, emscripten::allow_raw_pointers());
+    emscripten::function("U3", &gate::U3, emscripten::allow_raw_pointers());
     emscripten::function("RX", &gate::RX, emscripten::allow_raw_pointers());
     emscripten::function("RY", &gate::RY, emscripten::allow_raw_pointers());
     emscripten::function("RZ", &gate::RZ, emscripten::allow_raw_pointers());
@@ -238,6 +258,9 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("add_CNOT_gate", &QuantumCircuit::add_CNOT_gate)
         .function("add_CZ_gate", &QuantumCircuit::add_CZ_gate)
         .function("add_SWAP_gate", &QuantumCircuit::add_SWAP_gate)
+        .function("add_U1_gate", &QuantumCircuit::add_U1_gate)
+        .function("add_U2_gate", &QuantumCircuit::add_U2_gate)
+        .function("add_U3_gate", &QuantumCircuit::add_U3_gate)
         .function("add_RX_gate", &QuantumCircuit::add_RX_gate)
         .function("add_RY_gate", &QuantumCircuit::add_RY_gate)
         .function("add_RZ_gate", &QuantumCircuit::add_RZ_gate)
@@ -256,6 +279,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("add_parametric_RX_gate", &ParametricQuantumCircuit::add_parametric_RX_gate)
         .function("add_parametric_RY_gate", &ParametricQuantumCircuit::add_parametric_RY_gate)
         .function("add_parametric_RZ_gate", &ParametricQuantumCircuit::add_parametric_RZ_gate)
+        .function("add_parametric_multi_Pauli_rotation_gate", &ParametricQuantumCircuit::add_parametric_multi_Pauli_rotation_gate)
         .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*)>(&ParametricQuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
         .function("add_gate", emscripten::select_overload<void(const QuantumGateBase*, UINT)>(&ParametricQuantumCircuit::add_gate_copy), emscripten::allow_raw_pointers())
         .function("get_parameter_count", &ParametricQuantumCircuit::get_parameter_count, emscripten::allow_raw_pointers())
@@ -265,13 +289,15 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("remove_gate", &ParametricQuantumCircuit::remove_gate, emscripten::allow_raw_pointers());
 
     // NOTE: https://github.com/emscripten-core/emscripten/issues/11497
-    emscripten::function("partial_trace", emscripten::optional_override([](const QuantumState* state, const emscripten::val &trace) {
-        std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(trace);
-        return state::partial_trace(state, traceVec);
-    }), emscripten::allow_raw_pointers());
     emscripten::function("partial_trace", emscripten::optional_override([](const DensityMatrix* state, const emscripten::val &target_traceout) {
         std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(target_traceout);
         return state::partial_trace(state, traceVec);
     }), emscripten::allow_raw_pointers());
     emscripten::function("to_matrix_gate", &gate::to_matrix_gate, emscripten::allow_raw_pointers());
+    emscripten::function("inner_product", &state::inner_product, emscripten::allow_raw_pointers());
+    // NOTE: オーバーロード実装必要？
+    emscripten::function("tensor_product", emscripten::select_overload<QuantumState*(const QuantumState*, const QuantumState*)>(&state::tensor_product), emscripten::allow_raw_pointers());
+    emscripten::function("tensor_product", emscripten::select_overload<DensityMatrix*(const DensityMatrix*, const DensityMatrix*)>(&state::tensor_product), emscripten::allow_raw_pointers());
+    emscripten::function("make_superposition", &state::make_superposition, emscripten::allow_raw_pointers());
+    emscripten::function("make_mixture", &state::make_mixture, emscripten::allow_raw_pointers());
 };

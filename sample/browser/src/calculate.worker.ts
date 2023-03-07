@@ -1,8 +1,8 @@
-import { initQulacsModule } from "qulacs-wasm";
+import { initQulacs } from "qulacs-wasm";
 
 self.onmessage = function (event) {
     const module = event.data;
-    initQulacsModule({module})
+    initQulacs({module})
         .then(() => import("qulacs-wasm"))
         .then(({ QuantumState }) => {
             const state = new QuantumState(3);

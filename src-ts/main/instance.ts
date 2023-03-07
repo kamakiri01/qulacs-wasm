@@ -1,4 +1,5 @@
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
+import { Complex } from "./type/common";
 import type { ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, DensityMatrixImpl, ParametricQuantumCircuitImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateMatrix, QuantumStateImpl } from "./type/QulacsClass";
 
 export type QuantumState = QuantumStateImpl;
@@ -37,10 +38,38 @@ export var TOFFOLI: QuantumGateMatrix;
 
 export var partial_trace: (state: DensityMatrix, target_traceout: number[]) => DensityMatrix;
 export var to_matrix_gate: (gate: QuantumGateBase) => QuantumGateMatrix;
+export var inner_product: (state_bra: QuantumState, state_ket: QuantumState) => Complex; // NOTE: 変換が必要？
+export var tensor_product: (state_left: QuantumState, state_right: QuantumState) => QuantumState;
+export var make_superposition: (coef1: Complex, state1: QuantumState, coef2: Complex, state2: QuantumState) => QuantumState;
+export var make_mixture: (prob1: Complex, state1: QuantumState, prob2: Complex, state2: QuantumState) => DensityMatrix;
 
 export function applyModule(qulacsModule: QulacsWasmModule) {
     Object.keys(module.exports).forEach(key => {
         const wasmExportedClass = (qulacsModule as any)[key];
         if (wasmExportedClass) module.exports[key] = wasmExportedClass;
+        console.log("key", key, !!wasmExportedClass);
     });
+    applyQuantumStateOverload();
+    applyDensityMatrixOverload();
+}
+
+function applyQuantumStateOverload() {
+    QuantumState.prototype.load = function(arg: any) {
+        if (Array.isArray(arg)) return QuantumState.prototype.load_Vector.call(this, arg);
+        return QuantumState.prototype.load_QuantumStateBase.call(this, arg);
+    }
+}
+
+function applyDensityMatrixOverload() {
+    DensityMatrix.prototype.load = function(arg: any) {
+        const that = this;
+        if (Array.isArray(arg)) {
+            if (Array.isArray(arg[0])) {
+                return DensityMatrix.prototype.load_Matrix.call(this, arg);
+            } else {
+                return DensityMatrix.prototype.load_Vector.call(this, arg);
+            }
+        }
+        return DensityMatrix.prototype.load_QuantumStateBase.call(this, arg);
+    }
 }

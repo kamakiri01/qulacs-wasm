@@ -1,6 +1,7 @@
 import { QuantumState } from "../instance";
 import { Complex } from "./common";
 
+// QuantumStateBase
 export type QuantumStateImpl = {
     new (qubit_count: number): QuantumStateImpl;
     set_zero_state(): void;
@@ -13,7 +14,7 @@ export type QuantumStateImpl = {
     normalize(squared_norm: number): void;
     allocate_buffer(): QuantumStateImpl;
     copy(): QuantumStateImpl;
-    load(state: QuantumStateImpl): void;
+    load(stateOrArray: QuantumStateImpl | number[] | Complex[]): void;
     get_device_name(): string;
     add_state(state: QuantumStateImpl): void;
     multiply_coef(coef: Complex): void;
@@ -56,12 +57,13 @@ export interface QuantumCircuitImpl {
 
 export interface ParametricQuantumCircuitImpl extends QuantumCircuitImpl {
     add_parametric_RX_gate(target_index: number, initial_angle: number): void;
+    add_parametric_RY_gate(target_index: number, initial_angle: number): void;
+    add_parametric_RZ_gate(target_index: number, initial_angle: number): void;
     copy(): ParametricQuantumCircuitImpl;
-
 }
 
 export interface DensityMatrixImpl extends QuantumStateImpl {
-    set_zero_state(): void;
+    load(stateOrArrayOrMatrix: QuantumStateImpl | number[] | Complex[] | number[][] | Complex[][]): void;
 }
 
 export interface QuantumGateBase {

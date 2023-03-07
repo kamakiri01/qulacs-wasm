@@ -1,9 +1,12 @@
 
-const { QuantumState, initQulacsModule } = require("../../");
-
-initQulacsModule().then(module => {
-    const { QuantumState, X, Y,Z, H, RX, CNOT,QuantumCircuit, ParametricQuantumCircuit, DensityMatrix, partial_trace, getExceptionMessage } = require("../../"); // require after init, or use module.QuantumState
+const { QuantumState, initQulacs } = require("../../");
+let handler;
+initQulacs().then(module => {
+    const { QuantumState, X, Y,Z, H, RX, CNOT,TOFFOLI,QuantumCircuit, ParametricQuantumCircuit, DensityMatrix, partial_trace, getExceptionMessage, to_matrix_gate } = require("../../"); // require after init, or use module.QuantumState
     console.log("---test qulacs I/F---");
+
+console.log("TEST",getExceptionMessage, getExceptionMessage.toString())
+handler = getExceptionMessage; 
 
     /*
     const s = new QuantumState(1);
@@ -76,11 +79,43 @@ initQulacsModule().then(module => {
     console.log("amp", s6.get_amplitude(1));
     const s7 = new QuantumState(2);
     s7.set_Haar_random_state(2);
+    console.log("sample1", s7.sampling(10));
+    console.log("sample2", s7.sampling(10, 10));
     console.log("sample1", d1.sampling(10));
     console.log("sample2", d1.sampling(10, 10));
     console.log("gateH.get_matrix", gateH.get_matrix());
 
+    const toffoli = TOFFOLI(0,1,2);
+    const gateX = X(0);
+    const x2 = to_matrix_gate(gateX);
+    console.log("x2",x2, x2.get_target_index_list(), x2.get_control_index_list(), x2.is_Pauli());
+    const cx2 = x2.add_control_qubit(1,2);
+    console.log("x2",x2, x2.get_target_index_list(), x2.get_control_index_list(), x2.is_Pauli());
+
+
+    let s11 = new QuantumState(1);
+    s11.set_zero_state();
+
+    const s81 = new DensityMatrix(1);
+    s81.set_zero_state();
+    const s82 = new DensityMatrix(1);
+    const gateX2 = X(0);
+    //s7.set_computational_basis(1);
+    gateX2.update_quantum_state(s81);
+    //s81.load2(s82);
+    //s81.load([1,0]);
+    console.log("s81-1", s81.get_matrix());
+    s81.load(s82);
+    console.log("s81-2", s81.get_matrix());
+    s81.load([1, 1]);
+    console.log("s81-3", s81.get_matrix());
+    s81.load([[1, 0], [1, 0]]);
+    console.log("s81-4", s81.get_matrix());
+    s81.load(s11);
+    console.log("s81-4", s81.get_matrix());
 }).catch(e => {
-    const { getExceptionMessage } = require("../../");
-    console.log("getExceptionMessage", getExceptionMessage(e));
+    console.log(e)
+    console.log("handler", handler)
+
+    //console.log("getExceptionMessage", handler(e));
 })

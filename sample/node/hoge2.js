@@ -1,8 +1,8 @@
-const { initQulacsModule, QuantumState, QuantumCircuit } = require("../../");
+const { initQulacs, QuantumState, QuantumCircuit } = require("../../");
 
 
 (async () => {
-    await initQulacsModule({useWorker: false});
+    await initQulacs({useWorker: false});
     const loop = 5;
     let diffs = 0;
     for (var i = 0; i < loop;i++) {

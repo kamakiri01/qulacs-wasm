@@ -11,9 +11,9 @@ npm install qulacs-wasm
 ```
 
 ```javascript
-import { initQulacsModule } from "qulacs-wasm";
+import { initQulacs } from "qulacs-wasm";
 
-initQulacsModule()
+initQulacs()
   .then(() => import("qulacs-wasm")) // need dynamic import to get native class
   .then({ QuantumState, QuantumCircuit } => {
       const qubitCount = 2;
@@ -46,18 +46,13 @@ You can see more usage and how to include .wasm file for your project, in `sampl
 ## Available Classes and Methods
 
 - [x] Identity/ X / Y / Z / H / S / Sdag / T / Tdag / RX / RY / RZ / RotX / RotY / RotZ / RotInvX / RotInvY / RotInvZ / CNOT / CZ / SWAP / TOFFOLI / QuantumGateMatrix
-  - [x] update_quantum_state / copy / to_string / get_matrix
-  - [ ] add_control_qubit / copy / set_matrix / multiply_scalar / set_gate_property / etc
+  - [ ] set_matrix / set_gate_property / etc
 - [ ] DenseMatrix / SparseMatrix
 - [x] QuantumCircuit
-  - [x] update_quantum_state / add_gate / add_{}_gate
-  - [ ] calculate_depth / add_parametric_{}_gate / etc
 - [x] ParametricQuantumCircuit
 - [x] QuantumState / DensityMatrix
-  - [x] set_zero_state / set_computational_basis / set_Haar_random_state / get_vector / get_amplitude / get_qubit_count / get_zero_probability / load / allocate_buffer / sampling
-  - [ ] add_state / multiply_coef / multiply_elementwise_function / get_squared_norm / normalize / set_classical_value / set_classical_value / etc
 - [ ] Observable / NoiseSimulator / CausalConeSimulator / etc
-- [x] partial_trace / to_matrix_gate
+- [x] partial_trace / to_matrix_gate / inner_product / tensor_product / make_superposition / make_mixture
 
 ## Build from source
 
