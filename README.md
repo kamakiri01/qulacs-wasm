@@ -54,7 +54,19 @@ You can see more usage and how to include .wasm file for your project, in `sampl
 - [ ] Observable / NoiseSimulator / CausalConeSimulator / etc
 - [x] partial_trace / to_matrix_gate / inner_product / tensor_product / make_superposition / make_mixture
 
-## Build from source
+## Import from external .wasm file
+
+```javascript
+import { initQulacs } from "qulacs-wasm/lib/nobundle";
+const module = await WebAssembly.compile(fs.readFileSync("../path/to/module.wasm")); // Node.js
+// sconst module = await WebAssembly.compileStreaming(fetch("module.wasm")); // online
+await initQulacs({ module });
+const { QuantumState, X } = await import("qulacs-wasm/lib/nobundle");
+const state = new QuantumState(1);
+(X(0)).update_quantum_state(state);
+```
+
+## Build qulacs-wasm from source
 
 Building qulacs-wasm involves building Qulacs and Boost, so those requirements must be satisfied, and Emscripten environment for qulacs-wasm.
 
