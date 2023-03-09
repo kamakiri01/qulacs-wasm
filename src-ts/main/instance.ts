@@ -22,6 +22,9 @@ export var S: ClsOneQubitGate;
 export var Sdag: ClsOneQubitGate;
 export var T: ClsOneQubitGate;
 export var Tdag: ClsOneQubitGate;
+export var U1: ClsOneQubitGate;
+export var U2: ClsOneQubitGate;
+export var U3: ClsOneQubitGate;
 export var RX: ClsOneQubitRotationGate;
 export var RY: ClsOneQubitRotationGate;
 export var RZ: ClsOneQubitRotationGate;
@@ -47,7 +50,6 @@ export function applyModule(qulacsModule: QulacsWasmModule) {
     Object.keys(module.exports).forEach(key => {
         const wasmExportedClass = (qulacsModule as any)[key];
         if (wasmExportedClass) module.exports[key] = wasmExportedClass;
-        console.log("key", key, !!wasmExportedClass);
     });
     applyQuantumStateOverload();
     applyDensityMatrixOverload();
