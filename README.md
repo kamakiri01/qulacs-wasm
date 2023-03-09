@@ -58,8 +58,9 @@ You can see more usage and how to include .wasm file for your project, in `sampl
 
 ```javascript
 import { initQulacs } from "qulacs-wasm/lib/nobundle";
+
 const module = await WebAssembly.compile(fs.readFileSync("../path/to/module.wasm")); // Node.js
-// sconst module = await WebAssembly.compileStreaming(fetch("module.wasm")); // online
+// const module = await WebAssembly.compileStreaming(fetch("module.wasm")); // online
 await initQulacs({ module });
 const { QuantumState, X } = await import("qulacs-wasm/lib/nobundle");
 const state = new QuantumState(1);
