@@ -1,4 +1,5 @@
 lib-cpp/**/*
+lib-ts/**/*
 lib/**/*
 package-lock.json
 node_modules
