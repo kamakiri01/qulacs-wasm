@@ -1,8 +1,10 @@
 import { QuantumState } from "../instance";
 import { Complex } from "./common";
 
-// QuantumStateBase
-export type QuantumStateImpl = {
+export interface QuantumStateBase {
+}
+
+export type QuantumStateImpl = QuantumStateBase & {
     new (qubit_count: number): QuantumStateImpl;
     set_zero_state(): void;
     set_Haar_random_state(seed?: number): void;
@@ -14,17 +16,44 @@ export type QuantumStateImpl = {
     normalize(squared_norm: number): void;
     allocate_buffer(): QuantumStateImpl;
     copy(): QuantumStateImpl;
-    load(stateOrArray: QuantumStateImpl | number[] | Complex[]): void;
+    load(stateOrArray: QuantumStateBase | number[] | Complex[]): void;
     get_device_name(): string;
     add_state(state: QuantumStateImpl): void;
-    multiply_coef(coef: Complex): void;
+    multiply_coef(coef: number | Complex): void;
     // multiply_elementwise_function(): void;
     get_classical_value(index: number): number;
     set_classical_value(index: number, val: number): void;
     to_string(): string;
-    sampling(): number[];
+    sampling(sampling_count: number, random_seed?: number): number[];
     get_vector(): Complex[];
+    get_amplitude(): Complex;
+    get_qubit_count(): number;
 };
+
+export type DensityMatrixImpl = QuantumStateBase & {
+    new (qubit_count: number): DensityMatrixImpl;
+    set_zero_state(): void;
+    set_Haar_random_state(seed?: number): void;
+    set_computational_basis(comp_basis: number): void;
+    get_zero_probability(target_qubit_index: number): void;
+    get_marginal_probability(measured_values: number[]): void;
+    get_qubit_count(): number;
+    get_entropy(): number;
+    get_squared_norm(): number;
+    normalize(squared_norm: number): void;
+    allocate_buffer(): DensityMatrixImpl;
+    copy(): DensityMatrixImpl;
+    load(stateOrArrayOrMatrix: QuantumStateBase | number[] | Complex[] | number[][] | Complex[][]): void;
+    get_device_name(): string;
+    add_state(state: QuantumStateBase): void;
+    multiply_coef(coef: number | Complex): void;
+    // multiply_elementwise_function(): void;
+    get_classical_value(index: number): number;
+    set_classical_value(index: number, val: number): void;
+    to_string(): string;
+    sampling(sampling_count: number, random_seed?: number): number[];
+    get_matrix(): Complex[][];
+}
 
 export interface QuantumCircuitImpl {
     new (qubit_count: number): QuantumCircuitImpl;
@@ -60,10 +89,6 @@ export interface ParametricQuantumCircuitImpl extends QuantumCircuitImpl {
     add_parametric_RY_gate(target_index: number, initial_angle: number): void;
     add_parametric_RZ_gate(target_index: number, initial_angle: number): void;
     copy(): ParametricQuantumCircuitImpl;
-}
-
-export interface DensityMatrixImpl extends QuantumStateImpl {
-    load(stateOrArrayOrMatrix: QuantumStateImpl | number[] | Complex[] | number[][] | Complex[][]): void;
 }
 
 export interface QuantumGateBase {

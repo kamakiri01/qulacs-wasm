@@ -7,20 +7,24 @@ int* transpaleITYPEVecToIntArray(const std::vector<ITYPE> vec) {
     return arr;
 }
 
+CPPCTYPE translateJSNumberOrComplexToCPPCTYPE(const emscripten::val &v) {
+    std::complex<double> c;
+    if (v.hasOwnProperty("real") && v.hasOwnProperty("imag")) {
+        std::complex<double> c(v["real"].as<double>(), v["imag"].as<double>());
+        return c;
+    } else {
+        std::complex<double> c(v.as<double>(), 0);
+        return c;
+    }
+}
+
 std::vector<CPPCTYPE> translateJSArraytoCPPVec(const emscripten::val &v) {
     auto vec = emscripten::vecFromJSArray<emscripten::val>(v);
-
     std::vector<CPPCTYPE> cppVec;
     auto vecSize = vec.size();
     for (int i = 0; i < vecSize; i++) {
         auto raw = vec[i]; // complex or number
-        if (raw.hasOwnProperty("real") && raw.hasOwnProperty("imag")) {
-            std::complex<double> c(raw["real"].as<double>(), raw["imag"].as<double>());
-            cppVec.push_back(c);
-        } else {
-            std::complex<double> c(raw.as<double>(), 0);
-            cppVec.push_back(c);
-        }
+        cppVec.push_back(translateJSNumberOrComplexToCPPCTYPE(raw));
     }
     return cppVec;
 }

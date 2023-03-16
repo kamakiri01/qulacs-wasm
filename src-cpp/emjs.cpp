@@ -3,7 +3,6 @@
 // NOTE: 戻り型に自作structやstd::stringなどJSプリミティブでない型を渡すと、引数のintの処理が変わってしまう、getValueで正しい値も得られなくなる。型の指定によってオンメモリの扱いが変わる？
 // NOTE: 専用のEM_JSを使うべき？ https://emscripten.org/docs/api_reference/emscripten.h.html#c.EM_ASM_INT
 // NOTE: Noteの型言及参照 https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html#calling-javascript-from-c-c
-
 EM_JS(emscripten::EM_VAL, convertArray, (double* arr, int vecSize), {
     var result = [];
     const bit = 8;
@@ -16,6 +15,14 @@ EM_JS(emscripten::EM_VAL, convertArray, (double* arr, int vecSize), {
       });
     }
     return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
+});
+
+EM_JS(emscripten::EM_VAL, convertCPPCTYPEToJSComplex, (double real, double imag), {
+    var result = {
+        real: real,
+        imag: imag
+    };
+    return Emval.toHandle(result);
 });
 
 EM_JS(emscripten::EM_VAL, convertMatrix, (double* arr, int vecSize), {
