@@ -29,10 +29,10 @@ std::vector<CPPCTYPE> translateJSArraytoCPPVec(const emscripten::val &v) {
     return cppVec;
 }
 
-ComplexMatrix translateJSMatrixtoComplexMatrix(const emscripten::val &val, UINT dim) {
+ComplexMatrix translateJSMatrixtoComplexMatrix(const emscripten::val &val) {
     auto vec = emscripten::vecFromJSArray<emscripten::val>(val);
-    ComplexMatrix mat(dim, dim);
     auto vecSize = vec.size(); // maybe same dim
+    ComplexMatrix mat(vecSize, vecSize);
     for (int i = 0; i < vecSize; i++) {
         auto v = translateJSArraytoCPPVec(vec[i]);
         auto vSize = v.size(); // maybe same dim
@@ -40,5 +40,25 @@ ComplexMatrix translateJSMatrixtoComplexMatrix(const emscripten::val &val, UINT 
             mat(i, j) = v[j];
         }
     }
+    return mat;
+}
+
+// translateJSMatrixtoComplexMatrix の疎行列版。行列型以外の仕様は変わらない
+SparseComplexMatrix translateJSMatrixtoSparseComplexMatrix(const emscripten::val &val) {
+    auto vec = emscripten::vecFromJSArray<emscripten::val>(val);
+    auto vecSize = vec.size(); // maybe same dim
+    SparseComplexMatrix mat(vecSize, vecSize);
+
+
+    std::vector<Eigen::Triplet<CPPCTYPE>> tripletVec;
+    for (int i = 0; i < vecSize; i++) {
+        auto v = translateJSArraytoCPPVec(vec[i]);
+        auto vSize = v.size(); // maybe same dim
+        for (int j = 0; j < vSize; j++) {
+            //mat(i, j) = v[j];
+            tripletVec.push_back( Eigen::Triplet<CPPCTYPE>(i, j, v[j]) );
+        }
+    }
+    mat.setFromTriplets(tripletVec.begin(), tripletVec.end());
     return mat;
 }

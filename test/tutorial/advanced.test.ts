@@ -1,20 +1,20 @@
-import { initQulacs } from "../../lib/bundle";
+import { initQulacs, QuantumState } from "../../lib/bundle";
 import { round4 } from "../hepler/util";
 
-describe("tutorial advanced samples", () => {
+describe("Qulacs Advanced Guide", () => {
     let q;
     beforeEach(async () => {
         await initQulacs();
     });
 
     describe("QuantumState class", () => {
-        it("generate", async () => {
+        it("Create and Destroy", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const n = 2;
             const state = new QuantumState(n);
             expect(state).not.toBeUndefined();
         });
-        it("array", async () => {
+        it("Transform between array", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const state = new QuantumState(2);
             state.load([0, 1, 2, 3]);
@@ -25,7 +25,7 @@ describe("tutorial advanced samples", () => {
                 {real: 3, imag: 0},
             ]);
         });
-        it("copy", async () => {
+        it("Copy", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const initial_state = new QuantumState(3);
             const buffer = initial_state .allocate_buffer();
@@ -35,17 +35,16 @@ describe("tutorial advanced samples", () => {
                 expect(initial_state.get_vector()).toEqual(buffer.get_vector());
             }
         });
-        /*
-        it("json", async () => {
-            const { QuantumState } = await import("../../lib/bundle");
-            const o_state = new QuantumState(2);
-            o_state.set_Haar_random_state();
+
+        it("Store to JSON and restore", async () => {
+            // TODO
         });
-        */
-        it("init", async () => {
+
+
+        it("Initialization", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const n = 3;
-            const state = new QuantumState(n);
+            const state = new QuantumState(n);1
             state.set_zero_state();
             expect(state.get_vector()).toEqual([
                 {real: 1, imag: 0},
@@ -70,8 +69,8 @@ describe("tutorial advanced samples", () => {
                 {real: 0, imag: 0},
             ]);
 
-            state.set_Haar_random_state(0);
             // NOTE: set_Haar_random_stateはseedが固定でもqulacsバージョンや動作環境によって結果は一意とは保証されず、実装依存である
+            state.set_Haar_random_state(0);
             expect(state.get_vector()).toEqual([
                 {
                     "imag": -0.3991580676973766,
@@ -107,24 +106,22 @@ describe("tutorial advanced samples", () => {
                 },
             ]);
         });
-        it("kensa", async () => {
+        it("Check", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const n = 5;
             const state = new QuantumState(n);
             state.set_Haar_random_state(0);
             expect(state.get_qubit_count()).toBe(n);
             expect(state.get_zero_probability(1)).toBe(0.5445520462375112);
-            state.set_Haar_random_state(1);
-            expect(state.get_zero_probability(1)).not.toBe(0.5445520462375112);
-            //expect(state.get_marginal_probability([1,2,2,0,2])).toBe(0.20030608663813237);
-            //expect(state.get_entropy()).toBe(3.108273642412474);
-            //expect(state.get_squared_norm()).toBe(1);
+            expect(state.get_marginal_probability([1,2,2,0,2])).toBe(0.13406608083256927);
+            expect(state.get_entropy()).toBe(3.085681210868282);
+            expect(state.get_squared_norm()).toBe(1);
             state.sampling(10);
-            //expect(state.sampling(10, 314.0)).toEqual([23, 18, 28, 14, 17, 30, 9, 17, 16, 10]);
-            state.set_Haar_random_state();
+            expect(state.sampling(10, 314.0)).toEqual([23, 17, 24, 11, 14, 28, 3, 15, 14, 4]);
+            expect(state.get_device_name()).toBe("cpu");
             // NOTE: use seed 
         });
-        it("transform", async () => {
+        it("Deformation", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const state = new QuantumState(2);
             state.set_computational_basis(0);
@@ -158,8 +155,18 @@ describe("tutorial advanced samples", () => {
                 {real: 0, imag: 0},  
             ]);
         });
-        // 古典レジスタ
-        it("状態間の計算", async () => {
+
+        it("Classical registers", async () => {
+            const { QuantumState } = await import("../../lib/bundle");
+            const state = new QuantumState(3);
+            const position = 0;
+            const value = 20;
+            state.set_classical_value(position, value);
+            const obtained = state.get_classical_value(position);
+            expect(obtained).toEqual(value);
+        });
+
+        it("Calculation between quantum states", async () => {
             const { QuantumState, inner_product, tensor_product } = await import("../../lib/bundle");
             const n = 5;
             const state_bra = new QuantumState(n);
@@ -185,35 +192,80 @@ describe("tutorial advanced samples", () => {
                 {real: 0, imag: 0},
             ]);
         });
-        /*
-        it("replace", async () => {
-            const { QuantumState, permutate_qubit } = await import("../../lib/bundle");
+
+        it("Swap and delete qubits", async () => {
+            const { QuantumState, permutate_qubit, drop_qubit } = await import("../../lib/bundle");
             const n = 3;
             const state = new QuantumState(n);
             state.set_Haar_random_state(1);
+            expect(state.get_vector()).toEqual([
+                { real: 0.30385888914418613, imag: -0.1352706040121121 },
+                { real: 0.10818205843949354, imag: -0.0499035706092407 },
+                { real: 0.059044991052511896, imag: 0.0183033846365273 },
+                { real: -0.1601275112792203, imag: 0.004463466887972794 },
+                { real: -0.10910033108861181, imag: -0.4319005729971607 },
+                { real: 0.138922433172912, imag: 0.0064107920119231806 },
+                { real: 0.09613403820183443, imag: -0.2335702345816399 },
+                { real: -0.5734159974719932, imag: -0.48508927627363974 }
+            ]);
             const permutate = permutate_qubit(state, [1, 2, 0]);
-            expect(permutate.get_vector()).toEqual([]);
+            expect(permutate.get_vector()).toEqual([
+                { real: 0.30385888914418613, imag: -0.1352706040121121 },
+                { real: 0.059044991052511896, imag: 0.0183033846365273 },
+                { real: -0.10910033108861181, imag: -0.4319005729971607 },
+                { real: 0.09613403820183443, imag: -0.2335702345816399 },
+                { real: 0.10818205843949354, imag: -0.0499035706092407 },
+                { real: -0.1601275112792203, imag: 0.004463466887972794 },
+                { real: 0.138922433172912, imag: 0.0064107920119231806 },
+                { real: -0.5734159974719932, imag: -0.48508927627363974 }
+            ]);
+            state.set_Haar_random_state(1);
+            const state0 = drop_qubit(state, [1], [0]);
+            expect(state0.get_vector()).toEqual([
+                { real: 0.30385888914418613, imag: -0.1352706040121121 },
+                { real: 0.10818205843949354, imag: -0.0499035706092407 },
+                { real: -0.10910033108861181, imag: -0.4319005729971607 },
+                { real: 0.138922433172912, imag: 0.0064107920119231806 }
+            ]);
+            const state1 = drop_qubit(state, [1], [1]);
+            expect(state1.get_vector()).toEqual([
+                { real: 0.059044991052511896, imag: 0.0183033846365273 },
+                { real: -0.1601275112792203, imag: 0.004463466887972794 },
+                { real: 0.09613403820183443, imag: -0.2335702345816399 },
+                { real: -0.5734159974719932, imag: -0.48508927627363974 }
+            ]); 
         });
-        */
-        it("trace", async () => {
+
+        it("Calculate partial trace", async () => {
             const { QuantumState, DensityMatrix, partial_trace, H, X } = await import("../../lib/bundle");
             const state = new QuantumState(3);
             state.set_computational_basis(0);
             H(0).update_quantum_state(state);
             X(1).update_quantum_state(state);
-            // partial_trace
+            expect(state.get_vector()).toEqual([
+                { real: 0, imag: 0 },
+                { real: 0, imag: 0 },
+                { real: 0.7071067811865475, imag: 0 },
+                { real: 0.7071067811865475, imag: 0 },
+                { real: 0, imag: 0 },
+                { real: 0, imag: 0 },
+                { real: 0, imag: 0 },
+                { real: 0, imag: 0 }
+            ]);
+            const trace = partial_trace(state, [1]);
+            console.log(trace.get_matrix())
         });
     });
 
     describe("DensityMatrix class", () => {
-        it("generate", async () => {
+        it("Generate and delete", async () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const n = 2;
             const state = new DensityMatrix(n);
             expect(state).not.toBeUndefined();
         });
 
-        it("matrix", async () => {
+        it("Conversion between matrix", async () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const state = new DensityMatrix(2);
             expect(state.get_matrix()).toEqual([
@@ -298,19 +350,24 @@ describe("tutorial advanced samples", () => {
             ]);
         });
 
-        it("copy", async () => {
+        it("Copy", async () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const initial_state = new DensityMatrix(3);
             initial_state.set_computational_basis(1);
-            const copied_state = initial_state.copy(); // NOTE: copyが (node:40164) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 uncaughtException listeners added to [process]. Use emitter.setMaxListeners() to increase limit(Use `node --trace-warnings ...` to show where the warning was created) を出す
+            // NOTE: copy実行時、 (node:40164) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 uncaughtException listeners added to [process]. Use emitter.setMaxListeners() to increase limit(Use `node --trace-warnings ...` to show where the warning was created) を出す
+            const copied_state = initial_state.copy();
             expect(initial_state.get_matrix()).toEqual(copied_state.get_matrix());
             const buffer = initial_state.allocate_buffer();
             expect(buffer.get_matrix()).toEqual((new DensityMatrix(3)).get_matrix());
             buffer.load(initial_state);
             expect(buffer.get_matrix()).toEqual(initial_state.get_matrix());
         });
-        // json
-        it("init", async () => {
+
+        it("Store to JSON and restore", async () => {
+            // TODO
+        });
+
+        it("Initialize", async () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const n = 2;
             const state = new DensityMatrix(n);
@@ -381,7 +438,7 @@ describe("tutorial advanced samples", () => {
                 ]
             ]);
         });
-        it("kensa", async () => {
+        it("Check", async () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const n = 5;
             const state = new DensityMatrix(n);
@@ -397,7 +454,7 @@ describe("tutorial advanced samples", () => {
             expect(state.get_device_name()).toBe("cpu");
         });
 
-        it("transform", async () => {
+        it("Deformation", async () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const state = new DensityMatrix(2);
             state.set_computational_basis(0);
@@ -489,8 +546,18 @@ describe("tutorial advanced samples", () => {
             ]);
            expect(state.get_squared_norm()).toBe(1);
         });
-        // 古典レジスタ
-        it("superposition", async () => {
+
+        it("Classical registers", async () => {
+            const { DensityMatrix } = await import("../../lib/bundle");
+            const state = new DensityMatrix(3);
+            const position = 0;
+            const value = 20;
+            state.set_classical_value(position, value);
+            const obtained = state.get_classical_value(position);
+            expect(obtained).toEqual(value);
+        });
+
+        it("Creating superposition states and mixture states", async () => {
             const { QuantumState, DensityMatrix, make_superposition, make_mixture } = await import("../../lib/bundle");
             let a = new QuantumState(2);
             a.set_computational_basis(0b00);
@@ -543,7 +610,7 @@ describe("tutorial advanced samples", () => {
     });
 
     describe("QuantumGate class", () => {
-        it("common", async () => {
+        it("Common operations", async () => {
             const { X } = await import("../../lib/bundle");
             const gate = X(0);
             expect(gate).not.toBeUndefined();
@@ -552,10 +619,13 @@ describe("tutorial advanced samples", () => {
                 [{real: 1, imag: 0 }, {real: 0, imag: 0}]
             ]);
         });
-        // json test
 
-        describe("specified gates", () => {
-            it("single qubit gate", async () => {
+        it("Convert to/from JSON ", async () => {
+            // TODO
+        });
+
+        describe("Special gate", () => {
+            it("1 qubit gate", async () => {
                 const {
                     Identity,
                     X, Y, Z,
@@ -571,7 +641,7 @@ describe("tutorial advanced samples", () => {
                 ]);
             });
 
-            it("single qubit rotation gate", async () => {
+            it("single qubit rotating gate", async () => {
                 const { RX, RY, RZ } = await import("../../lib/bundle");
                 const target = 0;
                 const angle = 0.1;
@@ -582,7 +652,7 @@ describe("tutorial advanced samples", () => {
                 ]);
             });
 
-            it("OpenQASM basis gate", async () => {
+            it("IBMQ basis gate", async () => {
                 const { U1, U2, U3 } = await import("../../lib/bundle");
                 const gate = U3(0, 0.1, 0.2, 0.3);
                 expect(gate.get_matrix()).toEqual([
@@ -591,7 +661,7 @@ describe("tutorial advanced samples", () => {
                 ]);
             });
 
-            it("two qubit gate", async () => {
+            it("2 qubit gate", async () => {
                 const { CNOT, CZ, SWAP } = await import("../../lib/bundle");
                 const control = 5;
                 const target = 2;
@@ -635,7 +705,7 @@ describe("tutorial advanced samples", () => {
                 ]);
             });
 
-            it("multi pauli operator", async () => {
+            it("Multi-bit Pauli operation", async () => {
                 const { Pauli } = await import("../../lib/bundle");
                 const target_list = [0, 3, 5];
                 const pauli_index = [1, 3, 1]; // 1:X , 2:Y, 3:Z
@@ -725,7 +795,7 @@ describe("tutorial advanced samples", () => {
                 ]);
             });
 
-            it("multi pauli rotation operator", async () => {
+            it("Multi-bit Pauli rotating operation", async () => {
                 const { PauliRotation } = await import("../../lib/bundle");
                 const target_list = [0, 3, 5];
                 const pauli_index = [1, 3, 1]; // 1:X , 2:Y, 3:Z
@@ -734,7 +804,7 @@ describe("tutorial advanced samples", () => {
                 expect(gate).not.toBeUndefined();
             });
 
-            it("可逆回路", async () => {
+            it("Reversible circuit", async () => {
                 const { ReversibleBoolean, QuantumState } = await import("../../lib/bundle");
                 const upper = (val: number, dim: number) => (val + 1) % dim;
                 const target_list = [0, 1];
@@ -764,7 +834,7 @@ describe("tutorial advanced samples", () => {
                 ]);
             });
 
-            it("反射", async () => {
+            it("Reflecting", async () => {
                 const { StateReflection, QuantumState } = await import("../../lib/bundle");
                 const axis = new QuantumState(2);
                 axis.set_Haar_random_state(0);
@@ -798,8 +868,8 @@ describe("tutorial advanced samples", () => {
             });
         });
 
-        describe("general gates", () => {
-            it("DenseMatrix", async () => {
+        describe("General gates", () => {
+            it("Dense Matrix", async () => {
                 const { DenseMatrix } = await import("../../lib/bundle");
                 let gate = DenseMatrix(0, [[0, 1],[1, 0]]);
                 expect(gate.get_matrix()).toEqual([
@@ -838,6 +908,73 @@ describe("tutorial advanced samples", () => {
                         { real: 0, imag: 0 }
                       ]
                 ]);
+            });
+
+            it("Sparse Matrix", async () => {
+                const { SparseMatrix } = await import("../../lib/bundle");
+                const mat = [
+                    [0, 0],
+                    [0, 1]
+                ];
+                const gate = SparseMatrix([0], mat);
+                expect(gate.get_matrix()).toEqual([
+                    [ { real: 0, imag: 0 }, { real: 0, imag: 0 } ],
+                    [ { real: 0, imag: 0 }, { real: 1, imag: 0 } ]
+                ]);
+                const qs = new QuantumState(2);
+                qs.load([1, 2, 3, 4]);
+                gate.update_quantum_state(qs);
+                expect(qs.get_vector()).toEqual([
+                    { real: 0, imag: 0 },
+                    { real: 2, imag: 0 },
+                    { real: 0, imag: 0 },
+                    { real: 4, imag: 0 }
+                ]);
+            });
+
+            it("Add control bit", async () => {
+                const { to_matrix_gate, X } = await import("../../lib/bundle");
+                const index = 0;
+                const x_gate = X(index);
+                const x_mat_gate = to_matrix_gate(x_gate);
+                const control_index = 1;
+                const control_with_value = 0;
+                x_mat_gate.add_control_qubit(control_index, control_with_value);
+                expect(x_mat_gate.get_matrix()).toEqual([
+                    [ { real: 0, imag: 0 }, { real: 1, imag: 0 } ],
+                    [ { real: 1, imag: 0 }, { real: 0, imag: 0 } ]
+                ]);
+
+                const state = new QuantumState(3);
+                state.load(new Array(2**3).fill(0).map((_, i) => i));
+                expect(state.get_vector()).toEqual([
+                    { real: 0, imag: 0 },
+                    { real: 1, imag: 0 },
+                    { real: 2, imag: 0 },
+                    { real: 3, imag: 0 },
+                    { real: 4, imag: 0 },
+                    { real: 5, imag: 0 },
+                    { real: 6, imag: 0 },
+                    { real: 7, imag: 0 }
+                ]);
+                x_mat_gate.update_quantum_state(state);
+                expect(state.get_vector()).toEqual([
+                    { real: 1, imag: 0 },
+                    { real: 0, imag: 0 },
+                    { real: 2, imag: 0 },
+                    { real: 3, imag: 0 },
+                    { real: 5, imag: 0 },
+                    { real: 4, imag: 0 },
+                    { real: 6, imag: 0 },
+                    { real: 7, imag: 0 }
+                ]);
+            });
+        });
+
+        describe("Operation to create a new gate from multiple gates", () => {
+            it("Product", async () => {
+                const { PauliRotation } = await import("../../lib/bundle");
+
             });
         });
     });

@@ -17,18 +17,40 @@
 
 #include "vector.cpp"
 #include "emjs.cpp"
-#include "complex.cpp"
+//#include "complex.cpp"
 #include "util.cpp"
 
 extern "C" {
     // @see https://emscripten.org/docs/porting/Debugging.html#handling-c-exceptions-from-javascript
     std::string getExceptionMessage(intptr_t exceptionPtr) { return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what()); }
+    typedef void(*ReversibleBooleanFunc)(void);
+
+    static emscripten::val lastVal = emscripten::val::undefined();
+    void each_wrapper(const emscripten::val& v) {
+        lastVal = v;
+        lastVal();
+        lastVal = emscripten::val::undefined();
+    }
+
+    extern int invoke_function_pointer(int(*f)(int), int a) {
+        int r = (*f)(a);
+        return r;
+    }
 }
+
+// @see https://qiita.com/nokotan/items/35bea8b895eb7c9682de
+EM_JS(int, ReversibleBooleanWrapper, (intptr_t funcPtr, int n0, int n1), {
+    //console.log("EM_JS ReversibleBooleanWrapper funcPtr", funcPtr);
+    var re = Module['dynCall']('iii', funcPtr, [n0, n1]);
+    //console.log("EM_JS re:", re);
+    return re;
+    //return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
+});
 
 EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("getExceptionMessage", &getExceptionMessage);
 
-    register_complex<double>("complex128");
+    //register_complex<double>("complex128");
     // @see ./vector.cpp
     /*
     emscripten::register_vector<double>("vector<double>");
@@ -38,6 +60,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::register_vector<UINT>("vector<UINT>");
     emscripten::register_vector<long int>("vector<long int>");
     */
+
 
     emscripten::value_object<ComplexMatrix>("ComplexMatrix");
     emscripten::class_<QuantumStateBase>("QuantumStateBase");
@@ -141,7 +164,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             self.load(vec);
         }), emscripten::allow_raw_pointers())
         .function("load_Matrix", emscripten::optional_override([](DensityMatrix& self,  const emscripten::val &v) {
-            ComplexMatrix mat = translateJSMatrixtoComplexMatrix(v, self.dim);
+            ComplexMatrix mat = translateJSMatrixtoComplexMatrix(v);
             self.load(mat);
         }), emscripten::allow_raw_pointers())
         .function("get_device_name", &DensityMatrix::get_device_name, emscripten::allow_raw_pointers())
@@ -211,7 +234,9 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("is_parametric", &QuantumGateBase::is_parametric, emscripten::allow_raw_pointers())
         .function("is_diagonal", &QuantumGateBase::is_diagonal, emscripten::allow_raw_pointers());
 
+    emscripten::class_<ClsPauliGate, emscripten::base<QuantumGateBase>>("ClsPauliGate");
     emscripten::class_<ClsOneQubitGate, emscripten::base<QuantumGateBase>>("ClsOneQubitGate");
+    emscripten::class_<ClsPauliRotationGate, emscripten::base<QuantumGateBase>>("ClsPauliRotationGate");
     emscripten::class_<ClsTwoQubitGate, emscripten::base<QuantumGateBase>>("ClsTwoQubitGate");
     emscripten::class_<ClsOneQubitRotationGate, emscripten::base<QuantumGateBase>>("ClsOneQubitRotationGate");
     emscripten::class_<ClsOneControlOneTargetGate, emscripten::base<QuantumGateBase>>("ClsOneControlOneTargetGate");
@@ -220,6 +245,14 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("copy", &QuantumGateMatrix::copy, emscripten::allow_raw_pointers())
         .function("multiply_scalar", &QuantumGateMatrix::multiply_scalar, emscripten::allow_raw_pointers())
         .function("add_control_qubit", &QuantumGateMatrix::add_control_qubit, emscripten::allow_raw_pointers());
+    emscripten::class_<QuantumGateSparseMatrix, emscripten::base<QuantumGateBase>>("QuantumGateSparseMatrix");
+    emscripten::class_<QuantumGateDiagonalMatrix, emscripten::base<QuantumGateBase>>("QuantumGateDiagonalMatrix");
+    emscripten::class_<ClsReversibleBooleanGate, emscripten::base<QuantumGateBase>>("ClsReversibleBooleanGate");
+    emscripten::class_<ClsStateReflectionGate, emscripten::base<QuantumGateBase>>("ClsStateReflectionGate");
+    emscripten::class_<QuantumGate_Probabilistic, emscripten::base<QuantumGateBase>>("QuantumGate_Probabilistic");
+    emscripten::class_<QuantumGate_CPTP, emscripten::base<QuantumGateBase>>("QuantumGate_CPTP");
+    //emscripten::class_<QuantumGate_Instrument, emscripten::base<QuantumGateBase>>("QuantumGate_Instrument");
+    emscripten::class_<ClsNoisyEvolution, emscripten::base<QuantumGateBase>>("ClsNoisyEvolution");
 
     emscripten::function("Identity", &gate::Identity, emscripten::allow_raw_pointers());
     emscripten::function("X", &gate::X, emscripten::allow_raw_pointers());
@@ -230,6 +263,12 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("Sdag", &gate::Sdag, emscripten::allow_raw_pointers());
     emscripten::function("T", &gate::T, emscripten::allow_raw_pointers());
     emscripten::function("Tdag", &gate::Tdag, emscripten::allow_raw_pointers());
+    emscripten::function("sqrtX", &gate::sqrtX, emscripten::allow_raw_pointers());
+    emscripten::function("sqrtYdag", &gate::sqrtXdag, emscripten::allow_raw_pointers());
+    emscripten::function("sqrtX", &gate::sqrtY, emscripten::allow_raw_pointers());
+    emscripten::function("sqrtYdag", &gate::sqrtYdag, emscripten::allow_raw_pointers());
+    emscripten::function("P0", &gate::P0, emscripten::allow_raw_pointers());
+    emscripten::function("P1", &gate::P1, emscripten::allow_raw_pointers());
     emscripten::function("U1", &gate::U1, emscripten::allow_raw_pointers());
     emscripten::function("U2", &gate::U2, emscripten::allow_raw_pointers());
     emscripten::function("U3", &gate::U3, emscripten::allow_raw_pointers());
@@ -255,6 +294,112 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         delete ptr;
         return toffoli;
     }), emscripten::allow_raw_pointers());
+    emscripten::function("FREDKIN", emscripten::optional_override([](UINT control_index, UINT target_index1, UINT target_index2) {
+        // @see https://github.com/qulacs/qulacs/blob/2e6e0dc3feda505af5dbe1ae95c5973f7596f3aa/python/cppsim_wrapper.cpp#L855
+        auto ptr = gate::SWAP(target_index1, target_index2);
+        auto fredkin = gate::to_matrix_gate(ptr);
+        fredkin->add_control_qubit(control_index, 1);
+        delete ptr;
+        return fredkin;
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("Pauli", emscripten::optional_override([](const emscripten::val &target_qubit_index_list, const emscripten::val &pauli_ids) {
+        std::vector<UINT> target_list = emscripten::vecFromJSArray<UINT>(target_qubit_index_list);
+        std::vector<UINT> pauli_list = emscripten::vecFromJSArray<UINT>(pauli_ids);
+        // @see https://github.com/qulacs/qulacs/blob/2e6e0dc3feda505af5dbe1ae95c5973f7596f3aa/python/cppsim_wrapper.cpp#L868
+        if (target_list.size() != pauli_list.size())
+            throw std::invalid_argument("Size of qubit list and pauli list must be equal.");
+        auto ptr = gate::Pauli(target_list, pauli_list);
+        return ptr;
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("PauliRotation", emscripten::optional_override([](const emscripten::val &target_qubit_index_list, const emscripten::val &pauli_ids, double angle) {
+        std::vector<UINT> target_list = emscripten::vecFromJSArray<UINT>(target_qubit_index_list);
+        std::vector<UINT> pauli_list = emscripten::vecFromJSArray<UINT>(pauli_ids);
+        // @see https://github.com/qulacs/qulacs/blob/2e6e0dc3feda505af5dbe1ae95c5973f7596f3aa/python/cppsim_wrapper.cpp#L881
+        if (target_list.size() != pauli_list.size())
+            throw std::invalid_argument("Size of qubit list and pauli list must be equal.");
+        auto ptr = gate::PauliRotation(target_list, pauli_list, angle);
+        return ptr;
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("DenseMatrix_UINT", emscripten::optional_override([](UINT target_qubit_index, const emscripten::val &matrix) {
+        ComplexMatrix mat = translateJSMatrixtoComplexMatrix(matrix);
+        // @see https://github.com/qulacs/qulacs/blob/2e6e0dc3feda505af5dbe1ae95c5973f7596f3aa/python/cppsim_wrapper.cpp#L881
+		if (mat.rows() != 2 || mat.cols() != 2) throw std::invalid_argument("matrix dims is not 2x2.");
+		auto ptr = gate::DenseMatrix(target_qubit_index, mat);
+		if (ptr == NULL) throw std::invalid_argument("Invalid argument passed to DenseMatrix.");
+		return ptr;
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("DenseMatrix_vector_UINT", emscripten::optional_override([](const emscripten::val &target_qubit_index_list, const emscripten::val &matrix) {
+        std::vector<UINT> target_list = emscripten::vecFromJSArray<UINT>(target_qubit_index_list); // NOTE: arrayではないUINTを受けられるオーバーライドが必要
+        ComplexMatrix mat = translateJSMatrixtoComplexMatrix(matrix);
+        const ITYPE dim = 1ULL << target_list.size();
+        if (mat.rows() != dim || mat.cols() != dim)
+            throw std::invalid_argument("matrix dims is not consistent.");
+        auto ptr = gate::DenseMatrix(target_list, mat);
+        return ptr;
+
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("SparseMatrix", emscripten::optional_override([](const emscripten::val &target_qubit_index_list, const emscripten::val &matrix) {
+        std::vector<UINT> target_list = emscripten::vecFromJSArray<UINT>(target_qubit_index_list);
+        SparseComplexMatrix mat = translateJSMatrixtoSparseComplexMatrix(matrix);
+        const ITYPE dim = 1ULL << target_list.size();
+        if (mat.rows() != dim || mat.cols() != dim)
+            throw std::invalid_argument("matrix dims is not consistent.");
+        auto ptr = gate::SparseMatrix(target_list, mat);
+        return ptr;
+    }), emscripten::allow_raw_pointers());
+
+    /*
+    emscripten::function("DiagonalMatrix", emscripten::optional_override([](const emscripten::val &target_qubit_index_list, const emscripten::val &diagonal_element) {
+        std::vector<UINT> target_list = emscripten::vecFromJSArray<UINT>(target_qubit_index_list);
+        ComplexVector vec = translateJSArraytoCPPVec(diagonal_element);
+        const ITYPE dim = 1ULL << target_list.size();
+        if (vec.size() != dim)
+            throw std::invalid_argument("dim of diagonal elemet is not consistent.");
+        auto ptr =
+            gate::DiagonalMatrix(target_list, vec);
+        return ptr;
+    }), emscripten::allow_raw_pointers());
+    */
+    emscripten::function("RandomUnitary", emscripten::select_overload<QuantumGateMatrix*(std::vector<UINT>)>(&gate::RandomUnitary), emscripten::allow_raw_pointers());
+    emscripten::function("RandomUnitary", emscripten::select_overload<QuantumGateMatrix*(std::vector<UINT>, UINT)>(&gate::RandomUnitary), emscripten::allow_raw_pointers());
+    // emscripten::function("ReversibleBoolean", &gate::ReversibleBoolean, emscripten::allow_raw_pointers());
+
+    emscripten::function("ReversibleBoolean", emscripten::optional_override([](const emscripten::val &target_qubit_index_list, intptr_t funcPtr) { // , int n0, int n1
+        std::vector<UINT> target_list = emscripten::vecFromJSArray<UINT>(target_qubit_index_list); // NOTE: arrayではないUINTを受けられるようにする
+        //printf("ReversibleBoolean starting: %d\n", (int)funcPtr);
+        //func();
+        /*
+        int wrapperResult = ReversibleBooleanWrapper(funcPtr, n0, n1);
+
+        printf("ReversibleBoolean done %d\n", wrapperResult);
+        */
+        auto func = [funcPtr](int val, int dim) -> int {
+            return ReversibleBooleanWrapper(funcPtr, val, dim);
+        };
+
+        return gate::ReversibleBoolean(target_list, func);
+
+        //printf("re is %d\n", (int)re);
+    }), emscripten::allow_raw_pointers());
+
+    /*
+    emscripten::function("testPointer", emscripten::optional_override([](void(*f)(void)) {
+        printf("testPointer starting\n");
+        (*f)();
+        printf("testPointer is done\n");
+        //printf("re is %d\n", (int)re);
+
+    }), emscripten::allow_raw_pointers());
+    */
+
+    emscripten::function("StateReflection", &gate::StateReflection, emscripten::allow_raw_pointers());
+    emscripten::function("BitFlipNoise", &gate::BitFlipNoise, emscripten::allow_raw_pointers());
+    emscripten::function("DephasingNoise", &gate::DephasingNoise, emscripten::allow_raw_pointers());
+    emscripten::function("IndependentXZNoise", &gate::IndependentXZNoise, emscripten::allow_raw_pointers());
+    emscripten::function("DepolarizingNoise", &gate::DepolarizingNoise, emscripten::allow_raw_pointers());
+    emscripten::function("TwoQubitDepolarizingNoise", &gate::TwoQubitDepolarizingNoise, emscripten::allow_raw_pointers());
+    emscripten::function("AmplitudeDampingNoise", &gate::AmplitudeDampingNoise, emscripten::allow_raw_pointers());
+    emscripten::function("Measurement", &gate::Measurement, emscripten::allow_raw_pointers());
 
     emscripten::class_<QuantumCircuit>("QuantumCircuit")
         .constructor<int>()
@@ -311,18 +456,35 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("remove_gate", &ParametricQuantumCircuit::remove_gate, emscripten::allow_raw_pointers());
 
     // NOTE: https://github.com/emscripten-core/emscripten/issues/11497
-    emscripten::function("partial_trace", emscripten::optional_override([](const DensityMatrix* state, const emscripten::val &target_traceout) {
+    emscripten::function("partial_trace_QuantumState", emscripten::optional_override([](const QuantumState* state, const emscripten::val &target_traceout) {
         std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(target_traceout);
         return state::partial_trace(state, traceVec);
     }), emscripten::allow_raw_pointers());
+    emscripten::function("partial_trace_DensityMatrix", emscripten::optional_override([](const DensityMatrix* state, const emscripten::val &target_traceout) {
+        std::vector<UINT> traceVec = emscripten::vecFromJSArray<UINT>(target_traceout);
+        return state::partial_trace(state, traceVec);
+    }), emscripten::allow_raw_pointers());
+
     emscripten::function("to_matrix_gate", &gate::to_matrix_gate, emscripten::allow_raw_pointers());
     emscripten::function("inner_product", emscripten::optional_override([](const QuantumState* state_bra, const QuantumState* state_ket) {
         auto c = state::inner_product(state_bra, state_ket);
         return emscripten::val::take_ownership(convertCPPCTYPEToJSComplex(c.real(), c.imag()));
     }), emscripten::allow_raw_pointers());
     emscripten::function("tensor_product_QuantumState", emscripten::select_overload<QuantumState*(const QuantumState*, const QuantumState*)>(&state::tensor_product), emscripten::allow_raw_pointers());     
-    emscripten::function("tensor_product_DensityMatrix", emscripten::select_overload<DensityMatrix*(const DensityMatrix*, const DensityMatrix*)>(&state::tensor_product), emscripten::allow_raw_pointers());     
-    //emscripten::function("make_superposition", &state::make_superposition, emscripten::allow_raw_pointers());
+    emscripten::function("tensor_product_DensityMatrix", emscripten::select_overload<DensityMatrix*(const DensityMatrix*, const DensityMatrix*)>(&state::tensor_product), emscripten::allow_raw_pointers());
+    emscripten::function("permutate_qubit_QuantumState", emscripten::optional_override([](const QuantumState* state, const emscripten::val &qubit_order) {
+        std::vector<UINT> order = emscripten::vecFromJSArray<UINT>(qubit_order);
+        return state::permutate_qubit(state, order);
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("permutate_qubit_DensityMatrix", emscripten::optional_override([](const DensityMatrix* state, const emscripten::val &qubit_order) {
+        std::vector<UINT> order = emscripten::vecFromJSArray<UINT>(qubit_order);
+        return state::permutate_qubit(state, order);
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("drop_qubit", emscripten::optional_override([](const QuantumState* state, const emscripten::val &target, const emscripten::val &projection) {
+        std::vector<UINT> t = emscripten::vecFromJSArray<UINT>(target);
+        std::vector<UINT> p = emscripten::vecFromJSArray<UINT>(projection);
+        return state::drop_qubit(state, t, p);
+    }), emscripten::allow_raw_pointers());
     emscripten::function("make_superposition", emscripten::optional_override([](
         const emscripten::val &coef1, const QuantumState* state1, const emscripten::val &coef2, const QuantumState* state2) {
         auto state = state::make_superposition(
@@ -333,7 +495,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         );
         return state;
     }), emscripten::allow_raw_pointers());
-    //emscripten::function("make_mixture", &state::make_mixture, emscripten::allow_raw_pointers());
+    // 引数のQuantumStateBaseはtensor_productと異なりそれぞれ違う継承クラスでも良いので、別名をJS側にだし分ける必要はない
     emscripten::function("make_mixture", emscripten::optional_override([](
         const emscripten::val &prob1, const QuantumStateBase* state1, const emscripten::val &prob2, const QuantumStateBase* state2) {
         auto state = state::make_mixture(

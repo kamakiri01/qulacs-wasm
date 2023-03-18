@@ -93,19 +93,24 @@ export interface ParametricQuantumCircuitImpl extends QuantumCircuitImpl {
 
 export interface QuantumGateBase {
     update_quantum_state(state: QuantumState): void;
+    get_matrix(): Complex[][];
 }
 
-export interface ClsOneQubitGate extends QuantumGateBase {
-}
+export interface ClsOneQubitGate extends QuantumGateBase {}
 
-export interface ClsOneQubitRotationGate extends QuantumGateBase {
+export interface ClsOneQubitRotationGate extends QuantumGateBase {}
 
-}
-
-export interface ClsOneControlOneTargetGate extends QuantumGateBase {
-
-}
+export interface ClsOneControlOneTargetGate extends QuantumGateBase {}
 
 export interface QuantumGateMatrix extends QuantumGateBase {
-
+    to_string(): string;
+    copy(): QuantumGateMatrix;
+    multiply_scalar: (value: number | Complex) => void;
+    add_control_qubit: (qubit_index: number, control_value: number) => void;
 }
+export interface QuantumGateSparseMatrix extends QuantumGateBase {}
+export interface QuantumGateDiagonalMatrix extends QuantumGateBase {}
+
+export interface ClsReversibleBooleanGate extends QuantumGateBase {}
+
+export interface ClsStateReflectionGate extends QuantumGateBase {}
