@@ -1,5 +1,5 @@
 import { initQulacs, QuantumState } from "../../lib/bundle";
-import { round4 } from "../hepler/util";
+import { round4, round4ComplexMatrix } from "../hepler/util";
 
 describe("Qulacs Advanced Guide", () => {
     let q;
@@ -253,7 +253,32 @@ describe("Qulacs Advanced Guide", () => {
                 { real: 0, imag: 0 }
             ]);
             const trace = partial_trace(state, [1]);
-            console.log(trace.get_matrix())
+            expect(round4ComplexMatrix(trace.get_matrix())).toEqual([
+                [
+                    { real: 0.5, imag: 0 },
+                    { real: 0.5, imag: 0 },
+                    { real: 0, imag: 0 },
+                    { real: 0, imag: 0 }
+                  ],
+                  [
+                    { real: 0.5, imag: 0 },
+                    { real: 0.5, imag: 0 },
+                    { real: 0, imag: 0 },
+                    { real: 0, imag: 0 }
+                  ],
+                  [
+                    { real: 0, imag: 0 },
+                    { real: 0, imag: 0 },
+                    { real: 0, imag: 0 },
+                    { real: 0, imag: 0 }
+                  ],
+                  [
+                    { real: 0, imag: 0 },
+                    { real: 0, imag: 0 },
+                    { real: 0, imag: 0 },
+                    { real: 0, imag: 0 }
+                  ]
+            ]);
         });
     });
 
@@ -973,8 +998,137 @@ describe("Qulacs Advanced Guide", () => {
 
         describe("Operation to create a new gate from multiple gates", () => {
             it("Product", async () => {
-                const { PauliRotation } = await import("../../lib/bundle");
+                const { QuantumState, X, RY, merge } = await import("../../lib/bundle");
+                const n = 3;
+                const state = new QuantumState(n);
+                state.set_zero_state();
+                const index = 1;
+                const x_gate = X(index);
+                const angle = Math.PI / 4.0;
+                const ry_gate = RY(index, angle);
+                const x_and_ry_gate = merge(x_gate, ry_gate); // NOTE: merge(gate[])の実装はemscripten側でabstract classを扱う実装を検討中のため利用できない
+                expect(x_and_ry_gate.get_matrix()).toEqual([
+                    [
+                        { real: 0.3826834323650898, imag: 0 },
+                        { real: 0.9238795325112867, imag: 0 }
+                    ],
+                    [
+                        { real: 0.9238795325112867, imag: 0 },
+                        { real: -0.3826834323650898, imag: 0 }
+                      ]
+                ]);
+            });
+            it("Sum", async () => {
+                const { P0, P1, add, merge, Identity, X, Z } = await import("../../lib/bundle");
+                const gate00 = merge(P0(0), P0(1));
+                const gate11 = merge(P1(0), P1(1));
+                const proj_00_or_11 = add(gate00, gate11);
+                expect(proj_00_or_11.get_matrix()).toEqual([
+                    [
+                        { real: 1, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 }
+                      ],
+                      [
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 }
+                      ],
+                      [
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 }
+                      ],
+                      [
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 1, imag: 0 }
+                      ]
+                ]);
+                const gate_ii_zz = add(Identity(0), merge(Z(0),Z(1)));
+                const gate_ii_zz_from_array = add([Identity(0), merge([Z(0),Z(1)])]);
+                expect(gate_ii_zz.get_matrix()).toEqual(gate_ii_zz_from_array.get_matrix());
+                
+                const gate_ii_xx = add(Identity(0), merge(X(0),X(1)));
+                const proj_00_plus_11 = merge(gate_ii_zz, gate_ii_xx);
+                proj_00_plus_11.multiply_scalar(0.25);
+                expect(proj_00_plus_11.get_matrix()).toEqual([
+                    [
+                        { real: 0.5, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0.5, imag: 0 }
+                      ],
+                      [
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 }
+                      ],
+                      [
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 }
+                      ],
+                      [
+                        { real: 0.5, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0.5, imag: 0 }
+                      ]
+                ]);
+            });
 
+            it("Random unitary", async () => {
+                const { RandomUnitary } = await import("../../lib/bundle");
+                const target_list = [2, 3];
+                const gate = RandomUnitary(target_list);
+                expect(gate.get_matrix()).not.toBeUndefined();
+            });
+
+            it("Stochastic operation1", async () => {
+                const { Probabilistic, H, Z, X, QuantumState } = await import("../../lib/bundle");
+                const distribution = [0.2, 0.2, 0.2];
+                const gate_list = [H(0), Z(0), X(1)];
+                const gate = Probabilistic(distribution, gate_list);
+                const state = new QuantumState(2);
+                state.set_zero_state();
+                for (let i = 0; i < 10; i++) {
+                    gate.update_quantum_state(state);
+                }
+                expect(gate).not.toBeUndefined();
+            });
+
+            it("Stochastic operation2", async () => {
+                const { BitFlipNoise, DephasingNoise, IndependentXZNoise, DepolarizingNoise, TwoQubitDepolarizingNoise } = await import("../../lib/bundle");
+                const state = new QuantumState(2);
+                const target = 0;
+                const second_target = 1;
+                const error_prob = 0.8;
+                const gate0 = BitFlipNoise(target, error_prob) // X: prob
+                gate0.update_quantum_state(state);
+                const gate1 = DephasingNoise(target, error_prob) // Z: prob
+                gate1.update_quantum_state(state);
+                const gate2 = IndependentXZNoise(target, error_prob) // X,Z : prob*(1-prob), Y: prob*prob
+                gate2.update_quantum_state(state);
+                const gate3 = DepolarizingNoise(target, error_prob) // X,Y,Z : prob/3
+                gate3.update_quantum_state(state);
+                const gate4 = TwoQubitDepolarizingNoise(target, second_target, error_prob) // {I,X,Y,Z} \times {I,X,Y,Z} \setminus {II} : prob/15
+                gate4.update_quantum_state(state);
+            });
+
+            it("Noisy evolution", async () => {
+                // TODO
+                // const { Observable, GeneralQuantumOperator } = await import("../../lib/bundle");
+            });
+
+            it("CPTP mapping", async () => {
+                //const { merge, CPTP, P0,P1 } = await import("../../lib/bundle");
             });
         });
     });

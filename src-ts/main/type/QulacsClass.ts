@@ -1,8 +1,7 @@
 import { QuantumState } from "../instance";
 import { Complex } from "./common";
 
-export interface QuantumStateBase {
-}
+export interface QuantumStateBase {};
 
 export type QuantumStateImpl = QuantumStateBase & {
     new (qubit_count: number): QuantumStateImpl;
@@ -97,11 +96,8 @@ export interface QuantumGateBase {
 }
 
 export interface ClsOneQubitGate extends QuantumGateBase {}
-
 export interface ClsOneQubitRotationGate extends QuantumGateBase {}
-
 export interface ClsOneControlOneTargetGate extends QuantumGateBase {}
-
 export interface QuantumGateMatrix extends QuantumGateBase {
     to_string(): string;
     copy(): QuantumGateMatrix;
@@ -110,7 +106,10 @@ export interface QuantumGateMatrix extends QuantumGateBase {
 }
 export interface QuantumGateSparseMatrix extends QuantumGateBase {}
 export interface QuantumGateDiagonalMatrix extends QuantumGateBase {}
-
 export interface ClsReversibleBooleanGate extends QuantumGateBase {}
-
 export interface ClsStateReflectionGate extends QuantumGateBase {}
+export interface QuantumGate_Probabilistic extends QuantumGateBase {}
+export interface QuantumGate_CPTP extends QuantumGateBase {}
+export interface QuantumGate_Probabilistic extends QuantumGateBase {}
+export type QuantumGate_ProbabilisticInstrument = QuantumGate_Probabilistic;
+export type QuantumGate_Instrument = QuantumGate_CPTP;

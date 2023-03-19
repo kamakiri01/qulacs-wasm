@@ -19,6 +19,7 @@
 #include "emjs.cpp"
 //#include "complex.cpp"
 #include "util.cpp"
+#include <inttypes.h>
 
 extern "C" {
     // @see https://emscripten.org/docs/porting/Debugging.html#handling-c-exceptions-from-javascript
@@ -46,6 +47,13 @@ EM_JS(int, ReversibleBooleanWrapper, (intptr_t funcPtr, int n0, int n1), {
     return re;
     //return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
 });
+
+EM_JS(int, AbstractVectorWrapper, (intptr_t funcPtr, int index), {
+    console.log("EM_JS AbstractVectorWrapper", funcPtr, index);
+    return v;
+    //return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
+});
+
 
 EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("getExceptionMessage", &getExceptionMessage);
@@ -243,7 +251,11 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::class_<QuantumGateMatrix, emscripten::base<QuantumGateBase>>("QuantumGateMatrix")
         .function("to_string", &QuantumGateMatrix::to_string, emscripten::allow_raw_pointers())
         .function("copy", &QuantumGateMatrix::copy, emscripten::allow_raw_pointers())
-        .function("multiply_scalar", &QuantumGateMatrix::multiply_scalar, emscripten::allow_raw_pointers())
+
+        .function("multiply_scalar", emscripten::optional_override([](QuantumGateMatrix& self, const emscripten::val &value) {
+            self.multiply_scalar(translateJSNumberOrComplexToCPPCTYPE(value));
+        }), emscripten::allow_raw_pointers())
+
         .function("add_control_qubit", &QuantumGateMatrix::add_control_qubit, emscripten::allow_raw_pointers());
     emscripten::class_<QuantumGateSparseMatrix, emscripten::base<QuantumGateBase>>("QuantumGateSparseMatrix");
     emscripten::class_<QuantumGateDiagonalMatrix, emscripten::base<QuantumGateBase>>("QuantumGateDiagonalMatrix");
@@ -495,7 +507,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         );
         return state;
     }), emscripten::allow_raw_pointers());
-    // 引数のQuantumStateBaseはtensor_productと異なりそれぞれ違う継承クラスでも良いので、別名をJS側にだし分ける必要はない
+    // 引数のQuantumStateBaseはtensor_productと異なりそれぞれ違う継承クラスでも良いので、別名をJS側に出し分ける必要はない
     emscripten::function("make_mixture", emscripten::optional_override([](
         const emscripten::val &prob1, const QuantumStateBase* state1, const emscripten::val &prob2, const QuantumStateBase* state2) {
         auto state = state::make_mixture(
@@ -506,4 +518,90 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         );
         return state;
     }), emscripten::allow_raw_pointers());
+
+    emscripten::function("merge", emscripten::optional_override([](const QuantumGateBase* gate_applied_first, const QuantumGateBase* gate_applied_later) {
+        return gate::merge(gate_applied_first, gate_applied_later);
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("merge_QuantumGateBase_pointer", emscripten::optional_override([](const emscripten::val &v) {
+        std::vector<intptr_t> pointerVec = emscripten::vecFromJSArray<intptr_t>(v);
+        std::vector<QuantumGateBase*> list;
+        auto vecSize = pointerVec.size();
+        for (int i = 0; i < vecSize; i++) {
+            intptr_t ptr = pointerVec[i]; // uintptr_t かも
+            QuantumGateBase *s = (QuantumGateBase*) ptr;
+            list.push_back(s);
+        }
+        return gate::merge(list);
+    }), emscripten::allow_raw_pointers());
+
+    emscripten::function("add", emscripten::optional_override([](const QuantumGateBase* gate1, const QuantumGateBase* gate2) {
+        return gate::add(gate1, gate2);
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("add_QuantumGateBase_pointer", emscripten::optional_override([](const emscripten::val &v) {
+        std::vector<intptr_t> pointerVec = emscripten::vecFromJSArray<intptr_t>(v);
+        std::vector<QuantumGateBase*> list;
+        auto vecSize = pointerVec.size();
+        for (int i = 0; i < vecSize; i++) {
+            intptr_t ptr = pointerVec[i]; // uintptr_t かも
+            QuantumGateBase *s = (QuantumGateBase*) ptr;
+            list.push_back(s);
+        }
+        return gate::add(list);
+    }), emscripten::allow_raw_pointers());
+
+    emscripten::function("Probabilistic_QuantumGateBase_pointer", emscripten::optional_override([](const emscripten::val &v, const emscripten::val &v2) {
+        std::vector<double> distribution = emscripten::vecFromJSArray<double>(v);
+        std::vector<intptr_t> pointerVec = emscripten::vecFromJSArray<intptr_t>(v2);
+        std::vector<QuantumGateBase*> list;
+        auto vecSize = pointerVec.size();
+        for (int i = 0; i < vecSize; i++) {
+            intptr_t ptr = pointerVec[i]; // uintptr_t かも
+            QuantumGateBase *s = (QuantumGateBase*) ptr;
+            list.push_back(s);
+        }
+        return gate::Probabilistic(distribution, list);
+    }), emscripten::allow_raw_pointers());
+
+    /*
+    emscripten::function("testAbstArg", emscripten::optional_override([](const emscripten::val &v) {
+        //printf("testAbstArg name is %s\n", gate1->get_name().c_str());
+        std::vector<emscripten::val> vv = emscripten::vecFromJSArray<emscripten::val>(v);
+        //auto hoge = std::cref(vv[0]).as<QuantumGateBase>().get_name();
+        //printf("AbstractVectorWrapper test is %d\n ", AbstractVectorWrapper(vv[0]));
+
+        auto vecSize = vv.size();
+        std::vector<QuantumGateBase*> list;
+        for (int i = 0; i < vecSize; i++) {
+            printf("testAbstArg. ptr %" PRIdPTR "\n", &vv[i]);
+            //list.push_back((QuantumGateBase*) AbstractVectorWrapper(vv[i]));
+        }
+
+    }), emscripten::allow_raw_pointers());
+
+    emscripten::function("testAbstArg2", emscripten::optional_override([](const QuantumGateBase &v) {
+        printf("testAbstArg2. ptr %" PRIdPTR "\n", &v);
+        return (intptr_t)&v;
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("testAbstArg3", emscripten::optional_override([](const int v) {
+        printf("testAbstArg3. ptr %d\n", v);
+        QuantumGateBase *s = (QuantumGateBase*) v;
+        printf("testAbstArg3 name is %s\n", s->get_name().c_str());
+
+
+        std::vector<QuantumGateBase*> list;
+        list.push_back(s);
+        list.push_back(s);
+        return gate::add(list);
+    }), emscripten::allow_raw_pointers());
+    */
+
+    // 引数にstd::vector<QuantumGateBase*>を取る関数の場合、
+    // abstractであるQuantumGateBaseをvecFromJSArrayやas<QuantumGateBase>で直接生成することができない。
+    // またemscripten::valからvecFromJSArrayを利用した場合、valとQuantumGateBaseは型が異なるためC++に渡されるポインタも一致しない。
+    // そのため、QuantumGateBaseを引数に取る関数でQuantumGateBase型で使われるポインタアドレスを取得し、
+    // ポインタのリストを本来の関数のoptional_overrideから呼び出すことで実現する
+    emscripten::function("_getAbstractQuantumGateBasePointer", emscripten::optional_override([](const QuantumGateBase &v) {
+        return (intptr_t)&v;
+    }), emscripten::allow_raw_pointers());
+
 };

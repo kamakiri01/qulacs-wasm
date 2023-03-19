@@ -1,6 +1,6 @@
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 import { Complex } from "./type/common";
-import type { ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, ParametricQuantumCircuitImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
+import type { ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, ParametricQuantumCircuitImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
 
 export type QuantumState = QuantumStateImpl;
 export type QuantumCircuit = QuantumCircuitImpl;
@@ -55,6 +55,13 @@ export var DiagonalMatrix: (target_qubit_index_list: number[], diagonal_element:
 export var RandomUnitary: (target_qubit_index_list: number[], seed?: number) => QuantumGateMatrix;
 export var ReversibleBoolean: (target_qubit_index_list: number[], function_ptr: (val: number, dim: number) => number) => ClsReversibleBooleanGate;
 export var StateReflection: (reflection_state: QuantumStateBase) => ClsStateReflectionGate;
+export var BitFlipNoise: (target_index: number, prob: number) => QuantumGate_Probabilistic;
+export var DephasingNoise: (target_index: number, prob: number) => QuantumGate_Probabilistic;
+export var IndependentXZNoise: (target_index: number, prob: number) => QuantumGate_Probabilistic;
+export var DepolarizingNoise: (target_index: number, prob: number) => QuantumGate_Probabilistic;
+export var TwoQubitDepolarizingNoise: (target_index1: number, target_index2: number, prob: number) => QuantumGate_Probabilistic;
+export var AmplitudeDampingNoise: (target_index: number, prob: number) => QuantumGate_CPTP;
+export var Measurement: (target_index: number, classical_register_address: number) => QuantumGate_Instrument;
 
 export var partial_trace: (state: QuantumState | DensityMatrix, target_traceout: number[]) => DensityMatrix;
 export var to_matrix_gate: (gate: QuantumGateBase) => QuantumGateMatrix;
@@ -64,6 +71,10 @@ export var drop_qubit: (state: QuantumState, target: number[], order: number[]) 
 export var make_superposition: (coef1: number | Complex, state1: QuantumState, coef2: number | Complex, state2: QuantumState) => QuantumState;
 export var make_mixture: (prob1: number | Complex, state1: QuantumStateBase, prob2: number | Complex, state2: QuantumStateBase) => DensityMatrix;
 export var permutate_qubit: <T = QuantumState | DensityMatrix>(state: T, qubit_order: number[]) => T;
+
+export var merge: (gate_applied_firstOrGateList: QuantumGateBase | QuantumGateBase[], gate_applied_later?: QuantumGateBase) => QuantumGateMatrix;
+export var add: (gate1OrGateList: QuantumGateBase | QuantumGateBase[], gate2?: QuantumGateBase) => QuantumGateMatrix;
+export var Probabilistic: (distribution: number[], gate_list: QuantumGateBase[]) => QuantumGateBase;
 
 export function applyModule(qulacsModule: QulacsWasmModule) {
     Object.keys(module.exports).forEach(key => {
@@ -155,5 +166,28 @@ function applyFunctionOverload(qulacsModule: any) {
         } else {
             return qulacsModule["DenseMatrix_UINT"](target_qubit_index_list, matrix);
         }
+    }
+
+    merge = (gate1OrGateList: QuantumGateBase | QuantumGateBase[], gate2?: QuantumGateBase) => {
+        if (Array.isArray(gate1OrGateList)) {
+            const pointerList: number[] = gate1OrGateList.map(gate => qulacsModule["_getAbstractQuantumGateBasePointer"](gate));
+            return qulacsModule["merge_QuantumGateBase_pointer"](pointerList);
+        } else {
+            return qulacsModule["merge"](gate1OrGateList, gate2);
+        }
+    }
+
+    add = (gate1OrGateList: QuantumGateBase | QuantumGateBase[], gate2?: QuantumGateBase) => {
+        if (Array.isArray(gate1OrGateList)) {
+            const pointerList: number[] = gate1OrGateList.map(gate => qulacsModule["_getAbstractQuantumGateBasePointer"](gate));
+            return qulacsModule["add_QuantumGateBase_pointer"](pointerList);
+        } else {
+            return qulacsModule["add"](gate1OrGateList, gate2);
+        }
+    }
+
+    Probabilistic = (distribution: number[], gate_list: QuantumGateBase[]) => {
+        const pointerList: number[] = gate_list.map(gate => qulacsModule["_getAbstractQuantumGateBasePointer"](gate));
+        return qulacsModule["Probabilistic_QuantumGateBase_pointer"](distribution, pointerList);
     }
 }
