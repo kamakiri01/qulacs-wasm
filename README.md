@@ -43,16 +43,11 @@ sampling [
 
 You can see more usage and how to include .wasm file for your project, in `sample` dir.
 
-## Available Classes and Methods
+## non-Available Classes and Methods
 
-- [x] Identity/ X / Y / Z / H / S / Sdag / T / Tdag / RX / RY / RZ / RotX / RotY / RotZ / RotInvX / RotInvY / RotInvZ / CNOT / CZ / SWAP / TOFFOLI / QuantumGateMatrix
-  - [ ] set_matrix / set_gate_property / etc
-- [ ] DenseMatrix / SparseMatrix
-- [x] QuantumCircuit
-- [x] ParametricQuantumCircuit
-- [x] QuantumState / DensityMatrix
-- [ ] Observable / NoiseSimulator / CausalConeSimulator / etc
-- [x] partial_trace / to_matrix_gate / inner_product / tensor_product / make_superposition / make_mixture
+- [ ] Observable, GeneralQuantumOperator, CPTP
+
+Pull Requests Welcome!
 
 ## Import from external .wasm file
 

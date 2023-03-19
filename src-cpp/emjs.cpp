@@ -51,3 +51,8 @@ EM_JS(emscripten::EM_VAL, convertIntArrayToJSArray, (int* arr, int vecSize), {
     return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
 });
 
+// @see https://qiita.com/nokotan/items/35bea8b895eb7c9682de
+EM_JS(int, ReversibleBooleanWrapper, (intptr_t funcPtr, int n0, int n1), {
+    var re = Module['dynCall']('iii', funcPtr, [n0, n1]);
+    return re;
+});

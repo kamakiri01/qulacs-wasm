@@ -19,41 +19,16 @@
 #include "emjs.cpp"
 //#include "complex.cpp"
 #include "util.cpp"
-#include <inttypes.h>
 
 extern "C" {
     // @see https://emscripten.org/docs/porting/Debugging.html#handling-c-exceptions-from-javascript
     std::string getExceptionMessage(intptr_t exceptionPtr) { return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what()); }
-    typedef void(*ReversibleBooleanFunc)(void);
-
-    static emscripten::val lastVal = emscripten::val::undefined();
-    void each_wrapper(const emscripten::val& v) {
-        lastVal = v;
-        lastVal();
-        lastVal = emscripten::val::undefined();
-    }
 
     extern int invoke_function_pointer(int(*f)(int), int a) {
         int r = (*f)(a);
         return r;
     }
 }
-
-// @see https://qiita.com/nokotan/items/35bea8b895eb7c9682de
-EM_JS(int, ReversibleBooleanWrapper, (intptr_t funcPtr, int n0, int n1), {
-    //console.log("EM_JS ReversibleBooleanWrapper funcPtr", funcPtr);
-    var re = Module['dynCall']('iii', funcPtr, [n0, n1]);
-    //console.log("EM_JS re:", re);
-    return re;
-    //return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
-});
-
-EM_JS(int, AbstractVectorWrapper, (intptr_t funcPtr, int index), {
-    console.log("EM_JS AbstractVectorWrapper", funcPtr, index);
-    return v;
-    //return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
-});
-
 
 EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("getExceptionMessage", &getExceptionMessage);
@@ -68,7 +43,6 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::register_vector<UINT>("vector<UINT>");
     emscripten::register_vector<long int>("vector<long int>");
     */
-
 
     emscripten::value_object<ComplexMatrix>("ComplexMatrix");
     emscripten::class_<QuantumStateBase>("QuantumStateBase");
@@ -374,35 +348,13 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     */
     emscripten::function("RandomUnitary", emscripten::select_overload<QuantumGateMatrix*(std::vector<UINT>)>(&gate::RandomUnitary), emscripten::allow_raw_pointers());
     emscripten::function("RandomUnitary", emscripten::select_overload<QuantumGateMatrix*(std::vector<UINT>, UINT)>(&gate::RandomUnitary), emscripten::allow_raw_pointers());
-    // emscripten::function("ReversibleBoolean", &gate::ReversibleBoolean, emscripten::allow_raw_pointers());
-
     emscripten::function("ReversibleBoolean", emscripten::optional_override([](const emscripten::val &target_qubit_index_list, intptr_t funcPtr) { // , int n0, int n1
         std::vector<UINT> target_list = emscripten::vecFromJSArray<UINT>(target_qubit_index_list); // NOTE: arrayではないUINTを受けられるようにする
-        //printf("ReversibleBoolean starting: %d\n", (int)funcPtr);
-        //func();
-        /*
-        int wrapperResult = ReversibleBooleanWrapper(funcPtr, n0, n1);
-
-        printf("ReversibleBoolean done %d\n", wrapperResult);
-        */
         auto func = [funcPtr](int val, int dim) -> int {
             return ReversibleBooleanWrapper(funcPtr, val, dim);
         };
-
         return gate::ReversibleBoolean(target_list, func);
-
-        //printf("re is %d\n", (int)re);
     }), emscripten::allow_raw_pointers());
-
-    /*
-    emscripten::function("testPointer", emscripten::optional_override([](void(*f)(void)) {
-        printf("testPointer starting\n");
-        (*f)();
-        printf("testPointer is done\n");
-        //printf("re is %d\n", (int)re);
-
-    }), emscripten::allow_raw_pointers());
-    */
 
     emscripten::function("StateReflection", &gate::StateReflection, emscripten::allow_raw_pointers());
     emscripten::function("BitFlipNoise", &gate::BitFlipNoise, emscripten::allow_raw_pointers());
@@ -507,6 +459,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         );
         return state;
     }), emscripten::allow_raw_pointers());
+
     // 引数のQuantumStateBaseはtensor_productと異なりそれぞれ違う継承クラスでも良いので、別名をJS側に出し分ける必要はない
     emscripten::function("make_mixture", emscripten::optional_override([](
         const emscripten::val &prob1, const QuantumStateBase* state1, const emscripten::val &prob2, const QuantumStateBase* state2) {
@@ -562,39 +515,6 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         return gate::Probabilistic(distribution, list);
     }), emscripten::allow_raw_pointers());
 
-    /*
-    emscripten::function("testAbstArg", emscripten::optional_override([](const emscripten::val &v) {
-        //printf("testAbstArg name is %s\n", gate1->get_name().c_str());
-        std::vector<emscripten::val> vv = emscripten::vecFromJSArray<emscripten::val>(v);
-        //auto hoge = std::cref(vv[0]).as<QuantumGateBase>().get_name();
-        //printf("AbstractVectorWrapper test is %d\n ", AbstractVectorWrapper(vv[0]));
-
-        auto vecSize = vv.size();
-        std::vector<QuantumGateBase*> list;
-        for (int i = 0; i < vecSize; i++) {
-            printf("testAbstArg. ptr %" PRIdPTR "\n", &vv[i]);
-            //list.push_back((QuantumGateBase*) AbstractVectorWrapper(vv[i]));
-        }
-
-    }), emscripten::allow_raw_pointers());
-
-    emscripten::function("testAbstArg2", emscripten::optional_override([](const QuantumGateBase &v) {
-        printf("testAbstArg2. ptr %" PRIdPTR "\n", &v);
-        return (intptr_t)&v;
-    }), emscripten::allow_raw_pointers());
-    emscripten::function("testAbstArg3", emscripten::optional_override([](const int v) {
-        printf("testAbstArg3. ptr %d\n", v);
-        QuantumGateBase *s = (QuantumGateBase*) v;
-        printf("testAbstArg3 name is %s\n", s->get_name().c_str());
-
-
-        std::vector<QuantumGateBase*> list;
-        list.push_back(s);
-        list.push_back(s);
-        return gate::add(list);
-    }), emscripten::allow_raw_pointers());
-    */
-
     // 引数にstd::vector<QuantumGateBase*>を取る関数の場合、
     // abstractであるQuantumGateBaseをvecFromJSArrayやas<QuantumGateBase>で直接生成することができない。
     // またemscripten::valからvecFromJSArrayを利用した場合、valとQuantumGateBaseは型が異なるためC++に渡されるポインタも一致しない。
@@ -603,5 +523,4 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("_getAbstractQuantumGateBasePointer", emscripten::optional_override([](const QuantumGateBase &v) {
         return (intptr_t)&v;
     }), emscripten::allow_raw_pointers());
-
 };
