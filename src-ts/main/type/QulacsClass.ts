@@ -113,3 +113,14 @@ export interface QuantumGate_CPTP extends QuantumGateBase {}
 export interface QuantumGate_Probabilistic extends QuantumGateBase {}
 export type QuantumGate_ProbabilisticInstrument = QuantumGate_Probabilistic;
 export type QuantumGate_Instrument = QuantumGate_CPTP;
+export interface ClsNoisyEvolution_fast extends QuantumGateBase {};
+
+export interface GeneralQuantumOperatorImpl {
+    new (qubit_count: number): GeneralQuantumOperatorImpl;
+    add_operator(coef: number | Complex, pauli_string: string): void;
+    add_operator(target_qubit_index_list: number[], target_qubit_pauli_list: number[], pauli_string: number | Complex): void;
+    get_expectation_value(state: QuantumStateBase): Complex;
+};
+
+export type HermitianQuantumOperatorImpl = GeneralQuantumOperatorImpl & {}
+export type Observable = HermitianQuantumOperatorImpl;

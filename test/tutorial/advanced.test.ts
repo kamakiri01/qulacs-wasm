@@ -1,4 +1,4 @@
-import { initQulacs, QuantumState } from "../../lib/bundle";
+import { Complex, initQulacs, QuantumState } from "../../lib/bundle";
 import { round4, round4ComplexMatrix } from "../hepler/util";
 
 describe("Qulacs Advanced Guide", () => {
@@ -1124,7 +1124,51 @@ describe("Qulacs Advanced Guide", () => {
 
             it("Noisy evolution", async () => {
                 // TODO
-                // const { Observable, GeneralQuantumOperator } = await import("../../lib/bundle");
+                const { Observable, GeneralQuantumOperator, NoisyEvolution_fast, CMath, H } = await import("../../lib/bundle");
+                const n = 2;
+                const observable = new Observable(n);
+                observable.add_operator(1., "X 0");
+
+                const hamiltonian = new Observable(n);
+                hamiltonian.add_operator(1., "Z 0 Z 1");
+                const decay_rate_z = 0.2;
+                const decay_rate_p = 0.6;
+                const decay_rate_m = 0.1;
+
+                //const coef0 = CMath.mul(decay_rate_p / 2, { real: 0, imag: 1 });
+                //const coef1 = CMath.mul(1, CMath.mul(decay_rate_m / 2, { real: 0, imag: 1 }));
+                const coef0: Complex = { real: 0, imag: 0.3 };
+                const coef1: Complex = { real: -0, imag: -0.05 };
+
+                const c_ops = Array(3*n).fill(null).map((_, i) => { return new GeneralQuantumOperator(n); });
+                c_ops[0].add_operator(decay_rate_z, "Z 0");
+                c_ops[1].add_operator(decay_rate_z, "Z 1");
+                c_ops[2].add_operator(decay_rate_p/2, "X 0");
+                c_ops[2].add_operator(coef0, "Y 0");
+                c_ops[3].add_operator(decay_rate_p/2, "X 1");
+                c_ops[3].add_operator(coef0, "Y 1");
+                c_ops[4].add_operator(decay_rate_m/2, "X 0");
+                c_ops[4].add_operator(coef1, "Y 0");
+                c_ops[5].add_operator(decay_rate_m/2, "X 1");
+                c_ops[5].add_operator(coef1, "Y 1");
+
+                const time = 2;
+                const gate = NoisyEvolution_fast(hamiltonian, c_ops, time);
+
+                let exp: Complex = { real: 0, imag: 0 };
+                const n_samples = 1000;
+                const state = new QuantumState(n);
+                for (let k = 0; k < n_samples; k++) {
+                    state.set_zero_state();
+                    H(0).update_quantum_state(state);
+                    H(1).update_quantum_state(state);
+                    gate.update_quantum_state(state);
+                    const e = observable.get_expectation_value(state);
+                    exp = {
+                        real: exp.real + e.real / n_samples,
+                        imag: exp.imag + e.imag / n_samples
+                    };
+                }
             });
 
             it("CPTP mapping", async () => {

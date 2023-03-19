@@ -17,7 +17,7 @@
 
 #include "vector.cpp"
 #include "emjs.cpp"
-//#include "complex.cpp"
+#include "complex.cpp"
 #include "util.cpp"
 
 extern "C" {
@@ -33,7 +33,7 @@ extern "C" {
 EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("getExceptionMessage", &getExceptionMessage);
 
-    //register_complex<double>("complex128");
+    register_complex<double>("complex128");
     // @see ./vector.cpp
     /*
     emscripten::register_vector<double>("vector<double>");
@@ -239,6 +239,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::class_<QuantumGate_CPTP, emscripten::base<QuantumGateBase>>("QuantumGate_CPTP");
     //emscripten::class_<QuantumGate_Instrument, emscripten::base<QuantumGateBase>>("QuantumGate_Instrument");
     emscripten::class_<ClsNoisyEvolution, emscripten::base<QuantumGateBase>>("ClsNoisyEvolution");
+    emscripten::class_<ClsNoisyEvolution_fast, emscripten::base<QuantumGateBase>>("ClsNoisyEvolution_fast");
 
     emscripten::function("Identity", &gate::Identity, emscripten::allow_raw_pointers());
     emscripten::function("X", &gate::X, emscripten::allow_raw_pointers());
@@ -365,6 +366,19 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("AmplitudeDampingNoise", &gate::AmplitudeDampingNoise, emscripten::allow_raw_pointers());
     emscripten::function("Measurement", &gate::Measurement, emscripten::allow_raw_pointers());
 
+    emscripten::function("NoisyEvolution_fast_pointer", emscripten::optional_override([](Observable* hamiltonian, const emscripten::val &c_ops, double time) {
+        std::vector<intptr_t> pointerVec = emscripten::vecFromJSArray<intptr_t>(c_ops);
+        std::vector<GeneralQuantumOperator*> ops_list;
+        auto vecSize = pointerVec.size();
+        for (int i = 0; i < vecSize; i++) {
+            intptr_t ptr = pointerVec[i]; // uintptr_t かも
+            GeneralQuantumOperator *s = (GeneralQuantumOperator*) ptr;
+            ops_list.push_back(s);
+        }
+
+        return gate::NoisyEvolution_fast(hamiltonian, ops_list, time);
+    }), emscripten::allow_raw_pointers());
+
     emscripten::class_<QuantumCircuit>("QuantumCircuit")
         .constructor<int>()
         .function("copy", &QuantumCircuit::copy, emscripten::allow_raw_pointers())
@@ -418,6 +432,31 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("set_parameter", &ParametricQuantumCircuit::set_parameter, emscripten::allow_raw_pointers())
         .function("get_parametric_gate_position", &ParametricQuantumCircuit::get_parametric_gate_position, emscripten::allow_raw_pointers())
         .function("remove_gate", &ParametricQuantumCircuit::remove_gate, emscripten::allow_raw_pointers());
+
+    emscripten::class_<GeneralQuantumOperator>("GeneralQuantumOperator")
+        .constructor<int>()
+        .function("add_operator", emscripten::optional_override([](GeneralQuantumOperator& self, const emscripten::val &coef, const emscripten::val &pauli_string) {
+            auto c = translateJSNumberOrComplexToCPPCTYPE(coef);
+            auto str = pauli_string.as<std::string>();
+            self.add_operator(c,str);
+        }), emscripten::allow_raw_pointers())
+        .function("add_operator", emscripten::optional_override([](GeneralQuantumOperator& self, const emscripten::val &target_qubit_index_list, const emscripten::val &target_qubit_pauli_list, const emscripten::val &coef) {
+            std::vector<UINT> index_list = emscripten::vecFromJSArray<UINT>(target_qubit_index_list);
+            std::vector<UINT> pauli_list = emscripten::vecFromJSArray<UINT>(target_qubit_pauli_list);
+            auto c = translateJSNumberOrComplexToCPPCTYPE(coef);
+            self.add_operator(index_list, pauli_list, c);
+
+        }), emscripten::allow_raw_pointers());
+
+
+    emscripten::class_<HermitianQuantumOperator>("HermitianQuantumOperator")
+        .constructor<int>()
+        .function("add_operator", emscripten::optional_override([](HermitianQuantumOperator& self, const emscripten::val &coef, const emscripten::val &pauli_string) {
+            auto c = translateJSNumberOrComplexToCPPCTYPE(coef);
+            auto str = pauli_string.as<std::string>();
+            self.add_operator(c,str);
+        }), emscripten::allow_raw_pointers())
+        .function("get_expectation_value", &HermitianQuantumOperator::get_expectation_value, emscripten::allow_raw_pointers());
 
     // NOTE: https://github.com/emscripten-core/emscripten/issues/11497
     emscripten::function("partial_trace_QuantumState", emscripten::optional_override([](const QuantumState* state, const emscripten::val &target_traceout) {
@@ -515,12 +554,17 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         return gate::Probabilistic(distribution, list);
     }), emscripten::allow_raw_pointers());
 
+    // ポインタ取得用
+
     // 引数にstd::vector<QuantumGateBase*>を取る関数の場合、
-    // abstractであるQuantumGateBaseをvecFromJSArrayやas<QuantumGateBase>で直接生成することができない。
+    // (abstractである)QuantumGateBaseをvecFromJSArrayやas<QuantumGateBase>で直接生成することができない。
     // またemscripten::valからvecFromJSArrayを利用した場合、valとQuantumGateBaseは型が異なるためC++に渡されるポインタも一致しない。
     // そのため、QuantumGateBaseを引数に取る関数でQuantumGateBase型で使われるポインタアドレスを取得し、
     // ポインタのリストを本来の関数のoptional_overrideから呼び出すことで実現する
     emscripten::function("_getAbstractQuantumGateBasePointer", emscripten::optional_override([](const QuantumGateBase &v) {
+        return (intptr_t)&v;
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("_getAbstractGeneralQuantumOperatorPointer", emscripten::optional_override([](const GeneralQuantumOperator &v) {
         return (intptr_t)&v;
     }), emscripten::allow_raw_pointers());
 };

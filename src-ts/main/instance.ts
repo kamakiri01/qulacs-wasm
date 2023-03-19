@@ -1,11 +1,14 @@
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 import { Complex } from "./type/common";
-import type { ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, ParametricQuantumCircuitImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
+import type { ClsNoisyEvolution_fast, ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, GeneralQuantumOperatorImpl, HermitianQuantumOperatorImpl, ParametricQuantumCircuitImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
 
 export type QuantumState = QuantumStateImpl;
 export type QuantumCircuit = QuantumCircuitImpl;
 export type ParametricQuantumCircuit = ParametricQuantumCircuitImpl;
 export type DensityMatrix = DensityMatrixImpl;
+export type GeneralQuantumOperator = GeneralQuantumOperatorImpl;
+export type HermitianQuantumOperator = HermitianQuantumOperatorImpl;
+export type Observable = HermitianQuantumOperatorImpl;
 
 export var getExceptionMessage: (exceptionPtr: number) => string;
 export var addFunction: (func: any, flag: string) => number;
@@ -15,6 +18,10 @@ export var QuantumState: QuantumState;
 export var QuantumCircuit: QuantumCircuit;
 export var ParametricQuantumCircuit: ParametricQuantumCircuit;
 export var DensityMatrix: DensityMatrix;
+export var GeneralQuantumOperator: GeneralQuantumOperator;
+export var HermitianQuantumOperator: HermitianQuantumOperator;
+export var Observable: Observable;
+
 export var Identity: (target_qubit_index: number) => ClsOneQubitGate;;
 export var X: (target_qubit_index: number) => ClsOneQubitGate;;
 export var Y: (target_qubit_index: number) => ClsOneQubitGate;;
@@ -62,6 +69,7 @@ export var DepolarizingNoise: (target_index: number, prob: number) => QuantumGat
 export var TwoQubitDepolarizingNoise: (target_index1: number, target_index2: number, prob: number) => QuantumGate_Probabilistic;
 export var AmplitudeDampingNoise: (target_index: number, prob: number) => QuantumGate_CPTP;
 export var Measurement: (target_index: number, classical_register_address: number) => QuantumGate_Instrument;
+export var NoisyEvolution_fast: (hamiltonian: Observable, c_ops: GeneralQuantumOperator[], time: number) => ClsNoisyEvolution_fast;
 
 export var partial_trace: (state: QuantumState | DensityMatrix, target_traceout: number[]) => DensityMatrix;
 export var to_matrix_gate: (gate: QuantumGateBase) => QuantumGateMatrix;
@@ -81,9 +89,14 @@ export function applyModule(qulacsModule: QulacsWasmModule) {
         const wasmExportedImpl = (qulacsModule as any)[key];
         if (wasmExportedImpl) module.exports[key] = wasmExportedImpl;
     });
+    applayAlias();
     applyQuantumStateOverload();
     applyDensityMatrixOverload();
     applyFunctionOverload(qulacsModule);
+}
+
+function applayAlias() {
+    Observable = HermitianQuantumOperator;
 }
 
 function applyQuantumStateOverload() {
@@ -189,5 +202,10 @@ function applyFunctionOverload(qulacsModule: any) {
     Probabilistic = (distribution: number[], gate_list: QuantumGateBase[]) => {
         const pointerList: number[] = gate_list.map(gate => qulacsModule["_getAbstractQuantumGateBasePointer"](gate));
         return qulacsModule["Probabilistic_QuantumGateBase_pointer"](distribution, pointerList);
+    }
+
+    NoisyEvolution_fast = (hamiltonian: Observable, c_ops: GeneralQuantumOperator[], time: number) => {
+        const pointerList: number[] = c_ops.map(op => qulacsModule["_getAbstractGeneralQuantumOperatorPointer"](op));
+        return qulacsModule["NoisyEvolution_fast_pointer"](hamiltonian, pointerList, time);
     }
 }
