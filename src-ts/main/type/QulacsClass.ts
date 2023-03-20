@@ -124,3 +124,18 @@ export interface GeneralQuantumOperatorImpl {
 
 export type HermitianQuantumOperatorImpl = GeneralQuantumOperatorImpl & {}
 export type Observable = HermitianQuantumOperatorImpl;
+
+export interface PauliOperatorImpl {
+    new (): PauliOperatorImpl;
+    new (coef: number | Complex): PauliOperatorImpl;
+    new (strings: string, coef: number): PauliOperatorImpl;
+    add_single_Pauli(qubit_index: number, pauli_type: number): void;
+    get_index_list(): number[];
+    get_pauli_id_list(): number[];
+    get_coef(): Complex;
+    copy(): PauliOperatorImpl;
+    change_coef(new_coef: Complex): void;
+    get_pauli_string(): string;
+    get_expectation_value(state: QuantumStateBase): Complex;
+    get_transition_amplitude(state_bra: QuantumStateBase, state_ket: QuantumStateBase): Complex;
+};

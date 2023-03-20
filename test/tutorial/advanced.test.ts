@@ -1233,5 +1233,55 @@ describe("Qulacs Advanced Guide", () => {
                 expect(state.get_vector()).toEqual([{ real: 0, imag: 0 }, { real: 1, imag: 0 }]);
             });
         });
+
+        describe("Operator", () => {
+            describe("Pauli operator", () => {
+                it("Create Pauli operator and obtain state", async () => {
+                    const { PauliOperator } = await import("../../lib/bundle");
+                    const coef = 0.1;
+                    const s = "X 0 Y 1 Z 3";
+                    const pauli = new PauliOperator(s, coef);
+                    pauli.add_single_Pauli(3, 2);
+                    const index_list = pauli.get_index_list();
+                    const pauli_id_list = pauli.get_pauli_id_list();
+                    const coef1 = pauli.get_coef();
+                    expect(coef1).toEqual({ real: 0.1, imag: 0 });
+                    const another_pauli = pauli.copy();
+                    expect(another_pauli).not.toBeUndefined();
+                    const sArr = ["I","X","Y","Z"];
+                    const pauli_str = pauli_id_list.map(id => sArr[id]);
+                    const terms_str = Array(Math.max(pauli_str.length, index_list.length)).fill(0).map((_, i) => {return `${pauli_str[i]} ${index_list[i]}`});
+                    expect(terms_str).toEqual(["X 0", "Y 1", "Z 3", "Y 3"]);
+
+                    pauli.change_coef(0.5);
+                    const coef2 = pauli.get_coef();
+                    expect(coef2).toEqual({ real: 0.5, imag: 0 });
+                    const pauli_strings = pauli.get_pauli_string();
+                    expect(pauli_strings).toEqual("X 0 Y 1 Z 3 Y 3");
+                });
+
+                it("Expected value of Pauli operator", async () => {
+                    const { PauliOperator, QuantumState } = await import("../../lib/bundle");
+                    const n = 5;
+                    const coef = 2.0;
+                    const Pauli_string = "X 0 X 1 Y 2 Z 4";
+                    const pauli = new PauliOperator(Pauli_string,coef);
+
+                    // Calculate expectation value <a|H|a>
+                    const state = new QuantumState(n);
+                    state.set_Haar_random_state(0);
+                    const value = pauli.get_expectation_value(state);
+                    expect(value).toEqual({ real: 0.28573142833480863, imag: 0 });
+
+                    // Calculate transition moment <a|H|b>
+                    // The first arguments comes to the bra side
+                    const bra = new QuantumState(n);
+                    bra.set_Haar_random_state(0);
+                    const value2 = pauli.get_transition_amplitude(bra, state);
+                    expect(value2).toEqual({ real: 0.2857314283348087, imag: 0 });
+                });
+
+            });
+        });
     });
 });

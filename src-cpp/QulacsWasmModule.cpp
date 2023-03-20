@@ -448,7 +448,6 @@ EMSCRIPTEN_BINDINGS(Bindings) {
 
         }), emscripten::allow_raw_pointers());
 
-
     emscripten::class_<HermitianQuantumOperator>("HermitianQuantumOperator")
         .constructor<int>()
         .function("add_operator", emscripten::optional_override([](HermitianQuantumOperator& self, const emscripten::val &coef, const emscripten::val &pauli_string) {
@@ -457,6 +456,40 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             self.add_operator(c,str);
         }), emscripten::allow_raw_pointers())
         .function("get_expectation_value", &HermitianQuantumOperator::get_expectation_value, emscripten::allow_raw_pointers());
+
+    emscripten::class_<PauliOperator>("PauliOperator")
+        .constructor()
+        .constructor(emscripten::select_overload<PauliOperator(emscripten::val)>([](emscripten::val coef) {
+            CPPCTYPE c = translateJSNumberOrComplexToCPPCTYPE(coef);
+            PauliOperator pauli(c);
+            return pauli;
+        }))
+        .constructor(emscripten::select_overload<PauliOperator(std::string, emscripten::val)>([](std::string strings, emscripten::val coef) {
+            CPPCTYPE c = translateJSNumberOrComplexToCPPCTYPE(coef);
+            PauliOperator pauli(strings, c);
+            return pauli;
+        }))
+        .function("add_single_Pauli", &PauliOperator::add_single_Pauli, emscripten::allow_raw_pointers())
+        .function("get_index_list", &PauliOperator::get_index_list, emscripten::allow_raw_pointers())
+        .function("get_pauli_id_list", &PauliOperator::get_pauli_id_list, emscripten::allow_raw_pointers())
+        .function("get_coef", emscripten::optional_override([](PauliOperator& self) {
+            auto c = self.get_coef();
+            return emscripten::val::take_ownership(convertCPPCTYPEToJSComplex(c.real(), c.imag())); // templateで不要かも
+        }), emscripten::allow_raw_pointers())
+        .function("copy", &PauliOperator::copy, emscripten::allow_raw_pointers())
+        .function("change_coef", emscripten::optional_override([](PauliOperator& self, const emscripten::val coef) {
+            CPPCTYPE c = translateJSNumberOrComplexToCPPCTYPE(coef);
+            self.change_coef(c);
+        }), emscripten::allow_raw_pointers())
+        .function("get_pauli_string", &PauliOperator::get_pauli_string, emscripten::allow_raw_pointers())
+        .function("get_expectation_value", emscripten::optional_override([](PauliOperator& self, const QuantumState* state) {
+            CPPCTYPE c = self.get_expectation_value(state);
+            return emscripten::val::take_ownership(convertCPPCTYPEToJSComplex(c.real(), c.imag()));
+        }), emscripten::allow_raw_pointers())
+        .function("get_transition_amplitude", emscripten::optional_override([](PauliOperator& self, const QuantumStateBase* state_bra, const QuantumStateBase* state_ket) {
+            CPPCTYPE c = self.get_transition_amplitude(state_bra, state_ket);
+            return emscripten::val::take_ownership(convertCPPCTYPEToJSComplex(c.real(), c.imag()));
+        }), emscripten::allow_raw_pointers());
 
     // NOTE: https://github.com/emscripten-core/emscripten/issues/11497
     emscripten::function("partial_trace_QuantumState", emscripten::optional_override([](const QuantumState* state, const emscripten::val &target_traceout) {

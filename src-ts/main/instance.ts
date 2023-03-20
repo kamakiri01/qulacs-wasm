@@ -1,6 +1,6 @@
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 import { Complex } from "./type/common";
-import type { ClsNoisyEvolution_fast, ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, GeneralQuantumOperatorImpl, HermitianQuantumOperatorImpl, ParametricQuantumCircuitImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
+import type { ClsNoisyEvolution_fast, ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, GeneralQuantumOperatorImpl, HermitianQuantumOperatorImpl, ParametricQuantumCircuitImpl, PauliOperatorImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
 
 export type QuantumState = QuantumStateImpl;
 export type QuantumCircuit = QuantumCircuitImpl;
@@ -9,6 +9,7 @@ export type DensityMatrix = DensityMatrixImpl;
 export type GeneralQuantumOperator = GeneralQuantumOperatorImpl;
 export type HermitianQuantumOperator = HermitianQuantumOperatorImpl;
 export type Observable = HermitianQuantumOperatorImpl;
+export type PauliOperator = PauliOperatorImpl;
 
 export var getExceptionMessage: (exceptionPtr: number) => string;
 export var addFunction: (func: any, flag: string) => number;
@@ -21,6 +22,7 @@ export var DensityMatrix: DensityMatrix;
 export var GeneralQuantumOperator: GeneralQuantumOperator;
 export var HermitianQuantumOperator: HermitianQuantumOperator;
 export var Observable: Observable;
+export var PauliOperator: PauliOperator;
 
 export var Identity: (target_qubit_index: number) => ClsOneQubitGate;;
 export var X: (target_qubit_index: number) => ClsOneQubitGate;;
