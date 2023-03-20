@@ -51,8 +51,15 @@ EM_JS(emscripten::EM_VAL, convertIntArrayToJSArray, (int* arr, int vecSize), {
     return Emval.toHandle(result); // @see https://web.dev/emscripten-embedding-js-snippets/#emasyncjs-macro
 });
 
-// @see https://qiita.com/nokotan/items/35bea8b895eb7c9682de
+// @see https://qiita.com/nokotan/items/35bea8b895eb7c9682de#%E5%BF%9C%E7%94%A82-cc%E3%81%8B%E3%82%89%E6%96%87%E5%AD%97%E5%88%97%E3%82%92%E5%8F%97%E3%81%91%E5%8F%96%E3%82%8B
 EM_JS(int, ReversibleBooleanWrapper, (intptr_t funcPtr, int n0, int n1), {
     var re = Module['dynCall']('iii', funcPtr, [n0, n1]);
+    return re;
+});
+
+EM_JS(int, AdaptiveWrapper, (intptr_t funcPtr, int* arr, int size), {
+    // argに指定できる型がvijfdに限られるので、EM_JSの中でlistをJS配列化しても渡すことができない
+    // @see https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html#calling-javascript-functions-as-function-pointers-from-c
+    var re = Module['dynCall']('iii', funcPtr, [arr, size]);
     return re;
 });

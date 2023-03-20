@@ -554,6 +554,57 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         return gate::Probabilistic(distribution, list);
     }), emscripten::allow_raw_pointers());
 
+    emscripten::function("CPTP_QuantumGate_pointer", emscripten::optional_override([](const emscripten::val &v) {
+        std::vector<intptr_t> pointerVec = emscripten::vecFromJSArray<intptr_t>(v);
+        std::vector<QuantumGateBase*> gate_list;
+        auto vecSize = pointerVec.size();
+        for (int i = 0; i < vecSize; i++) {
+            intptr_t ptr = pointerVec[i]; // uintptr_t かも
+            QuantumGateBase *s = (QuantumGateBase*) ptr;
+            gate_list.push_back(s);
+        }
+        return gate::CPTP(gate_list);
+    }), emscripten::allow_raw_pointers());
+
+    emscripten::function("CP_QuantumGate_pointer", emscripten::optional_override([](const emscripten::val &v, bool state_normalize, bool probability_normalize, bool assign_zero_if_not_matched) {
+        std::vector<intptr_t> pointerVec = emscripten::vecFromJSArray<intptr_t>(v);
+        std::vector<QuantumGateBase*> gate_list;
+        auto vecSize = pointerVec.size();
+        for (int i = 0; i < vecSize; i++) {
+            intptr_t ptr = pointerVec[i]; // uintptr_t かも
+            QuantumGateBase *s = (QuantumGateBase*) ptr;
+            gate_list.push_back(s);
+        }
+        return gate::CP(gate_list, state_normalize, probability_normalize, assign_zero_if_not_matched);
+    }), emscripten::allow_raw_pointers());
+
+    emscripten::function("Instrument_QuantumGate_pointer", emscripten::optional_override([](const emscripten::val &v, UINT classical_register_address) {
+        std::vector<intptr_t> pointerVec = emscripten::vecFromJSArray<intptr_t>(v);
+        std::vector<QuantumGateBase*> gate_list;
+        auto vecSize = pointerVec.size();
+        for (int i = 0; i < vecSize; i++) {
+            intptr_t ptr = pointerVec[i]; // uintptr_t かも
+            QuantumGateBase *s = (QuantumGateBase*) ptr;
+            gate_list.push_back(s);
+        }
+        return gate::Instrument(gate_list, classical_register_address);
+    }), emscripten::allow_raw_pointers());
+
+    emscripten::function("Adaptive", emscripten::optional_override([](QuantumGateBase* gate, intptr_t funcPtr) {
+        std::function<bool(const std::vector<UINT>&)> func = [funcPtr](const std::vector<UINT>& list) -> bool {
+            // vectorのままJSに渡すとポインタアドレスからgetValueできないので配列に変換する
+            auto size = list.size();
+            int arr[size];
+            for (int i = 0; i < size; i++) {
+                arr[i] = (int)list[i];
+            }
+            return AdaptiveWrapper(funcPtr, arr, size);
+        };
+
+        return gate::Adaptive(gate, func);
+    }), emscripten::allow_raw_pointers());
+
+
     // ポインタ取得用
 
     // 引数にstd::vector<QuantumGateBase*>を取る関数の場合、

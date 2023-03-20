@@ -1123,7 +1123,6 @@ describe("Qulacs Advanced Guide", () => {
             });
 
             it("Noisy evolution", async () => {
-                // TODO
                 const { Observable, GeneralQuantumOperator, NoisyEvolution_fast, CMath, H } = await import("../../lib/bundle");
                 const n = 2;
                 const observable = new Observable(n);
@@ -1172,7 +1171,66 @@ describe("Qulacs Advanced Guide", () => {
             });
 
             it("CPTP mapping", async () => {
-                //const { merge, CPTP, P0,P1 } = await import("../../lib/bundle");
+                const { merge, CPTP, P0, P1, QuantumState, H } = await import("../../lib/bundle");
+
+                const gate00 = merge(P0(0), P0(1));
+                const gate01 = merge(P0(0), P1(1));
+                const gate10 = merge(P1(0), P0(1));
+                const gate11 = merge(P1(0), P1(1));
+                const gate_list = [gate00, gate01, gate10, gate11];
+                const gate = CPTP(gate_list);
+
+                const state = new QuantumState(2);
+                for (let i = 0; i < 10; i++) {
+                    state.set_zero_state();
+                    merge(H(0), H(1)).update_quantum_state(state);
+                    gate.update_quantum_state(state);
+                }
+            });
+
+            it("CPTP mapping2", async () => {
+                const { AmplitudeDampingNoise } = await import("../../lib/bundle");
+                const target = 0;
+                const damping_rate = 0.1;
+                AmplitudeDampingNoise(target, damping_rate); // K_0: [[1,0],[0,sqrt(1-p)]], K_1: [[0,sqrt(p)], [0,0]]
+            });
+
+            it("Instrument", async () => {
+                const { merge, Instrument, P0, P1, QuantumState, H } = await import("../../lib/bundle");
+                const gate00 = merge(P0(0),P0(1));
+                const gate01 = merge(P1(0),P0(1));
+                const gate10 = merge(P0(0),P1(1));
+                const gate11 = merge(P1(0),P1(1));
+
+                const gate_list = [gate00, gate01, gate10, gate11];
+                const classical_pos = 0;
+                const gate = Instrument(gate_list, classical_pos);
+
+                const state = new QuantumState(2);
+                for (let i = 0; i < 10; i++) {
+                    state.set_zero_state();
+                    merge(H(0),H(1)).update_quantum_state(state);
+                    gate.update_quantum_state(state);
+                    const result = state.get_classical_value(classical_pos);
+                    // console.log(i, `00${result.toString(2)}`.slice(-2), state.get_vector());
+                }
+            });
+
+            it("Adaptive operation", async () => {
+                const { Adaptive, X, QuantumState } = await import("../../lib/bundle");
+                const func = (list: number[]): boolean=> {
+                    console.log("func is called! list is ", list);
+                    return list[0] === 1;
+                }
+                const gate = Adaptive(X(0), func);
+                const state = new QuantumState(1);
+                state.set_zero_state();
+                state.set_classical_value(0, 0);
+                gate.update_quantum_state(state);
+                expect(state.get_vector()).toEqual([{ real: 1, imag: 0 }, { real: 0, imag: 0 }]);
+                state.set_classical_value(0, 1);
+                gate.update_quantum_state(state);
+                expect(state.get_vector()).toEqual([{ real: 0, imag: 0 }, { real: 1, imag: 0 }]);
             });
         });
     });

@@ -83,6 +83,11 @@ export var permutate_qubit: <T = QuantumState | DensityMatrix>(state: T, qubit_o
 export var merge: (gate_applied_firstOrGateList: QuantumGateBase | QuantumGateBase[], gate_applied_later?: QuantumGateBase) => QuantumGateMatrix;
 export var add: (gate1OrGateList: QuantumGateBase | QuantumGateBase[], gate2?: QuantumGateBase) => QuantumGateMatrix;
 export var Probabilistic: (distribution: number[], gate_list: QuantumGateBase[]) => QuantumGateBase;
+export var CPTP: (gate_list: QuantumGateBase[]) => QuantumGateBase;
+export var CP: (gate_list: QuantumGateBase[], state_normalize: boolean, probability_normalize: boolean, assign_zero_if_not_matched: boolean) => QuantumGateBase;
+export var Instrument: (gate_list: QuantumGateBase[], classical_register_address: number) => QuantumGateBase;
+export var Adaptive: (gate: QuantumGateBase, function_ptr: (list: number[]) => boolean) => QuantumGateBase;
+
 
 export function applyModule(qulacsModule: QulacsWasmModule) {
     Object.keys(module.exports).forEach(key => {
@@ -169,7 +174,7 @@ function applyFunctionOverload(qulacsModule: any) {
     ReversibleBoolean = (target_qubit_index_list: number[], function_ptr: (val: number, dim: number) => number) => {
         const fnPointer = addFunction(function_ptr, "iii");
         const gate = qulacsModule["ReversibleBoolean"](target_qubit_index_list, fnPointer);
-        //removeFunction(fnPointer); // NOTE:C++側クロージャが参照する可能性が残るので、いつ消せるか検討。ReversibleBooleanのdeleteまで？
+        //removeFunction(fnPointer); // NOTE: return後もC++側クロージャが参照する可能性が残るので、いつ消せるか検討。ReversibleBooleanのdeleteまで？
         return gate;
     }
 
@@ -207,5 +212,35 @@ function applyFunctionOverload(qulacsModule: any) {
     NoisyEvolution_fast = (hamiltonian: Observable, c_ops: GeneralQuantumOperator[], time: number) => {
         const pointerList: number[] = c_ops.map(op => qulacsModule["_getAbstractGeneralQuantumOperatorPointer"](op));
         return qulacsModule["NoisyEvolution_fast_pointer"](hamiltonian, pointerList, time);
+    }
+
+    CPTP = (gate_list: QuantumGateBase[]) => {
+        const pointerList: number[] = gate_list.map(gate => qulacsModule["_getAbstractQuantumGateBasePointer"](gate));
+        return qulacsModule["CPTP_QuantumGate_pointer"](pointerList);
+    }
+
+    CP = (gate_list: QuantumGateBase[], state_normalize: boolean, probability_normalize: boolean, assign_zero_if_not_matched: boolean) => {
+        const pointerList: number[] = gate_list.map(gate => qulacsModule["_getAbstractQuantumGateBasePointer"](gate));
+        return qulacsModule["CPTP_QuantumGate_pointer"](pointerList, state_normalize, probability_normalize, assign_zero_if_not_matched);
+    }
+
+    Instrument = (gate_list: QuantumGateBase[], classical_register_address: number) => {
+        const pointerList: number[] = gate_list.map(gate => qulacsModule["_getAbstractQuantumGateBasePointer"](gate));
+        return qulacsModule["Instrument_QuantumGate_pointer"](pointerList, classical_register_address);
+    }
+
+    Adaptive = (gate: QuantumGateBase, func: (list: number[]) => boolean) => {
+        const listRegenerator = (listPointer: number, size: number): boolean => {
+            const list: number[] = [];
+            var nByte = 4;
+            const getValueFunc = qulacsModule["getValue"] as typeof getValue;
+            for (let i = 0; i < size; i++) {
+                const n = getValueFunc(listPointer + i * nByte, "i32"); // NOTE: intのバイト数は環境依存の改善が必要かもしれない。sizeofする？
+                list.push(n);
+            }
+            return func(list);
+        };
+        const fnPointer = addFunction(listRegenerator, "iii");
+        return qulacsModule["Adaptive"](gate, fnPointer);
     }
 }
