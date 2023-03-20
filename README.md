@@ -43,18 +43,26 @@ sampling [
 
 You can see more usage and how to include .wasm file for your project, in `sample` dir.
 
-## Available Classes and Methods
+## non-Available Classes and Methods
 
-- [x] Identity/ X / Y / Z / H / S / Sdag / T / Tdag / RX / RY / RZ / RotX / RotY / RotZ / RotInvX / RotInvY / RotInvZ / CNOT / CZ / SWAP / TOFFOLI / QuantumGateMatrix
-  - [ ] set_matrix / set_gate_property / etc
-- [ ] DenseMatrix / SparseMatrix
-- [x] QuantumCircuit
-- [x] ParametricQuantumCircuit
-- [x] QuantumState / DensityMatrix
-- [ ] Observable / NoiseSimulator / CausalConeSimulator / etc
-- [x] partial_trace / to_matrix_gate / inner_product / tensor_product / make_superposition / make_mixture
+- [ ] Observable, GeneralQuantumOperator, CPTP
 
-## Build from source
+Pull Requests Welcome!
+
+## Import from external .wasm file
+
+```javascript
+import { initQulacs } from "qulacs-wasm/lib/nobundle";
+
+const module = await WebAssembly.compile(fs.readFileSync("../path/to/module.wasm")); // Node.js
+// const module = await WebAssembly.compileStreaming(fetch("module.wasm")); // online
+await initQulacs({ module });
+const { QuantumState, X } = await import("qulacs-wasm/lib/nobundle");
+const state = new QuantumState(1);
+(X(0)).update_quantum_state(state);
+```
+
+## Build qulacs-wasm from source
 
 Building qulacs-wasm involves building Qulacs and Boost, so those requirements must be satisfied, and Emscripten environment for qulacs-wasm.
 

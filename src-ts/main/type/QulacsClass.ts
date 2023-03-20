@@ -1,8 +1,9 @@
 import { QuantumState } from "../instance";
 import { Complex } from "./common";
 
-// QuantumStateBase
-export type QuantumStateImpl = {
+export interface QuantumStateBase {};
+
+export type QuantumStateImpl = QuantumStateBase & {
     new (qubit_count: number): QuantumStateImpl;
     set_zero_state(): void;
     set_Haar_random_state(seed?: number): void;
@@ -14,17 +15,44 @@ export type QuantumStateImpl = {
     normalize(squared_norm: number): void;
     allocate_buffer(): QuantumStateImpl;
     copy(): QuantumStateImpl;
-    load(stateOrArray: QuantumStateImpl | number[] | Complex[]): void;
+    load(stateOrArray: QuantumStateBase | number[] | Complex[]): void;
     get_device_name(): string;
     add_state(state: QuantumStateImpl): void;
-    multiply_coef(coef: Complex): void;
+    multiply_coef(coef: number | Complex): void;
     // multiply_elementwise_function(): void;
     get_classical_value(index: number): number;
     set_classical_value(index: number, val: number): void;
     to_string(): string;
-    sampling(): number[];
+    sampling(sampling_count: number, random_seed?: number): number[];
     get_vector(): Complex[];
+    get_amplitude(): Complex;
+    get_qubit_count(): number;
 };
+
+export type DensityMatrixImpl = QuantumStateBase & {
+    new (qubit_count: number): DensityMatrixImpl;
+    set_zero_state(): void;
+    set_Haar_random_state(seed?: number): void;
+    set_computational_basis(comp_basis: number): void;
+    get_zero_probability(target_qubit_index: number): void;
+    get_marginal_probability(measured_values: number[]): void;
+    get_qubit_count(): number;
+    get_entropy(): number;
+    get_squared_norm(): number;
+    normalize(squared_norm: number): void;
+    allocate_buffer(): DensityMatrixImpl;
+    copy(): DensityMatrixImpl;
+    load(stateOrArrayOrMatrix: QuantumStateBase | number[] | Complex[] | number[][] | Complex[][]): void;
+    get_device_name(): string;
+    add_state(state: QuantumStateBase): void;
+    multiply_coef(coef: number | Complex): void;
+    // multiply_elementwise_function(): void;
+    get_classical_value(index: number): number;
+    set_classical_value(index: number, val: number): void;
+    to_string(): string;
+    sampling(sampling_count: number, random_seed?: number): number[];
+    get_matrix(): Complex[][];
+}
 
 export interface QuantumCircuitImpl {
     new (qubit_count: number): QuantumCircuitImpl;
@@ -62,25 +90,37 @@ export interface ParametricQuantumCircuitImpl extends QuantumCircuitImpl {
     copy(): ParametricQuantumCircuitImpl;
 }
 
-export interface DensityMatrixImpl extends QuantumStateImpl {
-    load(stateOrArrayOrMatrix: QuantumStateImpl | number[] | Complex[] | number[][] | Complex[][]): void;
-}
-
 export interface QuantumGateBase {
     update_quantum_state(state: QuantumState): void;
+    get_matrix(): Complex[][];
 }
 
-export interface ClsOneQubitGate extends QuantumGateBase {
-}
-
-export interface ClsOneQubitRotationGate extends QuantumGateBase {
-
-}
-
-export interface ClsOneControlOneTargetGate extends QuantumGateBase {
-
-}
-
+export interface ClsOneQubitGate extends QuantumGateBase {}
+export interface ClsOneQubitRotationGate extends QuantumGateBase {}
+export interface ClsOneControlOneTargetGate extends QuantumGateBase {}
 export interface QuantumGateMatrix extends QuantumGateBase {
-
+    to_string(): string;
+    copy(): QuantumGateMatrix;
+    multiply_scalar: (value: number | Complex) => void;
+    add_control_qubit: (qubit_index: number, control_value: number) => void;
 }
+export interface QuantumGateSparseMatrix extends QuantumGateBase {}
+export interface QuantumGateDiagonalMatrix extends QuantumGateBase {}
+export interface ClsReversibleBooleanGate extends QuantumGateBase {}
+export interface ClsStateReflectionGate extends QuantumGateBase {}
+export interface QuantumGate_Probabilistic extends QuantumGateBase {}
+export interface QuantumGate_CPTP extends QuantumGateBase {}
+export interface QuantumGate_Probabilistic extends QuantumGateBase {}
+export type QuantumGate_ProbabilisticInstrument = QuantumGate_Probabilistic;
+export type QuantumGate_Instrument = QuantumGate_CPTP;
+export interface ClsNoisyEvolution_fast extends QuantumGateBase {};
+
+export interface GeneralQuantumOperatorImpl {
+    new (qubit_count: number): GeneralQuantumOperatorImpl;
+    add_operator(coef: number | Complex, pauli_string: string): void;
+    add_operator(target_qubit_index_list: number[], target_qubit_pauli_list: number[], pauli_string: number | Complex): void;
+    get_expectation_value(state: QuantumStateBase): Complex;
+};
+
+export type HermitianQuantumOperatorImpl = GeneralQuantumOperatorImpl & {}
+export type Observable = HermitianQuantumOperatorImpl;
