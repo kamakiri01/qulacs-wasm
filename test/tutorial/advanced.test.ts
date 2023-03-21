@@ -24,6 +24,7 @@ describe("Qulacs Advanced Guide", () => {
                 {real: 2, imag: 0},
                 {real: 3, imag: 0},
             ]);
+            expect(state.get_amplitude(3)).toEqual({real: 3, imag: 0});
         });
         it("Copy", async () => {
             const { QuantumState } = await import("../../lib/bundle");

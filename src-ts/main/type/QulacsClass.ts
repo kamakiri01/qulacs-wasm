@@ -25,7 +25,7 @@ export type QuantumStateImpl = QuantumStateBase & {
     to_string(): string;
     sampling(sampling_count: number, random_seed?: number): number[];
     get_vector(): Complex[];
-    get_amplitude(): Complex;
+    get_amplitude(index: number): Complex;
     get_qubit_count(): number;
 };
 
