@@ -1,6 +1,8 @@
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 import { Complex } from "./type/common";
-import type { ClsNoisyEvolution_fast, ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, GeneralQuantumOperatorImpl, HermitianQuantumOperatorImpl, ParametricQuantumCircuitImpl, PauliOperatorImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
+import type { ClsNoisyEvolution_fast, ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, GeneralQuantumOperatorImpl, GradCalculatorImpl, HermitianQuantumOperatorImpl, ParametricQuantumCircuitImpl, PauliOperatorImpl, QuantumCircuitImpl, QuantumCircuitOptimizerImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumGate_SingleParameter, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
+
+// Object.keys(module.exports) で一括取得して代入するため、1ファイルにexport変数をまとめている
 
 export type QuantumState = QuantumStateImpl;
 export type QuantumCircuit = QuantumCircuitImpl;
@@ -10,6 +12,8 @@ export type GeneralQuantumOperator = GeneralQuantumOperatorImpl;
 export type HermitianQuantumOperator = HermitianQuantumOperatorImpl;
 export type Observable = HermitianQuantumOperatorImpl;
 export type PauliOperator = PauliOperatorImpl;
+export type QuantumCircuitOptimizer = QuantumCircuitOptimizerImpl;
+export type GradCalculator = GradCalculatorImpl;
 
 export var getExceptionMessage: (exceptionPtr: number) => string;
 export var addFunction: (func: any, flag: string) => number;
@@ -23,6 +27,8 @@ export var GeneralQuantumOperator: GeneralQuantumOperator;
 export var HermitianQuantumOperator: HermitianQuantumOperator;
 export var Observable: Observable;
 export var PauliOperator: PauliOperator;
+export var QuantumCircuitOptimizer: QuantumCircuitOptimizer;
+export var GradCalculator: GradCalculator;
 
 export var Identity: (target_qubit_index: number) => ClsOneQubitGate;;
 export var X: (target_qubit_index: number) => ClsOneQubitGate;;
@@ -89,7 +95,9 @@ export var CPTP: (gate_list: QuantumGateBase[]) => QuantumGateBase;
 export var CP: (gate_list: QuantumGateBase[], state_normalize: boolean, probability_normalize: boolean, assign_zero_if_not_matched: boolean) => QuantumGateBase;
 export var Instrument: (gate_list: QuantumGateBase[], classical_register_address: number) => QuantumGateBase;
 export var Adaptive: (gate: QuantumGateBase, function_ptr: (list: number[]) => boolean) => QuantumGateBase;
-
+export var ParametricRX: (target_qubit_index: number, initial_angle: number) => QuantumGate_SingleParameter;
+export var ParametricRY: (target_qubit_index: number, initial_angle: number) => QuantumGate_SingleParameter;
+export var ParametricRZ: (target_qubit_index: number, initial_angle: number) => QuantumGate_SingleParameter;
 
 export function applyModule(qulacsModule: QulacsWasmModule) {
     Object.keys(module.exports).forEach(key => {

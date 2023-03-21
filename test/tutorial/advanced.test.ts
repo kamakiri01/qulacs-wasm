@@ -12,7 +12,7 @@ describe("Qulacs Advanced Guide", () => {
             const { QuantumState } = await import("../../lib/bundle");
             const n = 2;
             const state = new QuantumState(n);
-            expect(state).not.toBeUndefined();
+            expect(state.to_string()).not.toBeUndefined();
         });
         it("Transform between array", async () => {
             const { QuantumState } = await import("../../lib/bundle");
@@ -287,7 +287,7 @@ describe("Qulacs Advanced Guide", () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const n = 2;
             const state = new DensityMatrix(n);
-            expect(state).not.toBeUndefined();
+            expect(state.to_string()).not.toBeUndefined();
         });
 
         it("Conversion between matrix", async () => {
@@ -637,12 +637,12 @@ describe("Qulacs Advanced Guide", () => {
     describe("QuantumGate class", () => {
         it("Common operations", async () => {
             const { X } = await import("../../lib/bundle");
-            const gate = X(0);
-            expect(gate).not.toBeUndefined();
+            const gate = X(2);
             expect(gate.get_matrix()).toEqual([
                 [{real: 0, imag: 0}, {real: 1, imag: 0}],
                 [{real: 1, imag: 0 }, {real: 0, imag: 0}]
             ]);
+            expect(gate.to_string()).not.toBeUndefined();
         });
 
         it("Convert to/from JSON ", async () => {
@@ -735,7 +735,7 @@ describe("Qulacs Advanced Guide", () => {
                 const target_list = [0, 3, 5];
                 const pauli_index = [1, 3, 1]; // 1:X , 2:Y, 3:Z
                 const gate = Pauli(target_list, pauli_index); // = X_0 Z_3 X_5
-                expect(gate).not.toBeUndefined();
+                expect(gate.to_string()).not.toBeUndefined();
                 expect(gate.get_matrix()).toEqual([
                     [
                         { real: 0, imag: 0 },
@@ -826,7 +826,7 @@ describe("Qulacs Advanced Guide", () => {
                 const pauli_index = [1, 3, 1]; // 1:X , 2:Y, 3:Z
                 const angle = 0.5;
                 const gate = PauliRotation(target_list, pauli_index, angle); // = X_0 Z_3 X_5
-                expect(gate).not.toBeUndefined();
+                expect(gate.to_string()).not.toBeUndefined();
             });
 
             it("Reversible circuit", async () => {
@@ -1101,7 +1101,7 @@ describe("Qulacs Advanced Guide", () => {
                 for (let i = 0; i < 10; i++) {
                     gate.update_quantum_state(state);
                 }
-                expect(gate).not.toBeUndefined();
+                expect(gate.to_string()).not.toBeUndefined();
             });
 
             it("Stochastic operation2", async () => {
@@ -1247,7 +1247,7 @@ describe("Qulacs Advanced Guide", () => {
                     const coef1 = pauli.get_coef();
                     expect(coef1).toEqual({ real: 0.1, imag: 0 });
                     const another_pauli = pauli.copy();
-                    expect(another_pauli).not.toBeUndefined();
+                    expect(another_pauli.toString()).not.toBeUndefined();
                     const sArr = ["I","X","Y","Z"];
                     const pauli_str = pauli_id_list.map(id => sArr[id]);
                     const terms_str = Array(Math.max(pauli_str.length, index_list.length)).fill(0).map((_, i) => {return `${pauli_str[i]} ${index_list[i]}`});
@@ -1281,6 +1281,214 @@ describe("Qulacs Advanced Guide", () => {
                     expect(value2).toEqual({ real: 0.2857314283348087, imag: 0 });
                 });
 
+            });
+            describe("General linear operators", () => {
+                it("Create", async () => {
+                    const { GeneralQuantumOperator, QuantumState, PauliOperator } = await import("../../lib/bundle");
+
+                    const n = 5;
+                    const operator = new GeneralQuantumOperator(n);
+                    const coef: Complex = { real: 2.0, imag: 0.5 };
+                    const Pauli_string = "X 0 X 1 Y 2 Z 4";
+                    let pauli = new PauliOperator(Pauli_string, coef);
+                    operator.add_operator(pauli);
+                    operator.add_operator({ real: 0, imag: 0.5 },  "Y 1 Z 4");
+                    const term_count = operator.get_term_count();
+                    const qubit_count = operator.get_qubit_count();
+
+                    const index = 1;
+                    pauli = operator.get_term(index);
+                    const is_hermitian = operator.is_hermitian();
+
+                    const state = new QuantumState(n);
+                    state.set_Haar_random_state(0);
+                    let value = operator.get_expectation_value(state);
+                    expect(value).toEqual({ real: 0.28573142833480863, imag: 0.03594986768149972 });
+
+                    const result = new QuantumState(n);
+                    const work_state = new QuantumState(n);
+                    operator.apply_to_state(work_state, state, result);
+
+                    const bra = new QuantumState(n);
+                    bra.set_Haar_random_state(1);
+                    value = operator.get_transition_amplitude(bra, state);
+                    expect(value).toEqual({ real: 0.0211418381071447, imag: 0.12910792637830634 });
+                });
+
+                // json
+                it("Store linear operators", async () => {
+                });
+
+                it("Generation of observables using OpenFermion", async () => {
+                });
+            });
+
+            describe("Hermite operator / observable", () => {
+                it("Separates operators into diagonal and off-diagonal terms", async () => {
+                });
+
+                describe("Compute ground state", () => {
+                    it("Power method", async () => {
+                    });
+
+                    it("Arnoldi method", async () => {
+                    });
+
+                    it("Lanczos method", async () => {
+                    });
+                });
+                it("Apply to a quantum state", async () => {
+                });
+            });
+        });
+        describe("Quantum Circuits", () => {
+            it("Structure of a quantum circuit", async () => {
+                const { QuantumState, QuantumCircuit, Z } = await import("../../lib/bundle");
+                const n = 3;
+                const state = new QuantumState(n);
+                state.set_zero_state();
+                const circuit = new QuantumCircuit(n);
+
+                // Add hadamard gate to quantum circuit
+                for (let i = 0; i < n; i++) {
+                    circuit.add_H_gate(i);
+                }
+
+                // Create gate, which can also be added
+                for (let i = 0; i < n; i++) {
+                    circuit.add_gate(Z(i));
+                }
+
+                // Operate quantum circuit to state
+                circuit.update_quantum_state(state);
+                expect(state.get_vector()).toEqual([
+                    { real: 0.3535533905932737, imag: 0 },
+                    { real: -0.3535533905932737, imag: -0 },
+                    { real: -0.3535533905932737, imag: -0 },
+                    { real: 0.3535533905932737, imag: 0 },
+                    { real: -0.3535533905932737, imag: -0 },
+                    { real: 0.3535533905932737, imag: 0 },
+                    { real: 0.3535533905932737, imag: 0 },
+                    { real: -0.3535533905932737, imag: -0 }
+                ]);
+            });
+
+            it("Calculation and optimization of depth of quantum circuits", async () => {
+                const { QuantumCircuitOptimizer, QuantumCircuit } = await import("../../lib/bundle");
+                const n = 5;
+                const depth = 10;
+                const circuit = new QuantumCircuit(n);
+                for (let d = 0; d < depth; d++) {
+                    for (let i = 0; i < n; i++) {
+                        circuit.add_H_gate(i);
+                    }
+                }
+
+                // Calculate the depth (depth=10)
+                expect(circuit.calculate_depth()).toBe(depth);
+
+                // Optimization
+                const opt = new QuantumCircuitOptimizer();
+                const max_block_size = 3;
+                opt.optimize(circuit, max_block_size);
+
+                // Calculate the depth (depth=1へ)
+                expect(circuit.calculate_depth()).toBe(1);
+            });
+
+            it("Debugging quantum circuits", async () => {
+                const { QuantumCircuit } = await import("../../lib/bundle");
+                const n = 5;
+                const depth = 10;
+                const circuit = new QuantumCircuit(n);
+                for (let d = 0; d < depth; d++) {
+                    for (let i = 0; i < n; i++) {
+                        circuit.add_H_gate(i);
+                    }
+                }
+                expect(circuit.to_string()).not.toBeUndefined();
+            });
+            it("Store QuantumCircuit", async () => {
+            });
+        });
+
+        describe("Parametric Quantum Circuits", () => {
+            it("Application examples of parametric quantum circuits", async () => {
+                const { ParametricQuantumCircuit, QuantumState, ParametricRZ, Identity } = await import("../../lib/bundle");
+                const n = 5;
+                const depth = 10;
+                let angle: number;
+                // construct parametric quantum circuit with random rotation
+                const circuit = new ParametricQuantumCircuit(n);
+                for (let d = 0; d < depth; d++) {
+                    for (let i = 0; i < n; i++) {
+                        angle = Math.random();
+                        circuit.add_parametric_RX_gate(i, angle);
+                        angle = Math.random();
+                        circuit.add_parametric_RY_gate(i, angle)
+                        angle = Math.random();
+                        circuit.add_parametric_gate(ParametricRZ(i, angle));
+                    }
+                    for (let i = d % 2; i < n - 1; i += 2) {
+                        circuit.add_CNOT_gate(i, i + 1);
+                    }
+                    circuit.add_gate(Identity(0)); // QuantumCircuit#add_gateのオーバーライド正常動作チェック
+
+                    // add multi-qubit Pauli rotation gate as parametric gate (X_0 Y_3 Y_1 X_4)
+                    const target = [0,3 , 1, 4];
+                    const pauli_ids = [1, 2, 2, 1];
+                    angle = Math.random();
+                    circuit.add_parametric_multi_Pauli_rotation_gate(target, pauli_ids, angle);
+
+                    // get variable parameter count, and get current parameter
+                    const parameter_count = circuit.get_parameter_count()
+                    const param = Array(parameter_count).fill(0).map((_, ind) => {return circuit.get_parameter(ind)});
+
+                    // set 3rd parameter to 0
+                    circuit.set_parameter(3, 0);
+
+                    // update quantum state
+                    const state = new QuantumState(n);
+                    circuit.update_quantum_state(state);
+
+                    expect(param).not.toBeUndefined();
+                    expect(state.to_string()).not.toBeUndefined();
+                    expect(circuit.to_string()).not.toBeUndefined();
+                }
+            })
+            it("Compute a gradient of parametric quantum circuit", async () => {
+                const { ParametricQuantumCircuit, GradCalculator, Observable } = await import("../../lib/bundle");
+                const n = 2;
+                const observable = new Observable(n);
+                observable.add_operator(1.0, "X 0");
+                const circuit = new ParametricQuantumCircuit(n);
+                
+                const theta = [2.2, 1.4, 0.8];
+                circuit.add_parametric_RX_gate(0, theta[0]);
+                circuit.add_parametric_RY_gate(0, theta[1]);
+                circuit.add_parametric_RZ_gate(0, theta[2]);
+                
+                // GradCalculatorの場合
+                const gcalc = new GradCalculator();
+                expect(gcalc.calculate_grad(circuit, observable)).toEqual([
+                    { real: 0.13292406112215058, imag: 0 },
+                    { real: 0.06968868323709171, imag: 0 },
+                    { real: 0.14726262077628174, imag: 0 }
+                ]);
+                // 第三引数に回転角を指定することも可能
+                expect(gcalc.calculate_grad(circuit, observable, theta)).toEqual([
+                    { real: 0.13292406112215058, imag: 0 },
+                    { real: 0.06968868323709171, imag: 0 },
+                    { real: 0.14726262077628174, imag: 0 }
+                ]);
+                // Backpropを使って求めた場合
+                expect(circuit.backprop(observable)).toEqual([
+                    0.1329240611221506,
+                    0.06968868323709165,
+                    0.14726262077628166
+                ]);
+            });
+            it("Store parametric quantum circuits", async () => {
             });
         });
     });
