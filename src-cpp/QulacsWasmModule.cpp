@@ -83,12 +83,23 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             std::complex<double> c(coef, 0);
             self.multiply_coef(c);
         }), emscripten::allow_raw_pointers())
-
         .function("multiply_coef_complex", emscripten::optional_override([](QuantumState& self, const emscripten::val &v) {
             std::complex<double> c(v["real"].as<double>(), v["imag"].as<double>());
             self.multiply_coef(c);
         }), emscripten::allow_raw_pointers())
-        // .function("multiply_elementwise_function", &QuantumState::multiply_elementwise_function, emscripten::allow_raw_pointers())
+        .function("multiply_elementwise_function_wrapper", emscripten::optional_override([](QuantumState& self, intptr_t funcPtr) {
+            // JSのfuncPtr先の関数をC++の型でラップする
+            std::function<CPPCTYPE(ITYPE)> func = [funcPtr](ITYPE num) -> CPPCTYPE {
+                int castedNum = (int) num;
+                double complexArr[2]; // 戻り値のcomplex要素を格納するメモリを確保する
+                QuantumStateMultiplyElementwiseFunctionWrapper(funcPtr, castedNum, complexArr); // メモリにfuncPtrの実行結果を書き込む
+                double real = complexArr[0];
+                double imag = complexArr[1];
+                std::complex<double> c(real, imag);
+                return c;
+            };
+            return self.multiply_elementwise_function(func);
+        }), emscripten::allow_raw_pointers())
         .function("get_classical_value", &QuantumState::get_classical_value, emscripten::allow_raw_pointers())
         .function("set_classical_value", &QuantumState::set_classical_value, emscripten::allow_raw_pointers())
         .function("to_string", &QuantumState::to_string, emscripten::allow_raw_pointers())
@@ -330,8 +341,10 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     */
     emscripten::function("RandomUnitary", emscripten::select_overload<QuantumGateMatrix*(std::vector<UINT>)>(&gate::RandomUnitary), emscripten::allow_raw_pointers());
     emscripten::function("RandomUnitary", emscripten::select_overload<QuantumGateMatrix*(std::vector<UINT>, UINT)>(&gate::RandomUnitary), emscripten::allow_raw_pointers());
-    emscripten::function("ReversibleBoolean", emscripten::optional_override([](const emscripten::val &target_qubit_index_list, intptr_t funcPtr) { // , int n0, int n1
+    emscripten::function("ReversibleBoolean", emscripten::optional_override([](const emscripten::val &target_qubit_index_list, intptr_t funcPtr) {
+        // JSのfuncで処理する際に内部的にはまたJSの値に戻るが、C++側で一旦Vector化する
         std::vector<UINT> target_list = emscripten::vecFromJSArray<UINT>(target_qubit_index_list); // NOTE: arrayではないUINTを受けられるようにする
+        // JSのfuncPtr先の関数をC++の型でラップする
         auto func = [funcPtr](int val, int dim) -> int {
             return ReversibleBooleanWrapper(funcPtr, val, dim);
         };
@@ -693,8 +706,10 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     }), emscripten::allow_raw_pointers());
 
     emscripten::function("Adaptive", emscripten::optional_override([](QuantumGateBase* gate, intptr_t funcPtr) {
+        // JSのfuncPtr先の関数をC++の型でラップする
         std::function<bool(const std::vector<UINT>&)> func = [funcPtr](const std::vector<UINT>& list) -> bool {
-            // vectorのままJSに渡すとポインタアドレスからgetValueできないので配列に変換する
+            // Vector/配列はdyncallを通すことができないため、ポインタを渡してJS側で要素を取り出してArrayを復元する
+            // vectorをそのままJSに渡すとポインタアドレスからgetValueで要素を取り出せないため、配列ポインタに変換する
             auto size = list.size();
             int arr[size];
             for (int i = 0; i < size; i++) {

@@ -19,7 +19,7 @@ export type QuantumStateImpl = QuantumStateBase & {
     get_device_name(): string;
     add_state(state: QuantumStateImpl): void;
     multiply_coef(coef: number | Complex): void;
-    // multiply_elementwise_function(): void;
+    multiply_elementwise_function(function_ptr: (i: number) => Complex): void;
     get_classical_value(index: number): number;
     set_classical_value(index: number, val: number): void;
     to_string(): string;

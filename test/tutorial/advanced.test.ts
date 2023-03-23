@@ -1,4 +1,4 @@
-import { Complex, initQulacs, QuantumState } from "../../lib/bundle";
+import { CMath, Complex, initQulacs, QuantumState } from "../../lib/bundle";
 import { round4, round4Complex, round4ComplexMatrix } from "../hepler/util";
 
 describe("Qulacs Advanced Guide", () => {
@@ -14,6 +14,7 @@ describe("Qulacs Advanced Guide", () => {
             const state = new QuantumState(n);
             expect(state.to_string()).not.toBeUndefined();
         });
+
         it("Transform between array", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const state = new QuantumState(2);
@@ -26,6 +27,7 @@ describe("Qulacs Advanced Guide", () => {
             ]);
             expect(state.get_amplitude(3)).toEqual({real: 3, imag: 0});
         });
+
         it("Copy", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const initial_state = new QuantumState(3);
@@ -33,6 +35,7 @@ describe("Qulacs Advanced Guide", () => {
             for (let i = 0;i < 10; i++) {
                 buffer.set_Haar_random_state();
                 buffer.load(initial_state);
+                // some computation and get results
                 expect(initial_state.get_vector()).toEqual(buffer.get_vector());
             }
         });
@@ -41,11 +44,11 @@ describe("Qulacs Advanced Guide", () => {
             // TODO
         });
 
-
         it("Initialization", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const n = 3;
-            const state = new QuantumState(n);1
+            const state = new QuantumState(n);
+            // Initialize as |0> state
             state.set_zero_state();
             expect(state.get_vector()).toEqual([
                 {real: 1, imag: 0},
@@ -58,6 +61,7 @@ describe("Qulacs Advanced Guide", () => {
                 {real: 0, imag: 0},
             ]);
 
+            // Initialize the specified value to the calculation base in binary notation
             state.set_computational_basis(0b101);
             expect(state.get_vector()).toEqual([
                 {real: 0, imag: 0},
@@ -70,6 +74,8 @@ describe("Qulacs Advanced Guide", () => {
                 {real: 0, imag: 0},
             ]);
 
+            // Initialize to random pure state with Haar measure using argument value as seed
+            // If no value is specified, the time function is used as a seed. Pseudo random number uses xorshift.
             // NOTE: set_Haar_random_stateはseedが固定でもqulacsバージョンや動作環境によって結果は一意とは保証されず、実装依存である
             state.set_Haar_random_state(0);
             expect(state.get_vector()).toEqual([
@@ -112,15 +118,29 @@ describe("Qulacs Advanced Guide", () => {
             const n = 5;
             const state = new QuantumState(n);
             state.set_Haar_random_state(0);
+            // Get quantum bit numbers
             expect(state.get_qubit_count()).toBe(n);
+            // Get the probability that the specified qubit will be measured as 0
             expect(state.get_zero_probability(1)).toBe(0.5445520462375112);
+            // Get arbitrary marginal probabilities
+            // Argument is an array of the same length as the number of qubits
+            // Specify 0,1,2. 0,1 is the probability of the subscript measured at that value
+            // 2 means that bit is peripheralized.
+            // For example, calculation of the probability that the third is measured as 0 and the 0th is measured as 1:
             expect(state.get_marginal_probability([1,2,2,0,2])).toBe(0.13406608083256927);
+            // Get the entropy of the probability distribution when measured on the Z basis
             expect(state.get_entropy()).toBe(3.085681210868282);
+            // Get squared norm (<a|a>)
+            // Because the operation may not be Trace preserving, the norm of state does not necessarily to be 1.
             expect(state.get_squared_norm()).toBe(1);
+            // Measure and sample all the qubits on Z-basis as many times as given by the argument.
+            // Returns a list of integers converted from the resulting binaries.
             state.sampling(10);
+            // You can supply a random seed as second argument.
+            // If the same seed is given, always returns the same sampling result.
             expect(state.sampling(10, 314.0)).toEqual([23, 17, 24, 11, 14, 28, 3, 15, 14, 4]);
+            // Get a character string indicating whether the state vector is on CPU or GPU
             expect(state.get_device_name()).toBe("cpu");
-            // NOTE: use seed 
         });
         it("Deformation", async () => {
             const { QuantumState } = await import("../../lib/bundle");
@@ -140,6 +160,9 @@ describe("Qulacs Advanced Guide", () => {
                 {real: 1, imag: 0},
                 {real: 0, imag: 0},  
             ]);
+            // Sum of quantum state (state <- state+buffer)
+            // Add the buffer state to the state to create a superposition state.
+            // The norm after the operation generally is not 1.
             state.add_state(buffer);
             expect(state.get_vector()).toEqual([
                 {real: 1, imag: 0},
@@ -147,7 +170,10 @@ describe("Qulacs Advanced Guide", () => {
                 {real: 1, imag: 0},
                 {real: 0, imag: 0},  
             ]);
-            state.multiply_coef({real: 0.5, imag: 0.1});
+            // Product of quantum state and complex number
+            // Multiplies all elements by the complex number of the argument.
+            // The norm after operation generally is not 1.
+            state.multiply_coef({ real: 0.5, imag: 0.1 });
             state.multiply_coef(1);
             expect(state.get_vector()).toEqual([
                 {real: 0.5, imag: 0.1},
@@ -155,6 +181,38 @@ describe("Qulacs Advanced Guide", () => {
                 {real: 0.5, imag: 0.1},
                 {real: 0, imag: 0},  
             ]);
+            // Pruduct of a quantum state and complex numbers specified by an index of each element
+            // Multiplies the amplitude of |00> by `coef_func(0)`, the amplitude of |01> by `coef_func(1)`.
+            // The norm after operation generally is not 1.
+            const coef_func = (i: number): Complex => {
+                switch (i) {
+                    case 0: return {real: 1, imag: 0};
+                    case 1: return {real: 0, imag: 1};
+                    case 2: return {real: -1, imag: 0};
+                    case 3: return {real: -0, imag: -1};
+                }
+                throw new Error("Asset Error");
+            };
+            state.multiply_elementwise_function(coef_func);
+            expect(state.get_vector()).toEqual([
+                { real: 0.5, imag: 0.1 },
+                { real: 0, imag: 0 },
+                { real: -0.5, imag: -0.1 },
+                { real: 0, imag: -0 }
+            ]);
+
+            // Normalize quantum states
+            // Provide the current squared norm as an argument.
+            const squared_norm = state.get_squared_norm();
+            expect(squared_norm).toBe(0.52);
+            state.normalize(squared_norm);
+            expect(state.get_vector()).toEqual([
+                { real: 0.6933752452815364, imag: 0.1386750490563073 },
+                { real: 0, imag: 0 },
+                { real: -0.6933752452815364, imag: -0.1386750490563073 },
+                { real: 0, imag: -0 }
+            ]);
+            expect(state.get_squared_norm()).toBe(0.9999999999999998);
         });
 
         it("Classical registers", async () => {

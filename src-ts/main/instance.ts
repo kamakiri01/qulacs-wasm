@@ -111,7 +111,7 @@ export function applyModule(qulacsModule: QulacsWasmModule) {
         if (wasmExportedImpl) module.exports[key] = wasmExportedImpl;
     });
     applayAlias();
-    applyQuantumStateOverload();
+    applyQuantumStateOverload(qulacsModule);
     applyDensityMatrixOverload();
     applyQuantumCircuitSimulatorOverload();
     applyFunctionOverload(qulacsModule);
@@ -121,25 +121,38 @@ function applayAlias() {
     Observable = HermitianQuantumOperator;
 }
 
-function applyQuantumStateOverload() {
+function applyQuantumStateOverload(qulacsModule: any) {
     QuantumState.prototype.load = function(arg: any) {
         if (Array.isArray(arg)) return QuantumState.prototype.load_Vector.call(this, arg);
         return QuantumState.prototype.load_QuantumStateBase.call(this, arg);
     }
 
     QuantumState.prototype.multiply_coef = function(arg: any) {
-        const that = this;
         if (typeof arg === "number") {
             return QuantumState.prototype.multiply_coef_double.call(this, arg);
         } else {
             return QuantumState.prototype.multiply_coef_complex.call(this, arg);
         }
     }
+
+    QuantumState.prototype.multiply_elementwise_function = function(func: (val: number) => Complex) {
+        // NOTE: dyncallは入出力にvijfd型のみ利用できるため、funcが返すComplexをdyncall元に返すことができない
+        // そのため、funcの返り値をcomplexRegeneratorでdoubleに分解し、dyncallが渡すポインタに先に書き込み、
+        // complexRegenerator自体はvoidを返す
+        // dyncall側にはポインタから返り値を読みだすことを期待する
+        const complexRegenerator = (intNum: number, complexArrPointer: number): void => {
+            const setValueFunc = qulacsModule["setValue"] as typeof setValue;
+            const c: Complex = func(intNum);
+            setValueFunc(complexArrPointer, c.real, "double");
+            setValueFunc(complexArrPointer + 8, c.imag, "double");
+        }
+        const fnPointer = addFunction(complexRegenerator, "vii");
+        return QuantumState.prototype.multiply_elementwise_function_wrapper.call(this, fnPointer);
+    }
 }
 
 function applyDensityMatrixOverload() {
     DensityMatrix.prototype.load = function(arg: any) {
-        const that = this;
         if (Array.isArray(arg)) {
             if (Array.isArray(arg[0])) {
                 return DensityMatrix.prototype.load_Matrix.call(this, arg);
@@ -253,6 +266,10 @@ function applyFunctionOverload(qulacsModule: any) {
     }
 
     Adaptive = (gate: QuantumGateBase, func: (list: number[]) => boolean) => {
+        // NOTE: dyncallは入出力にvijfd型のみ利用できるため、dyncall元からfuncにvector/arrayを渡すことができない
+        // そのため、listRegeneratorでポインタから配列要素を復元してからfuncに渡す
+        // funcの返り値はboolをそのまま返す
+        // dyncall側にはJSで扱いたい配列のポインタを渡すことを期待する
         const listRegenerator = (listPointer: number, size: number): boolean => {
             const list: number[] = [];
             var nByte = 4;

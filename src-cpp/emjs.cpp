@@ -60,8 +60,13 @@ EM_JS(int, ReversibleBooleanWrapper, (intptr_t funcPtr, int n0, int n1), {
 });
 
 EM_JS(int, AdaptiveWrapper, (intptr_t funcPtr, int* arr, int size), {
-    // argに指定できる型がvijfdに限られるので、EM_JSの中でlistをJS配列化しても渡すことができない
     // @see https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html#calling-javascript-functions-as-function-pointers-from-c
     var re = Module['dynCall']('iii', funcPtr, [arr, size]);
     return re;
+});
+
+EM_JS(void, QuantumStateMultiplyElementwiseFunctionWrapper, (intptr_t funcPtr, int num, double* complexArrPtr), {
+    // 受け取ったfuncPtrの関数がcomplexArrPtrにstd::Complex<double>の要素をそれぞれ格納することを期待する
+    // @see https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html#calling-javascript-functions-as-function-pointers-from-c
+    Module['dynCall']('vii', funcPtr, [num, complexArrPtr]);
 });
