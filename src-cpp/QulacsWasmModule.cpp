@@ -16,6 +16,9 @@
 #include <vqcsim/parametric_gate_factory.hpp>
 #include <vqcsim/GradCalculator.hpp>
 #include <cppsim/circuit_optimizer.hpp>
+#include <cppsim/simulator.hpp>
+#include <cppsim/noisesimulator.hpp>
+#include <vqcsim/causalcone_simulator.hpp>
 
 #include "vector.cpp"
 //#include "emjs.cpp"
@@ -230,7 +233,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("Tdag", &gate::Tdag, emscripten::allow_raw_pointers());
     emscripten::function("sqrtX", &gate::sqrtX, emscripten::allow_raw_pointers());
     emscripten::function("sqrtYdag", &gate::sqrtXdag, emscripten::allow_raw_pointers());
-    emscripten::function("sqrtX", &gate::sqrtY, emscripten::allow_raw_pointers());
+    emscripten::function("sqrtY", &gate::sqrtY, emscripten::allow_raw_pointers());
     emscripten::function("sqrtYdag", &gate::sqrtYdag, emscripten::allow_raw_pointers());
     emscripten::function("P0", &gate::P0, emscripten::allow_raw_pointers());
     emscripten::function("P1", &gate::P1, emscripten::allow_raw_pointers());
@@ -369,6 +372,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("add_gate", emscripten::optional_override([](QuantumCircuit& self, const QuantumGateBase* state, UINT index) {
             self.add_gate_copy(state, index);
         }), emscripten::allow_raw_pointers())
+        .function("add_noise_gate", emscripten::select_overload<void(QuantumGateBase*, std::string, double)>(&QuantumCircuit::add_noise_gate_copy), emscripten::allow_raw_pointers())
 
         .function("remove_gate", &QuantumCircuit::remove_gate)
         .function("update_quantum_state", emscripten::select_overload<void(QuantumStateBase*)>(&QuantumCircuit::update_quantum_state), emscripten::allow_raw_pointers())
@@ -514,6 +518,46 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             std::vector<double> thetaVec = emscripten::vecFromJSArray<double>(theta);
             std::vector<std::complex<double>> complexVec = self.calculate_grad(x, obs, thetaVec);
             return emscripten::val::take_ownership(translateCPPVecToJSComplexArray(complexVec));
+        }), emscripten::allow_raw_pointers());
+
+    emscripten::class_<QuantumCircuitSimulator>("QuantumCircuitSimulator")
+        .constructor<QuantumCircuit*, QuantumStateBase*>()
+        .function("initialize_state_itype_wrapper", emscripten::optional_override([](QuantumCircuitSimulator& self, int computationl_basis) {
+            ITYPE basis = (ITYPE) computationl_basis;
+            self.initialize_state(basis);
+        }), emscripten::allow_raw_pointers())
+        .function("initialize_random_state", emscripten::select_overload<void()>(&QuantumCircuitSimulator::initialize_random_state), emscripten::allow_raw_pointers())
+        .function("initialize_random_state", emscripten::select_overload<void(UINT)>(&QuantumCircuitSimulator::initialize_random_state), emscripten::allow_raw_pointers())
+        .function("simulate", &QuantumCircuitSimulator::simulate, emscripten::allow_raw_pointers())
+        .function("simulate_range", &QuantumCircuitSimulator::simulate_range, emscripten::allow_raw_pointers())
+        .function("get_expectation_value", emscripten::optional_override([](QuantumCircuitSimulator& self, const Observable* observable) {
+            CPPCTYPE c = self.get_expectation_value(observable);
+            return emscripten::val::take_ownership(translateCPPToJSComplex(c));
+        }), emscripten::allow_raw_pointers())
+        .function("get_gate_count", &QuantumCircuitSimulator::get_gate_count, emscripten::allow_raw_pointers())
+        .function("copy_state_to_buffer", &QuantumCircuitSimulator::copy_state_to_buffer, emscripten::allow_raw_pointers())
+        .function("copy_state_from_buffer", &QuantumCircuitSimulator::copy_state_from_buffer, emscripten::allow_raw_pointers())
+        .function("swap_state_and_buffer", &QuantumCircuitSimulator::swap_state_and_buffer, emscripten::allow_raw_pointers());
+
+    emscripten::class_<NoiseSimulator>("NoiseSimulator")
+        .constructor<QuantumCircuit*, QuantumState*>()
+        .function("execute", emscripten::optional_override([](NoiseSimulator& self, const UINT sample_count) {
+            std::vector<ITYPE> samples = self.execute(sample_count);
+            return emscripten::val::take_ownership(transpaleITYPEVecToJSArray(samples));
+        }), emscripten::allow_raw_pointers());
+
+    emscripten::class_<CausalConeSimulator>("CausalConeSimulator")
+        .constructor<const ParametricQuantumCircuit&, const Observable&>()
+        .function("build", &CausalConeSimulator::build, emscripten::allow_raw_pointers())
+        .function("get_expectation_value", emscripten::optional_override([](CausalConeSimulator& self) {
+            CPPCTYPE c = self.get_expectation_value();
+            return emscripten::val::take_ownership(translateCPPToJSComplex(c));
+        }), emscripten::allow_raw_pointers())
+        .function("get_circuit_list", &CausalConeSimulator::get_circuit_list, emscripten::allow_raw_pointers())
+        .function("get_pauli_operator_list", &CausalConeSimulator::get_pauli_operator_list, emscripten::allow_raw_pointers())
+        .function("get_coef_list", emscripten::optional_override([](CausalConeSimulator& self) {
+            std::vector<CPPCTYPE> cVec = self.get_coef_list();
+            return emscripten::val::take_ownership(translateCPPVecToJSComplexArray(cVec));
         }), emscripten::allow_raw_pointers());
 
     // NOTE: https://github.com/emscripten-core/emscripten/issues/11497

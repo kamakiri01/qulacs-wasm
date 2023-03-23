@@ -60,6 +60,7 @@ export interface QuantumCircuitImpl {
     to_string(): string;
     copy(): QuantumCircuitImpl;
     add_gate(gate: QuantumGateBase, index?: number): void;
+    add_noise_gate(gate: QuantumGateBase, noise_type: string, noise_prob: number): void;
     remove_gate(index: number): void;
     calculate_depth(): number;
     add_X_gate(target_index: number): void;
@@ -187,4 +188,31 @@ export interface QuantumCircuitOptimizerImpl {
 export interface GradCalculatorImpl {
     new (): GradCalculatorImpl;
     calculate_grad(x: ParametricQuantumCircuitImpl, obs: Observable, theta?: number[]): Complex[];
+}
+
+export interface QuantumCircuitSimulatorImpl {
+    new (circuit: QuantumCircuitImpl, initial_state?: QuantumStateBase): QuantumCircuitSimulatorImpl;
+    initialize_state(computationl_basis: number): void;
+    initialize_random_state(seed?: number): void;
+    simulate(): void;
+    simulate_range(start: number, end: number): void;
+    get_expectation_value(observable: Observable): Complex;
+    get_gate_count(): number;
+    copy_state_to_buffer(): void;
+    copy_state_from_buffer(): void;
+    swap_state_and_buffer(): void;
+}
+
+export interface NoiseSimulatorImpl {
+    new (circuit: QuantumCircuitImpl, initial_state?: QuantumStateBase): NoiseSimulatorImpl;
+    execute(sample_count: number): number[];
+}
+
+export interface CausalConeSimulatorImpl {
+    new (_init_circuit: ParametricQuantumCircuitImpl, _init_observable: Observable): CausalConeSimulatorImpl;
+    build(): void;
+    get_expectation_value(): Complex;
+    get_circuit_list(): ParametricQuantumCircuitImpl[][];
+    get_pauli_operator_list: PauliOperatorImpl[][];
+    get_coef_list: Complex[];
 }

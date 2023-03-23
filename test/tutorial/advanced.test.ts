@@ -1,5 +1,5 @@
 import { Complex, initQulacs, QuantumState } from "../../lib/bundle";
-import { round4, round4ComplexMatrix } from "../hepler/util";
+import { round4, round4Complex, round4ComplexMatrix } from "../hepler/util";
 
 describe("Qulacs Advanced Guide", () => {
     let q;
@@ -1490,6 +1490,160 @@ describe("Qulacs Advanced Guide", () => {
                 ]);
             });
             it("Store parametric quantum circuits", async () => {
+            });
+            describe("Simulator", () => {
+                it("QuantumCircuitSimulator", async () => {
+                    const { QuantumState, QuantumCircuit, QuantumCircuitSimulator, Observable } = await import("../../lib/bundle");
+                    const n = 3;
+                    const state = new QuantumState(n);
+
+                    // 回路を作成
+                    const circuit = new QuantumCircuit(n);
+                    for (let i = 0; i < n; i++) {
+                        circuit.add_H_gate(i);
+                    }
+
+                    // シミュレータクラスを作成
+                    const sim = new QuantumCircuitSimulator(circuit, state);
+
+                    // 基底を二進数と見た時の整数値を入れて、その状態に初期化
+                    sim.initialize_state(0);
+                    expect(sim.get_gate_count()).toBe(3);
+
+                    // 実行
+                    sim.simulate();
+
+                    // 量子状態を表示
+                    expect(state.get_vector()).toEqual([
+                        { real: 0.3535533905932737, imag: 0 },
+                        { real: 0.3535533905932737, imag: 0 },
+                        { real: 0.3535533905932737, imag: 0 },
+                        { real: 0.3535533905932737, imag: 0 },
+                        { real: 0.3535533905932737, imag: 0 },
+                        { real: 0.3535533905932737, imag: 0 },
+                        { real: 0.3535533905932737, imag: 0 },
+                        { real: 0.3535533905932737, imag: 0 }
+                    ]);
+
+                    // 期待値
+                    const observable = new Observable(1);
+                    observable.add_operator(1.0, "Z 0");
+                    expect(sim.get_expectation_value(observable)).toEqual({ real: 0, imag: 0 });
+
+                    // 量子状態を入れ替え
+                    sim.swap_state_and_buffer();
+                    // ランダムな純粋状態へ初期化
+                    sim.initialize_random_state(0);
+                    sim.simulate()
+                    expect(state.get_vector()).toEqual([
+                        { real: 0.1225434154852396, imag: 0.12785993852555624 },
+                        { real: 0.08579214310130866, imag: -0.44437440183992627 },
+                        { real: 0.5650340456036835, imag: -0.3736419822394097 },
+                        { real: 0.38291198771560225, imag: -0.21902375708450025 },
+                        { real: -0.14005793986209567, imag: 0.02466864216798622 },
+                        { real: 0.0024387981362078153, imag: 0.09379376638431373 },
+                        { real: 0.05214439998065184, imag: -0.1950167201251396 },
+                        { real: -0.14156520609871934, imag: -0.14325499152541607 }
+                    ]);
+
+                    // 量子状態をコピー（バッファ->現状態）
+                    sim.copy_state_from_buffer();
+                    sim.simulate();
+                    expect(state.get_vector().map(c => round4Complex(c))).toEqual([
+                        { real: 1, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 },
+                        { real: 0, imag: 0 }
+                    ]);
+
+                    // 量子状態をコピー（現状態->バッファ）
+                    sim.copy_state_to_buffer();
+                    sim.simulate();
+                    expect(state.get_vector()).toEqual([
+                        { real: 0.3535533905932735, imag: 0 },
+                        { real: 0.3535533905932735, imag: 0 },
+                        { real: 0.3535533905932735, imag: 0 },
+                        { real: 0.3535533905932735, imag: 0 },
+                        { real: 0.3535533905932735, imag: 0 },
+                        { real: 0.3535533905932735, imag: 0 },
+                        { real: 0.3535533905932735, imag: 0 },
+                        { real: 0.3535533905932735, imag: 0 }
+                    ]);
+                });
+                it("NoiseSimulator", async () => {
+                    const { QuantumState, QuantumCircuit, NoiseSimulator, sqrtX, sqrtY, T, CNOT, CZ, getExceptionMessage } = await import("../../lib/bundle");
+                    const n = 3;
+                    const depth = 10;
+                    const one_qubit_noise = ["Depolarizing", "BitFlip", "Dephasing", "IndependentXZ", "AmplitudeDamping"];
+                    const circuit = new QuantumCircuit(n);
+                    for (let d = 0; d < depth; d++) {
+                        for (let i = 0; i < n; i++) {
+                            const r = Math.floor(Math.random() * 5); // randint(0, 4)
+                            const noise_type = Math.floor(Math.random() * 5);
+                            switch (r) {
+                                case 0:
+                                    circuit.add_noise_gate(sqrtX(i), one_qubit_noise[noise_type], 0.01);
+                                    break;
+                                case 1:
+                                    circuit.add_noise_gate(sqrtY(i), one_qubit_noise[noise_type], 0.01);
+                                    break;
+                                case 2:
+                                    circuit.add_noise_gate(T(i), one_qubit_noise[noise_type], 0.01);
+                                    break;
+                                case 3:
+                                    if (i < n -1) circuit.add_noise_gate(CNOT(i, i + 1), "Depolarizing", 0.01);
+                                    break;
+                                case 4:
+                                    if (i < n -1) circuit.add_noise_gate(CZ(i, i + 1), "Depolarizing", 0.01);
+                                    break;
+                                default:
+                                    // const unreachable: never = r;
+                            }
+                        }
+                    }
+                    const state = new QuantumState(n);
+                    state.set_Haar_random_state(0);
+                    const sim = new NoiseSimulator(circuit, state);
+                    sim.execute(100);
+                    expect(state.get_vector()).toEqual([
+                        { real: 0.3285365339385453, imag: -0.3991580676973766 },
+                        { real: 0.09548989118017889, imag: 0.10490963680782449 },
+                        { real: -0.27853247603515763, imag: 0.25911411674718726 },
+                        { real: -0.17026322699583063, imag: 0.2508423016086916 },
+                        { real: 0.48907802065924627, imag: -0.24372941890871075 },
+                        { real: 0.05927692487604381, imag: 0.19038955019035428 },
+                        { real: -0.24445110608496284, imag: -0.06384567684752364 },
+                        { real: 0.06747055877943083, imag: 0.26312007639361706 }
+                    ]);
+                });
+                it("CausalConeSimulator", async () => {
+                    const { QuantumState, ParametricQuantumCircuit, CausalConeSimulator, Observable } = await import("../../lib/bundle");
+                    const n = 100;
+                    const observable = new Observable(1);
+                    observable.add_operator(1.0, "Z 0");
+                    const circuit = new ParametricQuantumCircuit(n);
+                    for (let i = 0; i < n; i++) {
+                        circuit.add_parametric_RX_gate(i, 1.0);
+                        circuit.add_parametric_RY_gate(i, 1.0);
+                    }
+
+                    // CausalConeSimulatorの場合
+                    const ccs = new CausalConeSimulator(circuit, observable);
+                    expect(ccs.get_expectation_value()).toEqual({ real: 0.2919265817264289, imag: 0 });
+
+                    try {
+                        // 通常の場合
+                        const state = new QuantumState(n);
+                        circuit.update_quantum_state(state);
+                        observable.get_expectation_value(state);
+                    } catch (e: any) {
+                        expect(e.message).toBe("memory access out of bounds");
+                    }
+                });
             });
         });
     });

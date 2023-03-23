@@ -1,6 +1,6 @@
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 import { Complex } from "./type/common";
-import type { ClsNoisyEvolution_fast, ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, GeneralQuantumOperatorImpl, GradCalculatorImpl, HermitianQuantumOperatorImpl, ParametricQuantumCircuitImpl, PauliOperatorImpl, QuantumCircuitImpl, QuantumCircuitOptimizerImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumGate_SingleParameter, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
+import type { CausalConeSimulatorImpl, ClsNoisyEvolution_fast, ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, GeneralQuantumOperatorImpl, GradCalculatorImpl, HermitianQuantumOperatorImpl, NoiseSimulatorImpl, ParametricQuantumCircuitImpl, PauliOperatorImpl, QuantumCircuitImpl, QuantumCircuitOptimizerImpl, QuantumCircuitSimulatorImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumGate_SingleParameter, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
 
 // Object.keys(module.exports) で一括取得して代入するため、1ファイルにexport変数をまとめている
 
@@ -14,6 +14,9 @@ export type Observable = HermitianQuantumOperatorImpl;
 export type PauliOperator = PauliOperatorImpl;
 export type QuantumCircuitOptimizer = QuantumCircuitOptimizerImpl;
 export type GradCalculator = GradCalculatorImpl;
+export type QuantumCircuitSimulator = QuantumCircuitSimulatorImpl;;
+export type NoiseSimulator = NoiseSimulatorImpl;
+export type CausalConeSimulator = CausalConeSimulatorImpl;
 
 export var getExceptionMessage: (exceptionPtr: number) => string;
 export var addFunction: (func: any, flag: string) => number;
@@ -29,6 +32,9 @@ export var Observable: Observable;
 export var PauliOperator: PauliOperator;
 export var QuantumCircuitOptimizer: QuantumCircuitOptimizer;
 export var GradCalculator: GradCalculator;
+export var QuantumCircuitSimulator: QuantumCircuitSimulator;
+export var NoiseSimulator: NoiseSimulator;
+export var CausalConeSimulator: CausalConeSimulator;
 
 export var Identity: (target_qubit_index: number) => ClsOneQubitGate;;
 export var X: (target_qubit_index: number) => ClsOneQubitGate;;
@@ -107,6 +113,7 @@ export function applyModule(qulacsModule: QulacsWasmModule) {
     applayAlias();
     applyQuantumStateOverload();
     applyDensityMatrixOverload();
+    applyQuantumCircuitSimulatorOverload();
     applyFunctionOverload(qulacsModule);
 }
 
@@ -150,6 +157,12 @@ function applyDensityMatrixOverload() {
         } else {
             return DensityMatrix.prototype.multiply_coef_complex.call(this, arg);
         }
+    }
+}
+
+function applyQuantumCircuitSimulatorOverload() {
+    QuantumCircuitSimulator.prototype.initialize_state = function(computationl_basis: number) {
+        return QuantumCircuitSimulator.prototype.initialize_state_itype_wrapper.call(this, computationl_basis);
     }
 }
 
