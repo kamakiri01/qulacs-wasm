@@ -19,13 +19,13 @@ export type QuantumStateImpl = QuantumStateBase & {
     get_device_name(): string;
     add_state(state: QuantumStateImpl): void;
     multiply_coef(coef: number | Complex): void;
-    // multiply_elementwise_function(): void;
+    multiply_elementwise_function(function_ptr: (i: number) => Complex): void;
     get_classical_value(index: number): number;
     set_classical_value(index: number, val: number): void;
     to_string(): string;
     sampling(sampling_count: number, random_seed?: number): number[];
     get_vector(): Complex[];
-    get_amplitude(): Complex;
+    get_amplitude(index: number): Complex;
     get_qubit_count(): number;
 };
 
@@ -57,8 +57,10 @@ export type DensityMatrixImpl = QuantumStateBase & {
 export interface QuantumCircuitImpl {
     new (qubit_count: number): QuantumCircuitImpl;
     update_quantum_state(state: QuantumState, start_index?: number, end_index?: number): void;
+    to_string(): string;
     copy(): QuantumCircuitImpl;
     add_gate(gate: QuantumGateBase, index?: number): void;
+    add_noise_gate(gate: QuantumGateBase, noise_type: string, noise_prob: number): void;
     remove_gate(index: number): void;
     calculate_depth(): number;
     add_X_gate(target_index: number): void;
@@ -83,24 +85,51 @@ export interface QuantumCircuitImpl {
     add_RotZ_gate(target_index: number, angle: number): void;
 }
 
+/**
+ * NOTE: EMSCRIPTEN_BINDINGS側のParametricQuantumCircuitはQuantumCircuitをextendsしていない。
+ * これはbase宣言によりoverloadTableを上書きしてしまうので、これを防ぐためである。
+ * よって、継承関係を利用する場合、TS側とC++側の関係構造が異なる場合があることに留意。
+ */
 export interface ParametricQuantumCircuitImpl extends QuantumCircuitImpl {
+    new (qubit_count: number): ParametricQuantumCircuitImpl;
+    copy(): ParametricQuantumCircuitImpl;
+    add_parametric_gate(gate: QuantumGate_SingleParameter, index?: number): void;
     add_parametric_RX_gate(target_index: number, initial_angle: number): void;
     add_parametric_RY_gate(target_index: number, initial_angle: number): void;
     add_parametric_RZ_gate(target_index: number, initial_angle: number): void;
-    copy(): ParametricQuantumCircuitImpl;
+    add_parametric_multi_Pauli_rotation_gate(target: number[], pauli_id: number[], initial_angle: number): void;
+    get_parameter_count(): number;
+    get_parameter(index: number): number;
+    set_parameter(index: number, value: number): void;
+    get_parametric_gate_position(index: number): number;
+    backprop(obs: GeneralQuantumOperatorImpl): number[];
+    backprop_inner_product(bistate: QuantumStateBase): number[];
 }
 
 export interface QuantumGateBase {
     update_quantum_state(state: QuantumState): void;
+    to_string(): string;
+    copy(): QuantumGateMatrix;
     get_matrix(): Complex[][];
+    get_target_index_list(): number[];
+    get_control_index_list(): number[];
+    get_name(): string;
+    is_commute(gate: QuantumGateBase): boolean;
+    is_Pauli(): boolean;
+    is_Clifford(): boolean;
+    is_Gaussian(): boolean;
+    is_parametric(): boolean;
+    is_diagonal(): boolean;
 }
 
 export interface ClsOneQubitGate extends QuantumGateBase {}
 export interface ClsOneQubitRotationGate extends QuantumGateBase {}
 export interface ClsOneControlOneTargetGate extends QuantumGateBase {}
+export interface QuantumGate_SingleParameter extends QuantumGateBase {
+    set_parameter_value(value: number): void;
+    get_parameter_value(): number;
+}
 export interface QuantumGateMatrix extends QuantumGateBase {
-    to_string(): string;
-    copy(): QuantumGateMatrix;
     multiply_scalar: (value: number | Complex) => void;
     add_control_qubit: (qubit_index: number, control_value: number) => void;
 }
@@ -117,10 +146,73 @@ export interface ClsNoisyEvolution_fast extends QuantumGateBase {};
 
 export interface GeneralQuantumOperatorImpl {
     new (qubit_count: number): GeneralQuantumOperatorImpl;
+    get_term_count(): number;
+    get_qubit_count(): number;
+    get_term(index: number): PauliOperatorImpl;
+    is_hermitian(): boolean;
+    apply_to_state(work_state: QuantumStateBase, state_to_be_multiplied: QuantumStateBase, dst_state: QuantumStateBase): void;
+    get_transition_amplitude(state_bra: QuantumStateBase, state_ket: QuantumStateBase): Complex;
+    add_operator(mpt: PauliOperatorImpl): void;
     add_operator(coef: number | Complex, pauli_string: string): void;
     add_operator(target_qubit_index_list: number[], target_qubit_pauli_list: number[], pauli_string: number | Complex): void;
     get_expectation_value(state: QuantumStateBase): Complex;
 };
 
-export type HermitianQuantumOperatorImpl = GeneralQuantumOperatorImpl & {}
+export type HermitianQuantumOperatorImpl = GeneralQuantumOperatorImpl & {
+    new (qubit_count: number): HermitianQuantumOperatorImpl;
+}
 export type Observable = HermitianQuantumOperatorImpl;
+
+export interface PauliOperatorImpl {
+    new (): PauliOperatorImpl;
+    new (coef: number | Complex): PauliOperatorImpl;
+    new (strings: string, coef: number | Complex): PauliOperatorImpl;
+    add_single_Pauli(qubit_index: number, pauli_type: number): void;
+    get_index_list(): number[];
+    get_pauli_id_list(): number[];
+    get_coef(): Complex;
+    copy(): PauliOperatorImpl;
+    change_coef(new_coef: number | Complex): void;
+    get_pauli_string(): string;
+    get_expectation_value(state: QuantumStateBase): Complex;
+    get_transition_amplitude(state_bra: QuantumStateBase, state_ket: QuantumStateBase): Complex;
+};
+
+export interface QuantumCircuitOptimizerImpl {
+    new (): QuantumCircuitOptimizerImpl;
+    optimize(circuit: QuantumCircuitImpl, max_block_size?: number): void;
+    optimize_light(circuit: QuantumCircuitImpl): void;
+    merge_all(circuit: QuantumCircuitImpl): QuantumGateMatrix;   
+}
+
+export interface GradCalculatorImpl {
+    new (): GradCalculatorImpl;
+    calculate_grad(x: ParametricQuantumCircuitImpl, obs: Observable, theta?: number[]): Complex[];
+}
+
+export interface QuantumCircuitSimulatorImpl {
+    new (circuit: QuantumCircuitImpl, initial_state?: QuantumStateBase): QuantumCircuitSimulatorImpl;
+    initialize_state(computationl_basis: number): void;
+    initialize_random_state(seed?: number): void;
+    simulate(): void;
+    simulate_range(start: number, end: number): void;
+    get_expectation_value(observable: Observable): Complex;
+    get_gate_count(): number;
+    copy_state_to_buffer(): void;
+    copy_state_from_buffer(): void;
+    swap_state_and_buffer(): void;
+}
+
+export interface NoiseSimulatorImpl {
+    new (circuit: QuantumCircuitImpl, initial_state?: QuantumStateBase): NoiseSimulatorImpl;
+    execute(sample_count: number): number[];
+}
+
+export interface CausalConeSimulatorImpl {
+    new (_init_circuit: ParametricQuantumCircuitImpl, _init_observable: Observable): CausalConeSimulatorImpl;
+    build(): void;
+    get_expectation_value(): Complex;
+    get_circuit_list(): ParametricQuantumCircuitImpl[][];
+    get_pauli_operator_list: PauliOperatorImpl[][];
+    get_coef_list: Complex[];
+}

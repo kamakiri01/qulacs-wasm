@@ -14,7 +14,7 @@ npm install qulacs-wasm
 import { initQulacs } from "qulacs-wasm";
 
 initQulacs()
-  .then(() => import("qulacs-wasm")) // need dynamic import to get native class
+  .then(() => import("qulacs-wasm")) // dynamic import to get native class
   .then({ QuantumState, QuantumCircuit } => {
       const qubitCount = 2;
       const state = new QuantumState(qubitCount);
@@ -30,10 +30,10 @@ initQulacs()
 
 ```
 state vector [
-  { re: 0.7071067811865475, im: 0 },
-  { re: 0, im: 0 },
-  { re: 0, im: 0 },
-  { re: 0.7071067811865475, im: 0 }
+  { real: 0.7071067811865475, imag: 0 },
+  { real: 0, imag: 0 },
+  { real: 0, imag: 0 },
+  { real: 0.7071067811865475, imag: 0 }
 ]
 sampling [
   0, 0, 3, 3, 3,
@@ -41,15 +41,19 @@ sampling [
 ]
 ```
 
-You can see more usage and how to include .wasm file for your project, in `sample` dir.
+[advanced.test](./test/tutorial/advanced.test.ts) satisfies the same use case as [Qulacs Python Advanced Guide](https://docs.qulacs.org/en/latest/guide/2.0_python_advanced.html) with TypeScript.
 
-## non-Available Classes and Methods
+How to include .wasm file for your project, details in [sample](./sample/).
 
-- [ ] Observable, GeneralQuantumOperator, CPTP
+## non-available classes and methods
+
+- [ ] GPU class (ex: QuantumStateGpu)
+- [ ] long long int type (automatically cast to int)
+- [ ] some override methods
 
 Pull Requests Welcome!
 
-## Import from external .wasm file
+## How to import from external .wasm file
 
 ```javascript
 import { initQulacs } from "qulacs-wasm/lib/nobundle";

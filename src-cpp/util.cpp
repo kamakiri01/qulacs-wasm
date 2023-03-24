@@ -1,11 +1,6 @@
-int* transpaleITYPEVecToIntArray(const std::vector<ITYPE> vec) {
-    int size = vec.size();
-    int arr[size];
-    for (int i = 0; i < size; i++) {
-        arr[i] = (int) vec[i]; // NOTE: long long intをintに丸めている。JSで (un)signed long long intを取得する方法を検討
-    }
-    return arr;
-}
+#include "emjs.cpp"
+
+// JS to C++
 
 CPPCTYPE translateJSNumberOrComplexToCPPCTYPE(const emscripten::val &v) {
     std::complex<double> c;
@@ -61,4 +56,64 @@ SparseComplexMatrix translateJSMatrixtoSparseComplexMatrix(const emscripten::val
     }
     mat.setFromTriplets(tripletVec.begin(), tripletVec.end());
     return mat;
+}
+
+// C++ to JS
+
+emscripten::EM_VAL transpaleITYPEVecToJSArray(const std::vector<ITYPE> &vec) {
+    int size = vec.size();
+    int arr[size];
+    for (int i = 0; i < size; i++) {
+        arr[i] = (int) vec[i]; // NOTE: long long intをintに丸めている。JSで (un)signed long long intを取得する方法を検討
+    }
+    return convertIntArrayToJSArray(arr, size);
+}
+
+emscripten::EM_VAL translateCPPArrToJSComplexArray(CPPCTYPE *cppArr, int &size) {
+    double arr[size*2];
+    for (int i = 0; i < size; i++) {
+        CPPCTYPE c = cppArr[i];
+        arr[i*2] = c.real();
+        arr[i*2+1] = c.imag();
+    }
+    return convertDoubleArrayToJSComplexArray(arr, size);
+}
+
+emscripten::EM_VAL translateCPPVecToJSComplexArray(std::vector<std::complex<double>> &cppVec) {
+    int size = cppVec.size();
+    double arr[size*2];
+    for (int i = 0; i < size; i++) {
+        arr[i*2] = cppVec[i].real();
+        arr[i*2+1] = cppVec[i].imag();
+    }
+    return convertDoubleArrayToJSComplexArray(arr, size);
+}
+
+emscripten::EM_VAL translateCPPToJSComplex(CPPCTYPE &cpp) {
+    return convertCPPCTYPEToJSComplex(cpp.real(), cpp.imag());
+}
+
+emscripten::EM_VAL translateCTYPEArrMatrixToJSComplexMatrix(CTYPE* ptr, int &size, int dim) {
+    double arr[size*2];
+    for (ITYPE y = 0; y < dim; ++y) {
+        for (ITYPE x = 0; x < dim; ++x) {
+            auto c = ptr[y * dim + x];
+            arr[(x+(y*dim))*2] = c.real();
+            arr[(x+(y*dim))*2+1] = c.imag();
+        }
+    }
+    return convertMatrix(arr, size);
+}
+
+emscripten::EM_VAL translateComplexMatrixToJSComplexMatrix(ComplexMatrix &mat) {
+    int arrSize = mat.rows() * mat.cols();
+    double arr[arrSize*2];
+    for (ITYPE y = 0; y < mat.cols(); ++y) {
+        for (ITYPE x = 0; x < mat.rows(); ++x) {
+            auto c = mat(x, y);
+            arr[(x+(y*mat.cols()))*2] = c.real();
+            arr[(x+(y*mat.cols()))*2+1] = c.imag();
+        }
+    }
+    return convertMatrix(arr, arrSize);
 }

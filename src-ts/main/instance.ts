@@ -1,6 +1,8 @@
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 import { Complex } from "./type/common";
-import type { ClsNoisyEvolution_fast, ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, GeneralQuantumOperatorImpl, HermitianQuantumOperatorImpl, ParametricQuantumCircuitImpl, QuantumCircuitImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
+import type { CausalConeSimulatorImpl, ClsNoisyEvolution_fast, ClsOneControlOneTargetGate, ClsOneQubitGate, ClsOneQubitRotationGate, ClsReversibleBooleanGate, ClsStateReflectionGate, DensityMatrixImpl, GeneralQuantumOperatorImpl, GradCalculatorImpl, HermitianQuantumOperatorImpl, NoiseSimulatorImpl, ParametricQuantumCircuitImpl, PauliOperatorImpl, QuantumCircuitImpl, QuantumCircuitOptimizerImpl, QuantumCircuitSimulatorImpl, QuantumGateBase, QuantumGateDiagonalMatrix, QuantumGateMatrix, QuantumGateSparseMatrix, QuantumGate_CPTP, QuantumGate_Instrument, QuantumGate_Probabilistic, QuantumGate_SingleParameter, QuantumStateBase, QuantumStateImpl } from "./type/QulacsClass";
+
+// Object.keys(module.exports) で一括取得して代入するため、1ファイルにexport変数をまとめている
 
 export type QuantumState = QuantumStateImpl;
 export type QuantumCircuit = QuantumCircuitImpl;
@@ -9,6 +11,12 @@ export type DensityMatrix = DensityMatrixImpl;
 export type GeneralQuantumOperator = GeneralQuantumOperatorImpl;
 export type HermitianQuantumOperator = HermitianQuantumOperatorImpl;
 export type Observable = HermitianQuantumOperatorImpl;
+export type PauliOperator = PauliOperatorImpl;
+export type QuantumCircuitOptimizer = QuantumCircuitOptimizerImpl;
+export type GradCalculator = GradCalculatorImpl;
+export type QuantumCircuitSimulator = QuantumCircuitSimulatorImpl;;
+export type NoiseSimulator = NoiseSimulatorImpl;
+export type CausalConeSimulator = CausalConeSimulatorImpl;
 
 export var getExceptionMessage: (exceptionPtr: number) => string;
 export var addFunction: (func: any, flag: string) => number;
@@ -21,6 +29,12 @@ export var DensityMatrix: DensityMatrix;
 export var GeneralQuantumOperator: GeneralQuantumOperator;
 export var HermitianQuantumOperator: HermitianQuantumOperator;
 export var Observable: Observable;
+export var PauliOperator: PauliOperator;
+export var QuantumCircuitOptimizer: QuantumCircuitOptimizer;
+export var GradCalculator: GradCalculator;
+export var QuantumCircuitSimulator: QuantumCircuitSimulator;
+export var NoiseSimulator: NoiseSimulator;
+export var CausalConeSimulator: CausalConeSimulator;
 
 export var Identity: (target_qubit_index: number) => ClsOneQubitGate;;
 export var X: (target_qubit_index: number) => ClsOneQubitGate;;
@@ -87,7 +101,9 @@ export var CPTP: (gate_list: QuantumGateBase[]) => QuantumGateBase;
 export var CP: (gate_list: QuantumGateBase[], state_normalize: boolean, probability_normalize: boolean, assign_zero_if_not_matched: boolean) => QuantumGateBase;
 export var Instrument: (gate_list: QuantumGateBase[], classical_register_address: number) => QuantumGateBase;
 export var Adaptive: (gate: QuantumGateBase, function_ptr: (list: number[]) => boolean) => QuantumGateBase;
-
+export var ParametricRX: (target_qubit_index: number, initial_angle: number) => QuantumGate_SingleParameter;
+export var ParametricRY: (target_qubit_index: number, initial_angle: number) => QuantumGate_SingleParameter;
+export var ParametricRZ: (target_qubit_index: number, initial_angle: number) => QuantumGate_SingleParameter;
 
 export function applyModule(qulacsModule: QulacsWasmModule) {
     Object.keys(module.exports).forEach(key => {
@@ -95,8 +111,9 @@ export function applyModule(qulacsModule: QulacsWasmModule) {
         if (wasmExportedImpl) module.exports[key] = wasmExportedImpl;
     });
     applayAlias();
-    applyQuantumStateOverload();
+    applyQuantumStateOverload(qulacsModule);
     applyDensityMatrixOverload();
+    applyQuantumCircuitSimulatorOverload();
     applyFunctionOverload(qulacsModule);
 }
 
@@ -104,25 +121,38 @@ function applayAlias() {
     Observable = HermitianQuantumOperator;
 }
 
-function applyQuantumStateOverload() {
+function applyQuantumStateOverload(qulacsModule: any) {
     QuantumState.prototype.load = function(arg: any) {
         if (Array.isArray(arg)) return QuantumState.prototype.load_Vector.call(this, arg);
         return QuantumState.prototype.load_QuantumStateBase.call(this, arg);
     }
 
     QuantumState.prototype.multiply_coef = function(arg: any) {
-        const that = this;
         if (typeof arg === "number") {
             return QuantumState.prototype.multiply_coef_double.call(this, arg);
         } else {
             return QuantumState.prototype.multiply_coef_complex.call(this, arg);
         }
     }
+
+    QuantumState.prototype.multiply_elementwise_function = function(func: (val: number) => Complex) {
+        // NOTE: dyncallは入出力にvijfd型のみ利用できるため、funcが返すComplexをdyncall元に返すことができない
+        // そのため、funcの返り値をcomplexRegeneratorでdoubleに分解し、dyncallが渡すポインタに先に書き込み、
+        // complexRegenerator自体はvoidを返す
+        // dyncall側にはポインタから返り値を読みだすことを期待する
+        const complexRegenerator = (intNum: number, complexArrPointer: number): void => {
+            const setValueFunc = qulacsModule["setValue"] as typeof setValue;
+            const c: Complex = func(intNum);
+            setValueFunc(complexArrPointer, c.real, "double");
+            setValueFunc(complexArrPointer + 8, c.imag, "double");
+        }
+        const fnPointer = addFunction(complexRegenerator, "vii");
+        return QuantumState.prototype.multiply_elementwise_function_wrapper.call(this, fnPointer);
+    }
 }
 
 function applyDensityMatrixOverload() {
     DensityMatrix.prototype.load = function(arg: any) {
-        const that = this;
         if (Array.isArray(arg)) {
             if (Array.isArray(arg[0])) {
                 return DensityMatrix.prototype.load_Matrix.call(this, arg);
@@ -140,6 +170,12 @@ function applyDensityMatrixOverload() {
         } else {
             return DensityMatrix.prototype.multiply_coef_complex.call(this, arg);
         }
+    }
+}
+
+function applyQuantumCircuitSimulatorOverload() {
+    QuantumCircuitSimulator.prototype.initialize_state = function(computationl_basis: number) {
+        return QuantumCircuitSimulator.prototype.initialize_state_itype_wrapper.call(this, computationl_basis);
     }
 }
 
@@ -230,6 +266,10 @@ function applyFunctionOverload(qulacsModule: any) {
     }
 
     Adaptive = (gate: QuantumGateBase, func: (list: number[]) => boolean) => {
+        // NOTE: dyncallは入出力にvijfd型のみ利用できるため、dyncall元からfuncにvector/arrayを渡すことができない
+        // そのため、listRegeneratorでポインタから配列要素を復元してからfuncに渡す
+        // funcの返り値はboolをそのまま返す
+        // dyncall側にはJSで扱いたい配列のポインタを渡すことを期待する
         const listRegenerator = (listPointer: number, size: number): boolean => {
             const list: number[] = [];
             var nByte = 4;
