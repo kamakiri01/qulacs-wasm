@@ -215,12 +215,14 @@ describe("Qulacs Advanced Guide", () => {
             expect(state.get_squared_norm()).toBe(0.9999999999999998);
         });
 
-        it("Classical registers", async () => {
+        it("Opetation on Classical registers", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const state = new QuantumState(3);
             const position = 0;
             const value = 20;
+            // Write the value to `position`-th register
             state.set_classical_value(position, value);
+            // Get the value of the `position`-th register
             const obtained = state.get_classical_value(position);
             expect(obtained).toEqual(value);
         });
@@ -232,7 +234,10 @@ describe("Qulacs Advanced Guide", () => {
             const state_ket = new QuantumState(n);
             state_bra.set_Haar_random_state(1);
             state_ket.set_computational_basis(0);
+
+            // Calculation of inner product
             const value = inner_product(state_bra, state_ket);
+            expect(value).toEqual({ real: 0.15765739459521372, imag: 0.07018524636200694 });
 
             const n1 = 1
             const state_ket1 = new QuantumState(n1);
@@ -240,6 +245,8 @@ describe("Qulacs Advanced Guide", () => {
             const n2 = 2;
             const state_ket2 = new QuantumState(n2);
             state_ket2.set_computational_basis(2);
+
+            // Calculation of tensor product
             expect(tensor_product(state_ket1, state_ket2).get_vector()).toEqual([
                 {real: 0, imag: 0},
                 {real: 0, imag: 0},
@@ -267,6 +274,9 @@ describe("Qulacs Advanced Guide", () => {
                 { real: 0.09613403820183443, imag: -0.2335702345816399 },
                 { real: -0.5734159974719932, imag: -0.48508927627363974 }
             ]);
+            // new qubit 0 is old qubit 1
+            // new qubit 1 is old qubit 2,
+            // new qubit 2 is old qubit 0,
             const permutate = permutate_qubit(state, [1, 2, 0]);
             expect(permutate.get_vector()).toEqual([
                 { real: 0.30385888914418613, imag: -0.1352706040121121 },
@@ -280,14 +290,14 @@ describe("Qulacs Advanced Guide", () => {
             ]);
             state.set_Haar_random_state(1);
             const state0 = drop_qubit(state, [1], [0]);
-            expect(state0.get_vector()).toEqual([
+            expect(state0.get_vector()).toEqual([ // projection: qubit 1 is 0
                 { real: 0.30385888914418613, imag: -0.1352706040121121 },
                 { real: 0.10818205843949354, imag: -0.0499035706092407 },
                 { real: -0.10910033108861181, imag: -0.4319005729971607 },
                 { real: 0.138922433172912, imag: 0.0064107920119231806 }
             ]);
             const state1 = drop_qubit(state, [1], [1]);
-            expect(state1.get_vector()).toEqual([
+            expect(state1.get_vector()).toEqual([ // projection: qubit 1 is 1
                 { real: 0.059044991052511896, imag: 0.0183033846365273 },
                 { real: -0.1601275112792203, imag: 0.004463466887972794 },
                 { real: 0.09613403820183443, imag: -0.2335702345816399 },
@@ -451,10 +461,11 @@ describe("Qulacs Advanced Guide", () => {
             // TODO
         });
 
-        it("Initialize", async () => {
+        it("Initialize quantum states", async () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const n = 2;
             const state = new DensityMatrix(n);
+            // Initialize as |0> state.
             state.set_zero_state()
             expect(state.get_matrix()).toEqual([
                 [
@@ -482,6 +493,7 @@ describe("Qulacs Advanced Guide", () => {
                     {real: 0, imag: 0},
                 ],  
             ]);
+            // Initialize as computational basis specified in binary format.
             state.set_computational_basis(0b10);
             expect(state.get_matrix()).toEqual([
                 [
@@ -510,6 +522,10 @@ describe("Qulacs Advanced Guide", () => {
                 ],  
             ]);
             const state1 = new DensityMatrix(1);
+
+            //Initialize as a random pure state in Haar measure with the seed given as an argument.
+            // If you do not give the seed, `time` function is used for seed.
+            // Xorshift is used for psuedo random.
             state1.set_Haar_random_state(0);
             expect(state1.get_matrix()).toEqual([
                 [
@@ -522,28 +538,49 @@ describe("Qulacs Advanced Guide", () => {
                 ]
             ]);
         });
-        it("Check", async () => {
+        it("Check quantum states", async () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const n = 5;
             const state = new DensityMatrix(n);
             state.set_Haar_random_state(0);
+
+            // Get quantum bit numbers
             expect(state.get_qubit_count()).toBe(n);
+
+            // Get the probability that the specified qubit will be measured as 0
             expect(state.get_zero_probability(1)).toBe(0.5445520462375112);
+
+            // Get arbitrary marginal probabilities
+            // Argument is an array of the same length as the number of qubits
+            // Specify 0,1,2. 0,1 is the probability of the subscript measured at that value
+            // 2 means that bit is peripheralized.
+            // For example, calculation of the probability that the third is measured as 0 and the 0th is measured as 1:
             expect(state.get_marginal_probability([1,2,2,0,2])).toEqual(0.1340660808325693);
+            // Get the entropy of the probability distribution when measured on the Z basis
             expect(state.get_entropy()).toBe(3.085681210868283);
+            // Get squared norm (<a|a>)
+            // Because the operation may not be Trace preserving, the norm of state does not necessarily to be 1.
             expect(state.get_squared_norm()).toBe(1);
             state.set_zero_state();
+            // Measure and sample all the qubits on Z-basis as many times as given by the argument.
+            // Returns a list of integers converted from the resulting binaries.
             expect(state.sampling(10).length).toBe(10);
-            expect(state.sampling(5, 314)).toEqual([0, 0, 0, 0, 0]);
+            // You can supply a random seed as second argument.
+            // If the same seed is given, always returns the same sampling result.
+            expect(state.sampling(10, 314)).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+            // Get a character string indicating whether the state vector is on CPU or GPU
             expect(state.get_device_name()).toBe("cpu");
         });
 
-        it("Deformation", async () => {
+        it("Deformation of quantum states", async () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const state = new DensityMatrix(2);
             state.set_computational_basis(0);
             const buffer = new DensityMatrix(2);
             buffer.set_computational_basis(2);
+            // Sum of quantum state (state <- state+buffer)
+            // Add the buffer state to the state to create a superposition state.
+            // The norm after the operation generally is not 1.
             state.add_state(buffer);
             expect(state.get_matrix()).toEqual([
                 [
@@ -571,6 +608,9 @@ describe("Qulacs Advanced Guide", () => {
                     {real: 0, imag: 0},
                 ],  
             ]);
+            // Product of quantum state and complex number
+            // Multiplies all elements by the complex number of the argument.
+            // The norm after operation generally is not 1.
             const coef = 3.0;
             state.multiply_coef(coef);
             state.multiply_coef({real: 1, imag:0});
@@ -600,8 +640,11 @@ describe("Qulacs Advanced Guide", () => {
                     {real: 0, imag: 0},
                 ],  
             ]);
-           expect(state.get_squared_norm()).toBe(6);
-           state.normalize(state.get_squared_norm());
+
+            // Normalize quantum states
+            // Provide the current squared norm as an argument.
+            expect(state.get_squared_norm()).toBe(6);
+            state.normalize(state.get_squared_norm());
             expect(state.get_matrix()).toEqual([
                 [
                     {real: 0.5, imag: 0},
@@ -631,18 +674,21 @@ describe("Qulacs Advanced Guide", () => {
            expect(state.get_squared_norm()).toBe(1);
         });
 
-        it("Classical registers", async () => {
+        it("Operation on classical registers", async () => {
             const { DensityMatrix } = await import("../../lib/bundle");
             const state = new DensityMatrix(3);
             const position = 0;
             const value = 20;
+            // Set the value at `position`-th register.
             state.set_classical_value(position, value);
+            // Get the value at `position`-th register.
             const obtained = state.get_classical_value(position);
             expect(obtained).toEqual(value);
         });
 
         it("Creating superposition states and mixture states", async () => {
             const { QuantumState, DensityMatrix, make_superposition, make_mixture } = await import("../../lib/bundle");
+            // from QuantumState |a> and |b>, create a superposition state p|a> + q|b>
             let a = new QuantumState(2);
             a.set_computational_basis(0b00);
             const b = new QuantumState(2);
@@ -657,6 +703,8 @@ describe("Qulacs Advanced Guide", () => {
                 {real: 0.5, imag: 0},
             ]);
 
+            // from QuantumState |a> and DensityMatrix |b><b|, create a mixture state p|a><a| + q|b><b|
+            // You can also create a mixture states from two QuantumState or two DensitMatrix
             a = new QuantumState(2);
             a.set_computational_basis(0b00);
             const b2 = new DensityMatrix(2);
@@ -711,11 +759,11 @@ describe("Qulacs Advanced Guide", () => {
         describe("Special gate", () => {
             it("1 qubit gate", async () => {
                 const {
-                    Identity,
-                    X, Y, Z,
-                    H, S, Sdag, sqrtX, sqrtXdag, sqrtY, sqrtYdag,
-                    T, Tdag,
-                    P0, P1
+                    Identity, // Identity matrix
+                    X, Y, Z, // Pauli
+                    H, S, Sdag, sqrtX, sqrtXdag, sqrtY, sqrtYdag, // Clifford
+                    T, Tdag, // T gate
+                    P0, P1 // Projection to 0,1 (not normalized)
                 } = await import("../../lib/bundle");
                 const target = 3;
                 const gate = T(0);
@@ -884,7 +932,7 @@ describe("Qulacs Advanced Guide", () => {
                 const target_list = [0, 3, 5];
                 const pauli_index = [1, 3, 1]; // 1:X , 2:Y, 3:Z
                 const angle = 0.5;
-                const gate = PauliRotation(target_list, pauli_index, angle); // = X_0 Z_3 X_5
+                const gate = PauliRotation(target_list, pauli_index, angle); // = exp(i angle/2 X_0 Z_3 X_5)
                 expect(gate.to_string()).not.toBeUndefined();
             });
 
@@ -955,11 +1003,14 @@ describe("Qulacs Advanced Guide", () => {
         describe("General gates", () => {
             it("Dense Matrix", async () => {
                 const { DenseMatrix } = await import("../../lib/bundle");
+                // 1-qubit gate
                 let gate = DenseMatrix(0, [[0, 1],[1, 0]]);
                 expect(gate.get_matrix()).toEqual([
                     [ {real: 0, imag: 0}, {real: 1, imag: 0} ],
                     [ {real: 1, imag: 0}, {real: 0, imag: 0} ]
                 ]);
+
+                // 2-qubit gate
                 gate = DenseMatrix([0, 1], [
                     [1, 0, 0, 0],
                     [0, 1, 0, 0],
@@ -1021,6 +1072,7 @@ describe("Qulacs Advanced Guide", () => {
                 const index = 0;
                 const x_gate = X(index);
                 const x_mat_gate = to_matrix_gate(x_gate);
+                // Operate only when 1st-qubit is 0
                 const control_index = 1;
                 const control_with_value = 0;
                 x_mat_gate.add_control_qubit(control_index, control_with_value);
@@ -1056,7 +1108,7 @@ describe("Qulacs Advanced Guide", () => {
         });
 
         describe("Operation to create a new gate from multiple gates", () => {
-            it("Product", async () => {
+            it("Gate Product", async () => {
                 const { QuantumState, X, RY, merge } = await import("../../lib/bundle");
                 const n = 3;
                 const state = new QuantumState(n);
@@ -1065,6 +1117,8 @@ describe("Qulacs Advanced Guide", () => {
                 const x_gate = X(index);
                 const angle = Math.PI / 4.0;
                 const ry_gate = RY(index, angle);
+                // Create the new gate by combining gates
+                // The gate in the first augement is applied first
                 const x_and_ry_gate = merge(x_gate, ry_gate); // NOTE: merge(gate[])の実装はemscripten側でabstract classを扱う実装を検討中のため利用できない
                 expect(x_and_ry_gate.get_matrix()).toEqual([
                     [
@@ -1081,6 +1135,7 @@ describe("Qulacs Advanced Guide", () => {
                 const { P0, P1, add, merge, Identity, X, Z } = await import("../../lib/bundle");
                 const gate00 = merge(P0(0), P0(1));
                 const gate11 = merge(P1(0), P1(1));
+                // |00><00| + |11><11|
                 const proj_00_or_11 = add(gate00, gate11);
                 expect(proj_00_or_11.get_matrix()).toEqual([
                     [
@@ -1114,6 +1169,7 @@ describe("Qulacs Advanced Guide", () => {
                 
                 const gate_ii_xx = add(Identity(0), merge(X(0),X(1)));
                 const proj_00_plus_11 = merge(gate_ii_zz, gate_ii_xx);
+                // ((|00>+|11>)(<00|+<11|))/2 = (II + ZZ)(II + XX)/4
                 proj_00_plus_11.multiply_scalar(0.25);
                 expect(proj_00_plus_11.get_matrix()).toEqual([
                     [
@@ -1187,6 +1243,7 @@ describe("Qulacs Advanced Guide", () => {
                 const observable = new Observable(n);
                 observable.add_operator(1., "X 0");
 
+                // create hamiltonian and collapse operator
                 const hamiltonian = new Observable(n);
                 hamiltonian.add_operator(1., "Z 0 Z 1");
                 const decay_rate_z = 0.2;
@@ -1198,6 +1255,7 @@ describe("Qulacs Advanced Guide", () => {
                 const coef0: Complex = { real: 0, imag: 0.3 };
                 const coef1: Complex = { real: -0, imag: -0.05 };
 
+                // interacting operator
                 const c_ops = Array(3*n).fill(null).map((_, i) => { return new GeneralQuantumOperator(n); });
                 c_ops[0].add_operator(decay_rate_z, "Z 0");
                 c_ops[1].add_operator(decay_rate_z, "Z 1");
@@ -1284,9 +1342,11 @@ describe("Qulacs Advanced Guide", () => {
                 const gate = Adaptive(X(0), func);
                 const state = new QuantumState(1);
                 state.set_zero_state();
+                // func returns False, so X does not operate
                 state.set_classical_value(0, 0);
                 gate.update_quantum_state(state);
                 expect(state.get_vector()).toEqual([{ real: 1, imag: 0 }, { real: 0, imag: 0 }]);
+                // func returns True, so X operates
                 state.set_classical_value(0, 1);
                 gate.update_quantum_state(state);
                 expect(state.get_vector()).toEqual([{ real: 0, imag: 0 }, { real: 1, imag: 0 }]);
@@ -1300,11 +1360,16 @@ describe("Qulacs Advanced Guide", () => {
                     const coef = 0.1;
                     const s = "X 0 Y 1 Z 3";
                     const pauli = new PauliOperator(s, coef);
+                    //  Added pauli symbol later
                     pauli.add_single_Pauli(3, 2);
+                    // Get the subscript of each pauli symbol
                     const index_list = pauli.get_index_list();
+                    // Get pauli symbols (I,X,Y,Z -> 0,1,2,3)
                     const pauli_id_list = pauli.get_pauli_id_list();
+                    // Get pauli coefficient
                     const coef1 = pauli.get_coef();
                     expect(coef1).toEqual({ real: 0.1, imag: 0 });
+                    // Create a copy of pauli operator
                     const another_pauli = pauli.copy();
                     expect(another_pauli.toString()).not.toBeUndefined();
                     const sArr = ["I","X","Y","Z"];
@@ -1347,18 +1412,27 @@ describe("Qulacs Advanced Guide", () => {
 
                     const n = 5;
                     const operator = new GeneralQuantumOperator(n);
+                    // Pauli operator can be added
                     const coef: Complex = { real: 2.0, imag: 0.5 };
                     const Pauli_string = "X 0 X 1 Y 2 Z 4";
                     let pauli = new PauliOperator(Pauli_string, coef);
                     operator.add_operator(pauli);
+                    // Pauli operator can also be added directly from coefficients and strings
                     operator.add_operator({ real: 0, imag: 0.5 },  "Y 1 Z 4");
+
+                    // Get number of terms
                     const term_count = operator.get_term_count();
+
+                    // Get number of quantum bit
                     const qubit_count = operator.get_qubit_count();
 
+                    // Get specific terms as PauliOperator
                     const index = 1;
                     pauli = operator.get_term(index);
                     const is_hermitian = operator.is_hermitian();
 
+                    // Expected value calculation <a|H|a>
+                    // Generally not self-adjoint, can return complex value
                     const state = new QuantumState(n);
                     state.set_Haar_random_state(0);
                     let value = operator.get_expectation_value(state);
@@ -1368,6 +1442,8 @@ describe("Qulacs Advanced Guide", () => {
                     const work_state = new QuantumState(n);
                     operator.apply_to_state(work_state, state, result);
 
+                    // Transition moment calculation <a|H|b>
+                    // The first arguments comes to the bra side
                     const bra = new QuantumState(n);
                     bra.set_Haar_random_state(1);
                     value = operator.get_transition_amplitude(bra, state);
