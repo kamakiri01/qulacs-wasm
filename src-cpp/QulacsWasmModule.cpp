@@ -121,7 +121,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             auto c = self.data_cpp()[index];
             return emscripten::val::take_ownership(translateCPPToJSComplex(c));
         }), emscripten::allow_raw_pointers())
-        //.function("to_json", emscripten::optional_override([](QuantumState& self) { return to_json(self.to_ptree()); }), emscripten::allow_raw_pointers());
+        // .function("to_json", emscripten::optional_override([](QuantumState& self) { return to_json(self.to_ptree()); }), emscripten::allow_raw_pointers())
         // .function("data_cpp", &QuantumState::data_cpp, emscripten::allow_raw_pointers());
         .function("get_qubit_count", emscripten::optional_override([](QuantumState& self) { return self.qubit_count; }), emscripten::allow_raw_pointers());
 

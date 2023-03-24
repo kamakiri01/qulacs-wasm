@@ -40,11 +40,10 @@ describe("Qulacs Advanced Guide", () => {
             }
         });
 
-        it("Store to JSON and restore", async () => {
-            // TODO
+        it("Store quantum state", async () => {
         });
 
-        it("Initialization", async () => {
+        it("Initialization of quantum state", async () => {
             const { QuantumState } = await import("../../lib/bundle");
             const n = 3;
             const state = new QuantumState(n);
