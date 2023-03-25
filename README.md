@@ -49,7 +49,7 @@ How to include .wasm file for your project, details in [sample](./sample/).
 
 - [ ] GPU class (ex: QuantumStateGpu)
 - [ ] long long int type (automatically cast to int)
-- [ ] some override methods
+- [ ] file access functions (ex: create_quantum_operator_from_openfermion_file / create_observable_from_openfermion_file / create_split_quantum_operator)
 
 Pull Requests Welcome!
 
