@@ -12,13 +12,13 @@ module.exports = [
         }
     },
     {
-        files: ["src-ts/**/*.ts"],
+        files: ["src-ts/**/*.ts", "test/**/*.ts"],
         languageOptions: {
-          parser: tsParser,
-          globals: {
-            ...globals.node,
-            "WebAssembly": false,
-            "EmscriptenWasm": false
+            parser: tsParser,
+            globals: {
+                ...globals.node,
+                "WebAssembly": false,
+                "EmscriptenWasm": false
             }
         },
         plugins: {
@@ -28,7 +28,20 @@ module.exports = [
             ...tsPlugin.configs["recommended"].rules,
             ...tsPlugin.configs["eslint-recommended"].rules,
             "@typescript-eslint/no-empty-interface": "off",
-            "@typescript-eslint/no-var-requires": "off"
+            "@typescript-eslint/no-var-requires": "off",
+            "@typescript-eslint/no-misused-new": "off"
+        }
+    },
+    {
+        files: ["test/**/*.ts"],
+        languageOptions: {
+            parser: tsParser,
+            globals: {
+                it: "readonly",
+                describe:"readonly",
+                expect: "readonly",
+                beforeEach: "readonly"
+            }
         },
     }
 ];

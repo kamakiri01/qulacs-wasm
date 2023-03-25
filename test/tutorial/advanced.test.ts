@@ -1033,7 +1033,7 @@ describe("Qulacs Advanced Guide", () => {
                     { real: -0.7440010327937121, imag: -0.09942386922927482 },
                     { real: -0.5956395552904756, imag: 0.05514647914562293 }
                   ]);
-                gate.update_quantum_state(state);;
+                gate.update_quantum_state(state);
                 expect(state.get_vector().map(c => {
                     return {
                         real: round4(c.real),

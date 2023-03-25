@@ -14,7 +14,7 @@ export type Observable = HermitianQuantumOperatorImpl;
 export type PauliOperator = PauliOperatorImpl;
 export type QuantumCircuitOptimizer = QuantumCircuitOptimizerImpl;
 export type GradCalculator = GradCalculatorImpl;
-export type QuantumCircuitSimulator = QuantumCircuitSimulatorImpl;;
+export type QuantumCircuitSimulator = QuantumCircuitSimulatorImpl;
 export type NoiseSimulator = NoiseSimulatorImpl;
 export type CausalConeSimulator = CausalConeSimulatorImpl;
 
@@ -36,21 +36,21 @@ export var QuantumCircuitSimulator: QuantumCircuitSimulator;
 export var NoiseSimulator: NoiseSimulator;
 export var CausalConeSimulator: CausalConeSimulator;
 
-export var Identity: (target_qubit_index: number) => ClsOneQubitGate;;
-export var X: (target_qubit_index: number) => ClsOneQubitGate;;
-export var Y: (target_qubit_index: number) => ClsOneQubitGate;;
-export var Z: (target_qubit_index: number) => ClsOneQubitGate;;
+export var Identity: (target_qubit_index: number) => ClsOneQubitGate;
+export var X: (target_qubit_index: number) => ClsOneQubitGate;
+export var Y: (target_qubit_index: number) => ClsOneQubitGate;
+export var Z: (target_qubit_index: number) => ClsOneQubitGate;
 export var H: (target_qubit_index: number) => ClsOneQubitGate;
-export var S: (target_qubit_index: number) => ClsOneQubitGate;;
-export var Sdag: (target_qubit_index: number) => ClsOneQubitGate;;
-export var T: (target_qubit_index: number) => ClsOneQubitGate;;
+export var S: (target_qubit_index: number) => ClsOneQubitGate;
+export var Sdag: (target_qubit_index: number) => ClsOneQubitGate;
+export var T: (target_qubit_index: number) => ClsOneQubitGate;
 export var Tdag: (target_qubit_index: number) => ClsOneQubitGate;
 export var sqrtX: (target_qubit_index: number) => ClsOneQubitGate;
 export var sqrtXdag: (target_qubit_index: number) => ClsOneQubitGate;
 export var sqrtY: (target_qubit_index: number) => ClsOneQubitGate;
 export var sqrtYdag: (target_qubit_index: number) => ClsOneQubitGate;
-export var P0: (target_qubit_index: number) => ClsOneQubitGate;;
-export var P1: (target_qubit_index: number) => ClsOneQubitGate;;
+export var P0: (target_qubit_index: number) => ClsOneQubitGate;
+export var P1: (target_qubit_index: number) => ClsOneQubitGate;
 export var U1: (target_qubit_index: number, lambda: number) => QuantumGateMatrix;
 export var U2: (target_qubit_index: number, phi: number, lambda: number) => QuantumGateMatrix;
 export var U3: (target_qubit_index: number, theta: number, phi: number, lambda: number) => QuantumGateMatrix;
@@ -145,6 +145,7 @@ function applyQuantumStateOverload(qulacsModule: any) {
         // complexRegenerator自体はvoidを返す
         // dyncall側にはポインタから返り値を読みだすことを期待する
         const complexRegenerator = (intNum: number, complexArrPointer: number): void => {
+             // eslint-disable-next-line no-undef
             const setValueFunc = qulacsModule["setValue"] as typeof setValue;
             const c: Complex = func(intNum);
             setValueFunc(complexArrPointer, c.real, "double");
@@ -168,7 +169,6 @@ function applyDensityMatrixOverload() {
     }
 
     DensityMatrix.prototype.multiply_coef = function(arg: any) {
-        const that = this;
         if (typeof arg === "number") {
             return DensityMatrix.prototype.multiply_coef_double.call(this, arg);
         } else {
@@ -278,7 +278,8 @@ function applyFunctionOverload(qulacsModule: any) {
         const listRegenerator = (listPointer: number, size: number): boolean => {
             const list: number[] = [];
             var nByte = 4;
-            const getValueFunc = qulacsModule["getValue"] as typeof getValue;
+              // eslint-disable-next-line no-undef
+              const getValueFunc = qulacsModule["getValue"] as typeof getValue;
             for (let i = 0; i < size; i++) {
                 const n = getValueFunc(listPointer + i * nByte, "i32"); // NOTE: intのバイト数は環境依存の改善が必要かもしれない。sizeofする？
                 list.push(n);
@@ -308,8 +309,8 @@ function applyFunctionOverload(qulacsModule: any) {
                 return qulacsModule["from_json_QuantumCircuit"](json);
             default :
                 // TODO: DenseMatrixGateやXGate、CNOTGate、ParametricQuantumCircuitなどの暗黙の命名規則に依存している。型名をすべて列挙するなどの修正が必要
-                if (data.name.includes("Gate")) return qulacsModule["from_json_QuantumGateBase"](json);;
-                if (data.name.includes("QuantumCircuit")) return qulacsModule["from_json_QuantumCircuit"](json);;
+                if (data.name.includes("Gate")) return qulacsModule["from_json_QuantumGateBase"](json);
+                if (data.name.includes("QuantumCircuit")) return qulacsModule["from_json_QuantumCircuit"](json);
                 throw new Error(`unknown json data, type name: ${data.name} is cannot use from_json.`)
         }
     }
@@ -321,7 +322,7 @@ function getPtrNames(instance: any) {
     const registeredClassNames: string[] = [instance.$$.ptrType.registeredClass.name];
 
     let targetClass = instance.$$.ptrType.registeredClass;
-    while (!!targetClass.baseClass) {
+    while (targetClass.baseClass) {
         registeredClassNames.push(targetClass.baseClass.name);
         targetClass = targetClass.baseClass;
     }
