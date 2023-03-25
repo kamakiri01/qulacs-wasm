@@ -1,4 +1,5 @@
-import { CMath, Complex, initQulacs, QuantumState } from "../../lib/bundle";
+import path from "path";
+import { Complex, initQulacs } from "../../lib/bundle";
 import { round4, round4Complex, round4ComplexMatrix } from "../hepler/util";
 
 describe("Qulacs Advanced Guide", () => {
@@ -41,6 +42,21 @@ describe("Qulacs Advanced Guide", () => {
         });
 
         it("Store quantum state", async () => {
+            const { QuantumState, from_json } = await import("../../lib/bundle");
+            const o_state = new QuantumState(1);
+            o_state.set_Haar_random_state(0);
+            const state_json = o_state.to_json();
+            expect(JSON.parse(state_json)).toEqual({
+                name: 'QuantumState',
+                qubit_count: '1',
+                classical_register: '',
+                state_vector: [
+                  { real: '0.61284342497053657', imag: '-0.74457897993785815' },
+                  { real: '0.17812433600419988', imag: '0.19569568219085384' }
+                ]
+              });
+            const r_state: typeof QuantumState = from_json(state_json);
+            expect(r_state.get_vector()).toEqual(o_state.get_vector());
         });
 
         it("Initialization of quantum state", async () => {
@@ -456,8 +472,36 @@ describe("Qulacs Advanced Guide", () => {
             expect(buffer.get_matrix()).toEqual(initial_state.get_matrix());
         });
 
-        it("Store to JSON and restore", async () => {
-            // TODO
+        it("Store quantum states", async () => {
+            const { DensityMatrix, from_json } = await import("../../lib/bundle");
+            const o_state = new DensityMatrix(1);
+            o_state.set_Haar_random_state(0);
+            const state_json = o_state.to_json();
+            expect(JSON.parse(state_json)).toEqual({
+                name: "DensityMatrix",
+                qubit_count: "1",
+                classical_register: "",
+                density_matrix: [
+                    {
+                        real: "0.92997492089491907",
+                        imag: "0"
+                    },
+                    {
+                        real: "-0.03654856327649271",
+                        imag: "-0.25255844852990395"
+                    },
+                    {
+                        real: "-0.03654856327649271",
+                        imag: "0.25255844852990395"
+                    },
+                    {
+                        real: "0.070025079105080767",
+                        imag: "0"
+                    }
+                ]
+            });
+            const r_state: typeof DensityMatrix = from_json(state_json);
+            expect(r_state.get_matrix()).toEqual(o_state.get_matrix());
         });
 
         it("Initialize quantum states", async () => {
@@ -752,7 +796,12 @@ describe("Qulacs Advanced Guide", () => {
         });
 
         it("Convert to/from JSON ", async () => {
-            // TODO
+            const { X, from_json,  } = await import("../../lib/bundle");
+            const o_gate = X(2);
+            const gate_json = o_gate.to_json();
+            expect(JSON.parse(gate_json)).toEqual({ name: 'XGate', target_qubit: '2' });
+            const r_gate: typeof o_gate = from_json(gate_json); // NOTE: ClsOneQubitGate typeを取り出すためにtypeofを使う。typeofを省く場合、トップレベルimportが必要
+            expect(o_gate.get_matrix()).toEqual(r_gate.get_matrix());
         });
 
         describe("Special gate", () => {
@@ -1045,7 +1094,7 @@ describe("Qulacs Advanced Guide", () => {
             });
 
             it("Sparse Matrix", async () => {
-                const { SparseMatrix } = await import("../../lib/bundle");
+                const { SparseMatrix, QuantumState } = await import("../../lib/bundle");
                 const mat = [
                     [0, 0],
                     [0, 1]
@@ -1067,7 +1116,7 @@ describe("Qulacs Advanced Guide", () => {
             });
 
             it("Add control bit", async () => {
-                const { to_matrix_gate, X } = await import("../../lib/bundle");
+                const { to_matrix_gate, X, QuantumState } = await import("../../lib/bundle");
                 const index = 0;
                 const x_gate = X(index);
                 const x_mat_gate = to_matrix_gate(x_gate);
@@ -1219,7 +1268,7 @@ describe("Qulacs Advanced Guide", () => {
             });
 
             it("Stochastic operation2", async () => {
-                const { BitFlipNoise, DephasingNoise, IndependentXZNoise, DepolarizingNoise, TwoQubitDepolarizingNoise } = await import("../../lib/bundle");
+                const { BitFlipNoise, DephasingNoise, IndependentXZNoise, DepolarizingNoise, TwoQubitDepolarizingNoise, QuantumState } = await import("../../lib/bundle");
                 const state = new QuantumState(2);
                 const target = 0;
                 const second_target = 1;
@@ -1237,7 +1286,7 @@ describe("Qulacs Advanced Guide", () => {
             });
 
             it("Noisy evolution", async () => {
-                const { Observable, GeneralQuantumOperator, NoisyEvolution_fast, CMath, H } = await import("../../lib/bundle");
+                const { Observable, GeneralQuantumOperator, NoisyEvolution_fast, QuantumState, H } = await import("../../lib/bundle");
                 const n = 2;
                 const observable = new Observable(n);
                 observable.add_operator(1., "X 0");
@@ -1312,7 +1361,7 @@ describe("Qulacs Advanced Guide", () => {
             });
 
             it("Instrument", async () => {
-                const { merge, Instrument, P0, P1, QuantumState, H } = await import("../../lib/bundle");
+                const { merge, Instrument, P0, P1, QuantumState, H, Measurement } = await import("../../lib/bundle");
                 const gate00 = merge(P0(0),P0(1));
                 const gate01 = merge(P1(0),P0(1));
                 const gate10 = merge(P0(0),P1(1));
@@ -1330,6 +1379,11 @@ describe("Qulacs Advanced Guide", () => {
                     const result = state.get_classical_value(classical_pos);
                     // console.log(i, `00${result.toString(2)}`.slice(-2), state.get_vector());
                 }
+
+                const target = 0;
+                const classical_pos2 = 0;
+                const gate2 = Measurement(target, classical_pos2);
+                expect(gate2.get_matrix()).toEqual([[{ real: 1, imag: 0 }]]);
             });
 
             it("Adaptive operation", async () => {
@@ -1449,29 +1503,101 @@ describe("Qulacs Advanced Guide", () => {
                     expect(value).toEqual({ real: 0.0211418381071447, imag: 0.12910792637830634 });
                 });
 
-                // json
                 it("Store linear operators", async () => {
+                    const { GeneralQuantumOperator, from_json } = await import("../../lib/bundle");
+                    const o_operator = new GeneralQuantumOperator(3);
+                    o_operator.add_operator(1.0, "X 2 Y 0");
+                    o_operator.add_operator({ real: 0, imag: 0.5 }, "Y 1 Z 0");
+                    const operator_json = o_operator.to_json();
+                    expect(JSON.parse(operator_json)).toEqual({
+                        name: "GeneralQuantumOperator",
+                        qubit_count: "3",
+                        operator_list: [
+                            {
+                                name: "PauliOperator",
+                                pauli_list: [
+                                    {
+                                        name: "SinglePauliOperator",
+                                        index: "2",
+                                        pauli_id: "1"
+                                    },
+                                    {
+                                        name: "SinglePauliOperator",
+                                        index: "0",
+                                        pauli_id: "2"
+                                    }
+                                ],
+                                coef: { real: "1", imag: "0" }
+                            },
+                            {
+                                name: 'PauliOperator',
+                                pauli_list: [
+                                    {
+                                        name: "SinglePauliOperator",
+                                        index: "1",
+                                        pauli_id: "2"
+                                    },
+                                    {
+                                        name: "SinglePauliOperator",
+                                        index: "0",
+                                        pauli_id: "3"
+                                    }
+                                ],
+                                coef: { real: "0", imag: "0.5" }
+                            }
+                        ]
+                      });
+                      const r_operator: typeof o_operator = from_json(operator_json);
+                      expect(o_operator.to_json()).toEqual(r_operator.to_json());
+
+
                 });
 
                 it("Generation of observables using OpenFermion", async () => {
+                    const { create_quantum_operator_from_openfermion_text } = await import("../../lib/bundle");
+                    const open_fermion_text = `
+(-0.8126100000000005+0j) [] +
+(0.04532175+0j) [X0 Z1 X2] +
+(0.04532175+0j) [X0 Z1 X2 Z3] +
+(0.04532175+0j) [Y0 Z1 Y2] +
+(0.04532175+0j) [Y0 Z1 Y2 Z3] +
+(0.17120100000000002+0j) [Z0] +
+(0.17120100000000002+0j) [Z0 Z1] +
+(0.165868+0j) [Z0 Z1 Z2] +
+(0.165868+0j) [Z0 Z1 Z2 Z3] +
+(0.12054625+0j) [Z0 Z2] +
+(0.12054625+0j) [Z0 Z2 Z3] +
+(0.16862325+0j) [Z1] +
+(-0.22279649999999998+0j) [Z1 Z2 Z3] +
+(0.17434925+0j) [Z1 Z3] +
+(-0.22279649999999998+0j) [Z2]
+`;
+                    const operator = create_quantum_operator_from_openfermion_text(open_fermion_text);
+                    expect(operator.get_term_count()).toBe(15);
+                    expect(operator.get_qubit_count()).toBe(4);
                 });
             });
 
             describe("Hermite operator / observable", () => {
                 it("Separates operators into diagonal and off-diagonal terms", async () => {
+                    // TODO
                 });
 
                 describe("Compute ground state", () => {
                     it("Power method", async () => {
+                        // TODO
                     });
 
                     it("Arnoldi method", async () => {
+                        // TODO
                     });
 
                     it("Lanczos method", async () => {
+                        // TODO
                     });
                 });
                 it("Apply to a quantum state", async () => {
+                    // TODO
                 });
             });
         });
@@ -1543,6 +1669,25 @@ describe("Qulacs Advanced Guide", () => {
                 expect(circuit.to_string()).not.toBeUndefined();
             });
             it("Store QuantumCircuit", async () => {
+                const { QuantumCircuit, from_json } = await import("../../lib/bundle");
+                const o_circuit = new QuantumCircuit(3);
+                o_circuit.add_CNOT_gate(0, 1);
+                o_circuit.add_RZ_gate(2, 0.7);
+                const circuit_json = o_circuit.to_json();
+                expect(JSON.parse(circuit_json)).toEqual({
+                    name: 'QuantumCircuit',
+                    qubit_count: '3',
+                    gate_list: [
+                        { name: 'CNOTGate', control_qubit: '0', target_qubit: '1' },
+                        {
+                            name: 'Z-rotationGate',
+                            target_qubit: '2',
+                            angle: '0.69999999999999996'
+                        }
+                    ]
+                });
+                const r_circuit: typeof o_circuit = from_json(circuit_json);
+                expect(r_circuit.to_json()).toBe(o_circuit.to_json());
             });
         });
 
@@ -1623,6 +1768,54 @@ describe("Qulacs Advanced Guide", () => {
                 ]);
             });
             it("Store parametric quantum circuits", async () => {
+                const { ParametricQuantumCircuit, from_json } = await import("../../lib/bundle");
+                const o_circuit = new ParametricQuantumCircuit(3);
+                o_circuit.add_H_gate(0);
+                o_circuit.add_parametric_RX_gate(1, 0.3);
+                o_circuit.add_multi_Pauli_rotation_gate([0, 1, 2], [1, 3, 2], 1.4);
+                const circuit_json = o_circuit.to_json();
+                expect(JSON.parse(circuit_json)).toEqual({
+                    name: "ParametricQuantumCircuit",
+                    qubit_count: "3",
+                    gate_list: [
+                      { name: "HGate", target_qubit: "0" },
+                      {
+                        name: "ParametricRXGate",
+                        target_qubit: "1",
+                        angle: "0.29999999999999999"
+                      },
+                      {
+                        name: "PauliRotationGate",
+                        angle: "1.3999999999999999",
+                        pauli: {
+                            name: "PauliOperator",
+                            pauli_list: [
+                                {
+                                    name: "SinglePauliOperator",
+                                    index: "0",
+                                    pauli_id: "1"
+                                },
+                                {
+                                    name: "SinglePauliOperator",
+                                    index: "1",
+                                    pauli_id: "3"
+                                },
+                                {
+                                    name: "SinglePauliOperator",
+                                    index: "2",
+                                    pauli_id: "2"
+                                }
+                            ],
+                            coef: {
+                                real: "1.3999999999999999",
+                                imag: "0"
+                            }
+                        }
+                      }
+                    ]
+                  });
+                const r_circuit: typeof o_circuit = from_json(circuit_json);
+                expect(r_circuit.to_json()).toBe(o_circuit.to_json());
             });
             describe("Simulator", () => {
                 it("QuantumCircuitSimulator", async () => {

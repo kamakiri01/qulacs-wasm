@@ -121,7 +121,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             auto c = self.data_cpp()[index];
             return emscripten::val::take_ownership(translateCPPToJSComplex(c));
         }), emscripten::allow_raw_pointers())
-        // .function("to_json", emscripten::optional_override([](QuantumState& self) { return to_json(self.to_ptree()); }), emscripten::allow_raw_pointers())
+        .function("to_json", emscripten::optional_override([](QuantumState& self) { return ptree::to_json(self.to_ptree()); }), emscripten::allow_raw_pointers())
         // .function("data_cpp", &QuantumState::data_cpp, emscripten::allow_raw_pointers());
         .function("get_qubit_count", emscripten::optional_override([](QuantumState& self) { return self.qubit_count; }), emscripten::allow_raw_pointers());
 
@@ -162,7 +162,6 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             std::complex<double> c(coef, 0);
             self.multiply_coef(c);
         }), emscripten::allow_raw_pointers())
-
         .function("multiply_coef_complex", emscripten::optional_override([](DensityMatrix& self, const emscripten::val &v) {
             std::complex<double> c(v["real"].as<double>(), v["imag"].as<double>());
             self.multiply_coef(c);
@@ -182,7 +181,9 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             int size = state.dim * state.dim;
             CTYPE* ptr = state.data_c();
             return emscripten::val::take_ownership(translateCTYPEArrMatrixToJSComplexMatrix(ptr, size, state.dim));
-        }), emscripten::allow_raw_pointers());
+        }), emscripten::allow_raw_pointers())
+        .function("to_json", emscripten::optional_override([](DensityMatrix& self) { return ptree::to_json(self.to_ptree()); }), emscripten::allow_raw_pointers());
+
 
     emscripten::class_<QuantumGateBase>("QuantumGateBase")
         .function("update_quantum_state", &QuantumGateBase::update_quantum_state, emscripten::allow_raw_pointers())
@@ -202,7 +203,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("is_Clifford", &QuantumGateBase::is_Clifford, emscripten::allow_raw_pointers())
         .function("is_Gaussian", &QuantumGateBase::is_Gaussian, emscripten::allow_raw_pointers())
         .function("is_parametric", &QuantumGateBase::is_parametric, emscripten::allow_raw_pointers())
-        .function("is_diagonal", &QuantumGateBase::is_diagonal, emscripten::allow_raw_pointers());
+        .function("is_diagonal", &QuantumGateBase::is_diagonal, emscripten::allow_raw_pointers())
+        .function("to_json", emscripten::optional_override([](QuantumGateBase& self) { return ptree::to_json(self.to_ptree()); }), emscripten::allow_raw_pointers());
 
     emscripten::class_<ClsPauliGate, emscripten::base<QuantumGateBase>>("ClsPauliGate");
     emscripten::class_<ClsOneQubitGate, emscripten::base<QuantumGateBase>>("ClsOneQubitGate");
@@ -415,7 +417,43 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("add_RotInvZ_gate", &QuantumCircuit::add_RZ_gate)
         .function("add_RotX_gate", &QuantumCircuit::add_RX_gate)
         .function("add_RotY_gate", &QuantumCircuit::add_RY_gate)
-        .function("add_RotZ_gate", &QuantumCircuit::add_RZ_gate);
+        .function("add_RotZ_gate", &QuantumCircuit::add_RZ_gate)
+        .function("add_multi_Pauli_gate", emscripten::optional_override([](QuantumCircuit& self, const PauliOperator& pauli_operator) {
+            self.add_multi_Pauli_gate(pauli_operator);
+        }), emscripten::allow_raw_pointers())
+        .function("add_multi_Pauli_gate", emscripten::optional_override([](QuantumCircuit& self, const emscripten::val &target_index_list, const emscripten::val &pauli_id_list) {
+            std::vector<UINT> target_index = emscripten::vecFromJSArray<UINT>(target_index_list);
+            std::vector<UINT> pauli_id = emscripten::vecFromJSArray<UINT>(pauli_id_list);
+            self.add_multi_Pauli_gate(target_index, pauli_id);
+        }), emscripten::allow_raw_pointers())
+        .function("add_multi_Pauli_rotation_gate", emscripten::optional_override([](QuantumCircuit& self, const PauliOperator& pauli_operator) {
+            self.add_multi_Pauli_rotation_gate(pauli_operator);
+        }), emscripten::allow_raw_pointers())
+        .function("add_multi_Pauli_rotation_gate", emscripten::optional_override([](QuantumCircuit& self, const emscripten::val &target_index_list, const emscripten::val &pauli_id_list, double angle) {
+            std::vector<UINT> target_index = emscripten::vecFromJSArray<UINT>(target_index_list);
+            std::vector<UINT> pauli_id = emscripten::vecFromJSArray<UINT>(pauli_id_list);
+            self.add_multi_Pauli_rotation_gate(target_index, pauli_id, angle);
+        }), emscripten::allow_raw_pointers())
+        .function("add_dense_matrix_gate", emscripten::optional_override([](QuantumCircuit& self, UINT target_index, const emscripten::val &matrix) {
+            const ComplexMatrix mat = translateJSMatrixtoComplexMatrix(matrix);
+            self.add_dense_matrix_gate(target_index, mat);
+        }), emscripten::allow_raw_pointers())
+        .function("add_dense_matrix_gate", emscripten::optional_override([](QuantumCircuit& self, const emscripten::val &target_index_list, const emscripten::val &matrix) {
+            std::vector<UINT> target_index = emscripten::vecFromJSArray<UINT>(target_index_list);
+            const ComplexMatrix mat = translateJSMatrixtoComplexMatrix(matrix);
+            self.add_dense_matrix_gate(target_index, mat);
+        }), emscripten::allow_raw_pointers())
+        .function("add_random_unitary_gate", emscripten::optional_override([](QuantumCircuit& self, const emscripten::val &target_index_list) {
+            std::vector<UINT> target_index = emscripten::vecFromJSArray<UINT>(target_index_list);
+            self.add_random_unitary_gate(target_index);
+        }), emscripten::allow_raw_pointers())
+        .function("add_random_unitary_gate", emscripten::optional_override([](QuantumCircuit& self, const emscripten::val &target_index_list, UINT seed) {
+            std::vector<UINT> target_index = emscripten::vecFromJSArray<UINT>(target_index_list);
+            self.add_random_unitary_gate(target_index, seed);
+        }), emscripten::allow_raw_pointers())
+        .function("add_diagonal_observable_rotation_gate", &QuantumCircuit::add_diagonal_observable_rotation_gate)
+
+        .function("to_json", emscripten::optional_override([](QuantumCircuit& self) { return ptree::to_json(self.to_ptree()); }), emscripten::allow_raw_pointers());
 
     // NOTE: baseを利用すると、ParametricQuantumCircuit#add_gateがQuantumCircuit#add_Gateが定義されているoverloadTableを上書きしてしまうため、base宣言を外す実装も検討する
     // その場合、emscriptenから継承関係を認識できなくなるため、BindingErrorが発生しうる
@@ -441,8 +479,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("get_parametric_gate_position", &ParametricQuantumCircuit::get_parametric_gate_position, emscripten::allow_raw_pointers())
         .function("remove_gate", &ParametricQuantumCircuit::remove_gate, emscripten::allow_raw_pointers())
         .function("backprop", &ParametricQuantumCircuit::backprop, emscripten::allow_raw_pointers())
-        .function("backprop_inner_product", &ParametricQuantumCircuit::backprop_inner_product, emscripten::allow_raw_pointers());
-        
+        .function("backprop_inner_product", &ParametricQuantumCircuit::backprop_inner_product, emscripten::allow_raw_pointers())
+        .function("to_json", emscripten::optional_override([](QuantumCircuit& self) { return ptree::to_json(self.to_ptree()); }), emscripten::allow_raw_pointers());
 
     emscripten::class_<GeneralQuantumOperator>("GeneralQuantumOperator")
         .constructor<int>()
@@ -476,7 +514,9 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("get_expectation_value", emscripten::optional_override([](GeneralQuantumOperator& self, const QuantumStateBase* state) {
             auto c = self.get_expectation_value(state);
             return emscripten::val::take_ownership(translateCPPToJSComplex(c));
-        }), emscripten::allow_raw_pointers());
+        }), emscripten::allow_raw_pointers())
+        .function("to_json", emscripten::optional_override([](GeneralQuantumOperator& self) { return ptree::to_json(self.to_ptree()); }), emscripten::allow_raw_pointers());
+
 
     emscripten::class_<HermitianQuantumOperator, emscripten::base<GeneralQuantumOperator>>("HermitianQuantumOperator")
         .constructor<int>();
@@ -723,6 +763,44 @@ EMSCRIPTEN_BINDINGS(Bindings) {
     emscripten::function("ParametricRX", &gate::ParametricRX, emscripten::allow_raw_pointers());
     emscripten::function("ParametricRY", &gate::ParametricRY, emscripten::allow_raw_pointers());
     emscripten::function("ParametricRZ", &gate::ParametricRZ, emscripten::allow_raw_pointers());
+    // emscripten::function("ParametricPauliRotation", &gate::ParametricPauliRotation, emscripten::allow_raw_pointers());
+
+// take owenershipいるかも
+    emscripten::function("from_json_GeneralQuantumOperator", emscripten::optional_override([](std::string json) -> GeneralQuantumOperator* {
+        return quantum_operator::from_ptree(ptree::from_json(json));
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("from_json_HermitianQuantumOperator", emscripten::optional_override([](std::string json) -> HermitianQuantumOperator* {
+        return observable::from_ptree(ptree::from_json(json));
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("from_json_QuantumState", emscripten::optional_override([](std::string json) -> QuantumState* {
+        return static_cast<QuantumState*>(
+            state::from_ptree(ptree::from_json(json)));
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("from_json_DensityMatrix", emscripten::optional_override([](std::string json) -> DensityMatrix* {
+        return static_cast<DensityMatrix*>(
+            state::from_ptree(ptree::from_json(json)));
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("from_json_QuantumStateBase", emscripten::optional_override([](std::string json) -> QuantumStateBase* {
+        return state::from_ptree(ptree::from_json(json));
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("from_json_QuantumGateBase", emscripten::optional_override([](std::string json) -> QuantumGateBase* {
+        boost::property_tree::ptree pt = ptree::from_json(json);
+        if (pt.get<std::string>("name").substr(0, 10) == "Parametric") {
+            return gate::parametric_gate_from_ptree(pt);
+        }
+        return gate::from_ptree(ptree::from_json(json));
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("from_json_QuantumCircuit", emscripten::optional_override([](std::string json) -> QuantumCircuit* {
+        boost::property_tree::ptree pt = ptree::from_json(json);
+        if (pt.get<std::string>("name") == "ParametricQuantumCircuit") {
+            return circuit::parametric_circuit_from_ptree(pt);
+        } else {
+            return circuit::from_ptree(pt);
+        }
+    }), emscripten::allow_raw_pointers());
+    emscripten::function("create_quantum_operator_from_openfermion_text", &quantum_operator::create_general_quantum_operator_from_openfermion_text, emscripten::allow_raw_pointers());
+    emscripten::function("create_observable_from_openfermion_text", &observable::create_observable_from_openfermion_text, emscripten::allow_raw_pointers());
+
 
     // ポインタ取得用
 

@@ -104,6 +104,10 @@ export var Adaptive: (gate: QuantumGateBase, function_ptr: (list: number[]) => b
 export var ParametricRX: (target_qubit_index: number, initial_angle: number) => QuantumGate_SingleParameter;
 export var ParametricRY: (target_qubit_index: number, initial_angle: number) => QuantumGate_SingleParameter;
 export var ParametricRZ: (target_qubit_index: number, initial_angle: number) => QuantumGate_SingleParameter;
+// export var ParametricPauliRotation: (target_qubit_index: number, initial_angle: number) => QuantumGate_SingleParameter;
+
+export var from_json: <T= GeneralQuantumOperator | HermitianQuantumOperator | QuantumState | DensityMatrix | QuantumStateBase | QuantumGateBase | QuantumCircuit>(json: string) => T;
+export var create_quantum_operator_from_openfermion_text: (text: string) => GeneralQuantumOperator;
 
 export function applyModule(qulacsModule: QulacsWasmModule) {
     Object.keys(module.exports).forEach(key => {
@@ -182,7 +186,8 @@ function applyQuantumCircuitSimulatorOverload() {
 function applyFunctionOverload(qulacsModule: any) {
     partial_trace = (state: any, target_traceout: number[]) => {
         // NOTE: 暫定。より確実な判定方法を検討する
-        if (state.$$.ptrType.name === "QuantumState*" && state.$$.ptrType.name === "QuantumState*") {
+        const names = getPtrNames(state);
+        if (names?.ptrTypeName === "QuantumState*") {
             return qulacsModule["partial_trace_QuantumState"](state, target_traceout);
         } else {
             return qulacsModule["partial_trace_DensityMatrix"](state, target_traceout);
@@ -282,5 +287,47 @@ function applyFunctionOverload(qulacsModule: any) {
         };
         const fnPointer = addFunction(listRegenerator, "iii");
         return qulacsModule["Adaptive"](gate, fnPointer);
+    }
+
+    from_json = <T= GeneralQuantumOperator | HermitianQuantumOperator | QuantumState | DensityMatrix | QuantumStateBase | QuantumGateBase | QuantumCircuit>(json: string): T => {
+        const data = JSON.parse(json);
+        switch (data.name) {
+            case "GeneralQuantumOperator":
+                return qulacsModule["from_json_GeneralQuantumOperator"](json);
+            case "HermitianQuantumOperator":
+                return qulacsModule["from_json_HermitianQuantumOperator"](json);
+            case "QuantumState":
+                return qulacsModule["from_json_QuantumState"](json);
+            case "DensityMatrix":
+                return qulacsModule["from_json_DensityMatrix"](json);
+            case "QuantumStateBase":
+                return qulacsModule["from_json_QuantumStateBase"](json);
+            case "QuantumGateBase":
+                return qulacsModule["from_json_QuantumGateBase"](json);
+            case "QuantumCircuit":
+                return qulacsModule["from_json_QuantumCircuit"](json);
+            default :
+                // TODO: DenseMatrixGateやXGate、CNOTGate、ParametricQuantumCircuitなどの暗黙の命名規則に依存している。型名をすべて列挙するなどの修正が必要
+                if (data.name.includes("Gate")) return qulacsModule["from_json_QuantumGateBase"](json);;
+                if (data.name.includes("QuantumCircuit")) return qulacsModule["from_json_QuantumCircuit"](json);;
+                throw new Error(`unknown json data, type name: ${data.name} is cannot use from_json.`)
+        }
+    }
+}
+
+
+function getPtrNames(instance: any) {
+    if (!instance || !instance.$$.ptrType) return null;
+    const ptrTypeName: string = instance.$$.ptrType.name;
+    const registeredClassNames: string[] = [instance.$$.ptrType.registeredClass.name];
+
+    let targetClass = instance.$$.ptrType.registeredClass;
+    while (!!targetClass.baseClass) {
+        registeredClassNames.push(targetClass.baseClass.name);
+        targetClass = targetClass.baseClass;
+    }
+    return {
+        ptrTypeName,
+        registeredClassNames
     }
 }

@@ -2,11 +2,25 @@
 const { QuantumState, initQulacs } = require("../../");
 let handler;
 initQulacs().then(module => {
-    const { QuantumState, X, Y,Z, H, RX, CNOT,TOFFOLI,QuantumCircuit, ParametricQuantumCircuit, DensityMatrix, partial_trace, getExceptionMessage, to_matrix_gate } = require("../../"); // require after init, or use module.QuantumState
+    const { QuantumState, X, Y,Z, H, RX, CNOT,TOFFOLI,QuantumCircuit, ParametricQuantumCircuit, DensityMatrix, partial_trace, getExceptionMessage, to_matrix_gate, tensor_product, inner_product, Pauli, ReversibleBoolean, addFunction, removeFunction, testPointer, invoke_function_pointer, _invoke_function_pointer, CMath, testAbstArg, testAbstArg2,testAbstArg3, add } = require("../../"); // require after init, or use module.QuantumState
     console.log("---test qulacs I/F---");
 
 console.log("TEST",getExceptionMessage, getExceptionMessage.toString())
 handler = getExceptionMessage; 
+
+const c = {real: 0, imag: 1};
+console.log("1", CMath.mul(c, c));
+
+    console.log("START")
+    const s = new QuantumState(1);
+    s.multiply_elementwise_function((intNum) => {
+        console.log("intNum", intNum);
+        return {real: 999.99, imag: 22.222}
+    });
+    console.log("done");
+
+    return;
+
 
     /*
     const s = new QuantumState(1);
@@ -113,6 +127,70 @@ handler = getExceptionMessage;
     console.log("s81-4", s81.get_matrix());
     s81.load(s11);
     console.log("s81-4", s81.get_matrix());
+
+    console.log("types", typeof DensityMatrix, typeof X, typeof partial_trace);
+
+
+    const uint = 0x00000000;
+    
+    const st = new QuantumState(1);
+    //st.set_Haar_random_state2(uint >>> 0);
+    //console.log("ST", uint, st.get_vector());
+    console.log("tensor_product2", tensor_product(st,s11).get_vector());
+    console.log("tensor_product3", tensor_product(s81,s82).get_matrix());
+    console.log("inner_product", inner_product(st,s11));
+
+
+    //console.log("Module.addFunction", {addFunction, removeFunction, testPointer, invoke_function_pointer, _invoke_function_pointer});
+    const upper = function(n0, n1) {console.log("WELCOME! n0:", n0, " n1: ", n1); return (n0+1)%n1};
+    //const fnPointer = addFunction(upper, "iii");
+    //console.log("foo", upper, fnPointer);
+    //testPointer(fnPointer);
+    
+    //module.invoke_function_pointer(fnPointer);
+
+    /*
+    var hoge = module.ccall(
+        'invoke_function_pointer', // 関数名
+        'number', // 戻り型
+        ['number', "number"], // 引数型
+        [fnPointer, 5] // 引数
+    );
+    var hoge2 = module.cwrap(
+        'invoke_function_pointer', // 関数名
+        'number', // 戻り型
+        ['number', "number"], // 引数型
+    );
+    console.log("hoge2", hoge2(fnPointer, 5));
+    const fnPointer2 = addFunction(hoge2, "ii");
+    */
+
+    const rev = ReversibleBoolean([0, 1], upper);
+    console.log("rev", rev);
+    //removeFunction(fnPointer);
+    const sr = new QuantumState(3);
+    sr.load(new Array(2**3).fill(0).map((_, i) => i));
+    console.log("srv", sr.get_vector());
+    rev.update_quantum_state(sr);
+    console.log("update, done")
+    console.log("srv", sr.get_vector());
+
+
+    const target_list = [0, 3, 5];
+    const pauli_index = [1, 3, 1]; // 1:X , 2:Y, 3:Z
+    const gate = Pauli(target_list, pauli_index); // = X_0 Z_3 X_5
+    //console.log("gate.get_matrix()", gate.get_matrix());
+
+    console.log(testAbstArg([gate, gate]))
+    console.log(testAbstArg2(gate));
+    console.log(testAbstArg([gate, gate]))
+    console.log(testAbstArg2(gate));
+    const ptr = testAbstArg2(gate);
+    console.log("ptrd",ptr);
+    console.log(testAbstArg3(ptr));
+
+    console.log("add", add([gate, gate]));
+
 }).catch(e => {
     console.log(e)
     console.log("handler", handler)

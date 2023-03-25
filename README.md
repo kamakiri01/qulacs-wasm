@@ -14,18 +14,18 @@ npm install qulacs-wasm
 import { initQulacs } from "qulacs-wasm";
 
 initQulacs()
-  .then(() => import("qulacs-wasm")) // dynamic import to get native class
-  .then({ QuantumState, QuantumCircuit } => {
-      const qubitCount = 2;
-      const state = new QuantumState(qubitCount);
-      state.set_zero_state();
-      const circuit = new QuantumCircuit(qubitCount);
-      circuit.add_H_gate(0);
-      circuit.add_CNOT_gate(0, 1);
-      circuit.update_quantum_state(state);
-      console.log("state vector ", state.get_vector());
-      console.log("sampling", state.sampling(10)); // sampling may return 0th/3th base state with equal probability
-});
+  .then(async () => {
+    const { QuantumState, QuantumCircuit } = await import("qulacs-wasm");
+    const qubitCount = 2;
+    const state = new QuantumState(qubitCount);
+    state.set_zero_state();
+    const circuit = new QuantumCircuit(qubitCount);
+    circuit.add_H_gate(0);
+    circuit.add_CNOT_gate(0, 1);
+    circuit.update_quantum_state(state);
+    console.log("state vector ", state.get_vector());
+    console.log("sampling", state.sampling(10)); // sampling may return 0th/3th base state with equal probability
+  });
 ```
 
 ```
@@ -49,7 +49,7 @@ How to include .wasm file for your project, details in [sample](./sample/).
 
 - [ ] GPU class (ex: QuantumStateGpu)
 - [ ] long long int type (automatically cast to int)
-- [ ] some override methods
+- [ ] file access functions (ex: create_quantum_operator_from_openfermion_file / create_observable_from_openfermion_file / create_split_quantum_operator)
 
 Pull Requests Welcome!
 
