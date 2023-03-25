@@ -16,8 +16,8 @@ if (USE_WORKER) {
     })
 } else {
     initQulacs()
-        .then(() => import("qulacs-wasm"))
-        .then(({ QuantumState, QuantumCircuit }) => {
+        .then(async () => {
+            const { QuantumState, QuantumCircuit } = await import("qulacs-wasm");
             const state = new QuantumState(3);
             const circuit = new QuantumCircuit(3);
             circuit.add_X_gate(0);
