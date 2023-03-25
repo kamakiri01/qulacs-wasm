@@ -22,13 +22,13 @@
     "build:emscripten": "npm run build:emscripten:bundle && npm run build:emscripten:nobundle",
     "build:emscripten:bundle": "mkdir -p lib-cpp/bundle && npm run build:emscripten:em++:bundle && npm run build:emscripten:cp:bundle",
     "build:emscripten:nobundle": "mkdir -p lib-cpp/nobundle && npm run build:emscripten:em++:nobundle && npm run build:emscripten:cp:nobundle",
-    "build:emscripten:em++:bundle": "em++ -O2 -s SINGLE_FILE=1 -I ./submodules/boost -I ./submodules/qulacs/include -L ./submodules/qulacs/lib -o ./lib-cpp/bundle/module.js ./src-cpp/QulacsWasmModule.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleQulacsWasm\"' --bind -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_RUNTIME_METHODS=addFunction,removeFunction,ccall,cwrap,_invoke_function_pointer,invoke_function_pointer,dyncall -s ALLOW_TABLE_GROWTH -s EXPORTED_FUNCTIONS=_invoke_function_pointer -s EXTRA_EXPORTED_RUNTIME_METHODS=['dynCall','getValue','setValue']",
-    "build:emscripten:em++:nobundle": "em++ -O2                -I ./submodules/boost -I ./submodules/qulacs/include -L ./submodules/qulacs/lib -o ./lib-cpp/nobundle/module.js ./src-cpp/QulacsWasmModule.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleQulacsWasm\"' --bind -s DISABLE_EXCEPTION_CATCHING=0",
+    "build:emscripten:em++:bundle": "em++ -O2 -s SINGLE_FILE=1 -I ./submodules/boost -I ./submodules/qulacs/include -L ./submodules/qulacs/lib -o ./lib-cpp/bundle/module.js   ./src-cpp/QulacsWasmModule.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleQulacsWasm\"' --bind -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_RUNTIME_METHODS=addFunction,removeFunction,ccall,cwrap,dyncall -s ALLOW_TABLE_GROWTH -s EXTRA_EXPORTED_RUNTIME_METHODS=['dynCall','getValue','setValue']",
+    "build:emscripten:em++:nobundle": "em++ -O2 -I ./submodules/boost -I ./submodules/qulacs/include -L ./submodules/qulacs/lib -o ./lib-cpp/nobundle/module.js ./src-cpp/QulacsWasmModule.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleQulacsWasm\"' --bind -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_RUNTIME_METHODS=addFunction,removeFunction,ccall,cwrap,dyncall -s ALLOW_TABLE_GROWTH -s EXTRA_EXPORTED_RUNTIME_METHODS=['dynCall','getValue','setValue']",
     "build:emscripten:cp": "npm run build:emscripten:cp:bundle && npm run build:emscripten:cp:nobundle",
     "build:emscripten:cp:bundle": "cpx \"./lib-cpp/bundle/**\" \"./lib/bundle/wasm/\" --clean",
     "build:emscripten:cp:nobundle": "cpx \"./lib-cpp/nobundle/**\" \"./lib/nobundle/wasm/\" --clean",
-    "test": "jest",
-    "lint": "eslint \"./src-ts/**/*.ts\""
+    "test": "jest && npm run lint",
+    "lint": "eslint \"./src-ts/**/*.ts\" \"./test/**/*.ts\""
   },
   "keywords": [
     "WebAssembly",

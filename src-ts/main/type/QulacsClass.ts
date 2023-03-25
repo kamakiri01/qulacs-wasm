@@ -1,7 +1,7 @@
 import { QuantumState } from "../instance";
 import { Complex } from "./common";
 
-export interface QuantumStateBase {};
+export interface QuantumStateBase {}
 
 export type QuantumStateImpl = QuantumStateBase & {
     new (qubit_count: number): QuantumStateImpl;
@@ -154,7 +154,7 @@ export interface QuantumGate_CPTP extends QuantumGateBase {}
 export interface QuantumGate_Probabilistic extends QuantumGateBase {}
 export type QuantumGate_ProbabilisticInstrument = QuantumGate_Probabilistic;
 export type QuantumGate_Instrument = QuantumGate_CPTP;
-export interface ClsNoisyEvolution_fast extends QuantumGateBase {};
+export interface ClsNoisyEvolution_fast extends QuantumGateBase {}
 
 export interface GeneralQuantumOperatorImpl {
     new (qubit_count: number): GeneralQuantumOperatorImpl;
@@ -169,7 +169,7 @@ export interface GeneralQuantumOperatorImpl {
     add_operator(target_qubit_index_list: number[], target_qubit_pauli_list: number[], pauli_string: number | Complex): void;
     get_expectation_value(state: QuantumStateBase): Complex;
     to_json(): string;
-};
+}
 
 export type HermitianQuantumOperatorImpl = GeneralQuantumOperatorImpl & {
     new (qubit_count: number): HermitianQuantumOperatorImpl;
@@ -189,7 +189,7 @@ export interface PauliOperatorImpl {
     get_pauli_string(): string;
     get_expectation_value(state: QuantumStateBase): Complex;
     get_transition_amplitude(state_bra: QuantumStateBase, state_ket: QuantumStateBase): Complex;
-};
+}
 
 export interface QuantumCircuitOptimizerImpl {
     new (): QuantumCircuitOptimizerImpl;

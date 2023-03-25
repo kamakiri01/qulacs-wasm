@@ -45,14 +45,6 @@ sampling [
 
 How to include .wasm file for your project, details in [sample](./sample/).
 
-## non-available classes and methods
-
-- [ ] GPU class (ex: QuantumStateGpu)
-- [ ] long long int type (automatically cast to int)
-- [ ] file access functions (ex: create_quantum_operator_from_openfermion_file / create_observable_from_openfermion_file / create_split_quantum_operator)
-
-Pull Requests Welcome!
-
 ## How to import from external .wasm file
 
 ```javascript
@@ -88,3 +80,11 @@ npm run submodule:build
 npm install
 npm run build
 ```
+
+## non-available classes and functions
+
+- [ ] GPU class (ex: QuantumStateGpu)
+- [ ] ITYPE(long long int) type (automatically cast to int)
+- [ ] file access functions (ex: create_quantum_operator_from_openfermion_file / create_observable_from_openfermion_file / create_split_quantum_operator)
+
+Pull Requests Welcome!
