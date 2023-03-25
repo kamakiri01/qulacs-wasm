@@ -140,7 +140,7 @@ function applyQuantumStateOverload(qulacsModule: any) {
     }
 
     QuantumState.prototype.multiply_elementwise_function = function(func: (val: number) => Complex) {
-        // NOTE: dyncallは入出力にvijfd型のみ利用できるため、funcが返すComplexをdyncall元に返すことができない
+        // NOTE: EM_JSで使うdyncallは入出力にvijfd型のみ利用できるため、funcが返すComplexをdyncall元に返すことができない
         // そのため、funcの返り値をcomplexRegeneratorでdoubleに分解し、dyncallが渡すポインタに先に書き込み、
         // complexRegenerator自体はvoidを返す
         // dyncall側にはポインタから返り値を読みだすことを期待する
@@ -314,7 +314,6 @@ function applyFunctionOverload(qulacsModule: any) {
         }
     }
 }
-
 
 function getPtrNames(instance: any) {
     if (!instance || !instance.$$.ptrType) return null;
