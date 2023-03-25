@@ -27,6 +27,7 @@ export type QuantumStateImpl = QuantumStateBase & {
     get_vector(): Complex[];
     get_amplitude(index: number): Complex;
     get_qubit_count(): number;
+    to_json(): string;
 };
 
 export type DensityMatrixImpl = QuantumStateBase & {
@@ -52,6 +53,7 @@ export type DensityMatrixImpl = QuantumStateBase & {
     to_string(): string;
     sampling(sampling_count: number, random_seed?: number): number[];
     get_matrix(): Complex[][];
+    to_json(): string;
 }
 
 export interface QuantumCircuitImpl {
@@ -83,6 +85,14 @@ export interface QuantumCircuitImpl {
     add_RotX_gate(target_index: number, angle: number): void;
     add_RotY_gate(target_index: number, angle: number): void;
     add_RotZ_gate(target_index: number, angle: number): void;
+    add_multi_Pauli_gate(target_index_list: number, pauli_id_list: number): void;
+    add_multi_Pauli_gate(pauli_operator: PauliOperatorImpl): void;
+    add_multi_Pauli_rotation_gate(target_index_list: number[], pauli_id_list: number[], angle: number): void;
+    add_multi_Pauli_rotation_gate(pauli_operator: PauliOperatorImpl): void;
+    add_dense_matrix_gate(target_index: number | number[], matrix: number[][] | Complex[][]): void;
+    add_random_unitary_gate(target_index_list: number[], seed?: number): void;
+    add_diagonal_observable_rotation_gate(observable: Observable, angle: number): void;
+    to_json(): string;
 }
 
 /**
@@ -104,6 +114,7 @@ export interface ParametricQuantumCircuitImpl extends QuantumCircuitImpl {
     get_parametric_gate_position(index: number): number;
     backprop(obs: GeneralQuantumOperatorImpl): number[];
     backprop_inner_product(bistate: QuantumStateBase): number[];
+    to_json(): string;
 }
 
 export interface QuantumGateBase {
@@ -120,6 +131,7 @@ export interface QuantumGateBase {
     is_Gaussian(): boolean;
     is_parametric(): boolean;
     is_diagonal(): boolean;
+    to_json(): string;
 }
 
 export interface ClsOneQubitGate extends QuantumGateBase {}
@@ -156,6 +168,7 @@ export interface GeneralQuantumOperatorImpl {
     add_operator(coef: number | Complex, pauli_string: string): void;
     add_operator(target_qubit_index_list: number[], target_qubit_pauli_list: number[], pauli_string: number | Complex): void;
     get_expectation_value(state: QuantumStateBase): Complex;
+    to_json(): string;
 };
 
 export type HermitianQuantumOperatorImpl = GeneralQuantumOperatorImpl & {
