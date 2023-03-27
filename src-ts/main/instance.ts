@@ -131,14 +131,6 @@ function applyQuantumStateOverload(qulacsModule: any) {
         return QuantumState.prototype.load_QuantumStateBase.call(this, arg);
     }
 
-    QuantumState.prototype.multiply_coef = function(arg: any) {
-        if (typeof arg === "number") {
-            return QuantumState.prototype.multiply_coef_double.call(this, arg);
-        } else {
-            return QuantumState.prototype.multiply_coef_complex.call(this, arg);
-        }
-    }
-
     QuantumState.prototype.multiply_elementwise_function = function(func: (val: number) => Complex) {
         // NOTE: EM_JSで使うdyncallは入出力にvijfd型のみ利用できるため、funcが返すComplexをdyncall元に返すことができない
         // そのため、funcの返り値をcomplexRegeneratorでdoubleに分解し、dyncallが渡すポインタに先に書き込み、
@@ -167,14 +159,6 @@ function applyDensityMatrixOverload() {
         }
         return DensityMatrix.prototype.load_QuantumStateBase.call(this, arg);
     }
-
-    DensityMatrix.prototype.multiply_coef = function(arg: any) {
-        if (typeof arg === "number") {
-            return DensityMatrix.prototype.multiply_coef_double.call(this, arg);
-        } else {
-            return DensityMatrix.prototype.multiply_coef_complex.call(this, arg);
-        }
-    }
 }
 
 function applyQuantumCircuitSimulatorOverload() {
@@ -196,16 +180,20 @@ function applyFunctionOverload(qulacsModule: any) {
 
     tensor_product = (state_left: any, state_right: any) => {
         // NOTE: 暫定。より確実な判定方法を検討する
-        if (state_left.$$.ptrType.name === "QuantumState*" && state_right.$$.ptrType.name === "QuantumState*") {
+        const names_left = getPtrNames(state_left);
+        const names_right = getPtrNames(state_right);
+        if (names_left?.ptrTypeName === "QuantumState*" && names_right?.ptrTypeName === "QuantumState*") {
             return qulacsModule["tensor_product_QuantumState"](state_left, state_right);
         } else {
             return qulacsModule["tensor_product_DensityMatrix"](state_left, state_right);
         }
+
     };
 
     permutate_qubit = (state: any, qubit_order: number[]) => {
         // NOTE: 暫定。より確実な判定方法を検討する
-        if (state.$$.ptrType.name === "QuantumState*" && state.$$.ptrType.name === "QuantumState*") {
+        const names = getPtrNames(state);
+        if (names?.ptrTypeName === "QuantumState*") {
             return qulacsModule["permutate_qubit_QuantumState"](state, qubit_order);
         } else {
             return qulacsModule["permutate_qubit_DensityMatrix"](state, qubit_order);
