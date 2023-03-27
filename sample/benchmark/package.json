@@ -1,14 +1,14 @@
 {
-  "name": "qulacs-wasm-browser-sample",
+  "name": "benchmark-qulacs-wasm",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm run build:tsc && npm run build:webpack && npm run build:cpx",
+    "build": "npm run build:tsc && npm run build:webpack",
     "build:tsc": "tsc -p .",
     "build:webpack": "webpack",
-    "build:cpx": "cpx node_modules/qulacs-wasm/lib/wasm/*.wasm dist",
-    "start": "http-server dist"
+    "start-node": "node lib/index.js",
+    "start-browser": "http-server dist"
   },
   "keywords": [],
   "author": "",
