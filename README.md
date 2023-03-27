@@ -41,11 +41,28 @@ sampling [
 ]
 ```
 
-[advanced.test](./test/tutorial/advanced.test.ts) satisfies the same use case as [Qulacs Python Advanced Guide](https://docs.qulacs.org/en/latest/guide/2.0_python_advanced.html) with TypeScript.
+## Features
 
-How to include .wasm file for your project, details in [sample](./sample/).
+- Almost fully Qulacs on Python compatible interface (except for direct json file access)
+- Very fast quantum circuit simulation in JavaScript environments
+- Provides TypeScript d.ts
+- Support for external loading of .wasm file
+
+[Qulacs Python Advanced Guide](https://docs.qulacs.org/en/latest/guide/2.0_python_advanced.html) use case is implemented by TypeScript in [advanced-guide.test.ts](./test/tutorial/advanced-guide.test.ts).
+
+## Performance
+
+The time to simulate a random quantum circuit is compared to the original Qulacs(November 2020).
+
+This benchmark test complies with [benchmark-qulacs](https://github.com/qulacs/benchmark-qulacs) and you can see the detail [here](./sample/benchmark/).
+
+### Single-thread benchmark
+
+![single thread benchmark](./img/fig_both_singlethread.png)
 
 ## How to import from external .wasm file
+
+qulacs-wasm automatically loads bundled wasm binary, but can also load it externally. This helps manage js bundle size.
 
 ```javascript
 import { initQulacs } from "qulacs-wasm/lib/nobundle";
@@ -58,13 +75,15 @@ const state = new QuantumState(1);
 (X(0)).update_quantum_state(state);
 ```
 
+How to include .wasm file for your project, details in [sample](./sample/).
+
 ## Build qulacs-wasm from source
 
 Building qulacs-wasm involves building Qulacs and Boost, so those requirements must be satisfied, and Emscripten environment for qulacs-wasm.
 
 ### Requirements
 
-- [Qulacs requirements](https://github.com/qulacs/qulacs#requirements) (tested on [v0.5.2](https://github.com/qulacs/qulacs/tree/9739c28c6c9fd2981e3e4ddf9f11b003b3b8a84d))
+- [Qulacs requirements](https://github.com/qulacs/qulacs#requirements) (tested on [v0.5.6](https://github.com/qulacs/qulacs/tree/v0.5.6))
 - Emscripten (tested on v3.1.22)
   - need `em++` command
 - Node.js/npm (tested on Node.js v18.3.0/npm 8.11.0)
