@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "qulacs-wasm": "^0.0.1"
+    "qulacs-wasm": "^0.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",

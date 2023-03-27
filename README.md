@@ -100,7 +100,7 @@ npm install
 npm run build
 ```
 
-## non-available classes and functions
+## Non-available classes and functions
 
 - [ ] GPU class (ex: QuantumStateGpu)
 - [ ] ITYPE(long long int) type (automatically cast to int)

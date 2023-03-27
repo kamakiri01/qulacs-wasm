@@ -8,14 +8,13 @@
     "build:tsc": "tsc -p .",
     "build:webpack": "webpack",
     "build:cpx": "cpx node_modules/qulacs-wasm/lib/wasm/*.wasm dist",
-    "start": "http-server dist",
-    "start2": "http-server -p 8082 dist"
+    "start": "http-server dist"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "qulacs-wasm": "^0.0.1"
+    "qulacs-wasm": "^0.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",
