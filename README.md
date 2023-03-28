@@ -105,5 +105,5 @@ npm run build
 - [ ] GPU class (ex: QuantumStateGpu)
 - [ ] ITYPE(long long int) type (automatically cast to int)
 - [ ] file access functions (ex: create_quantum_operator_from_openfermion_file / create_observable_from_openfermion_file / create_split_quantum_operator)
-
+- [ ] Multi-thread (limited by currently  WebAssembly Specifications)
 Pull Requests Welcome!
