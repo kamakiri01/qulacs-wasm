@@ -89,7 +89,6 @@ initQulacs()
     })
 
     const result_test_QCBM: any[] = [];
-
     nqubits_list.forEach(i => {
         const time = test_QCBM(i)/timeScale;
         result_test_QCBM.push({qubits: i, time});
@@ -97,8 +96,8 @@ initQulacs()
     })
     
     console.log({
-        test_QCBMopt: result_test_QCBMopt,
-        test_QCM: result_test_QCBM
+        QCBMopt: result_test_QCBMopt,
+        QCM: result_test_QCBM
     })
 }).catch(e => {
     console.log("getExceptionMessage(e)", getExceptionMessage(e));
