@@ -79,13 +79,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         }), emscripten::allow_raw_pointers())
         .function("get_device_name", &QuantumState::get_device_name, emscripten::allow_raw_pointers())
         .function("add_state", &QuantumState::add_state, emscripten::allow_raw_pointers())
-        .function("multiply_coef_double", emscripten::optional_override([](QuantumState& self, const double &coef) {
-            std::complex<double> c(coef, 0);
-            self.multiply_coef(c);
-        }), emscripten::allow_raw_pointers())
-        .function("multiply_coef_complex", emscripten::optional_override([](QuantumState& self, const emscripten::val &v) {
-            std::complex<double> c(v["real"].as<double>(), v["imag"].as<double>());
-            self.multiply_coef(c);
+        .function("multiply_coef", emscripten::optional_override([](QuantumState& self, const emscripten::val &v) {
+            self.multiply_coef(translateJSNumberOrComplexToCPPCTYPE(v));
         }), emscripten::allow_raw_pointers())
         .function("multiply_elementwise_function_wrapper", emscripten::optional_override([](QuantumState& self, intptr_t funcPtr) {
             // JSのfuncPtr先の関数をC++の型でラップする
@@ -158,13 +153,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         }), emscripten::allow_raw_pointers())
         .function("get_device_name", &DensityMatrix::get_device_name, emscripten::allow_raw_pointers())
         .function("add_state", &DensityMatrix::add_state, emscripten::allow_raw_pointers())
-        .function("multiply_coef_double", emscripten::optional_override([](DensityMatrix& self, const double &coef) {
-            std::complex<double> c(coef, 0);
-            self.multiply_coef(c);
-        }), emscripten::allow_raw_pointers())
-        .function("multiply_coef_complex", emscripten::optional_override([](DensityMatrix& self, const emscripten::val &v) {
-            std::complex<double> c(v["real"].as<double>(), v["imag"].as<double>());
-            self.multiply_coef(c);
+        .function("multiply_coef", emscripten::optional_override([](DensityMatrix& self, const emscripten::val &v) {
+            self.multiply_coef(translateJSNumberOrComplexToCPPCTYPE(v));
         }), emscripten::allow_raw_pointers())
         .function("get_classical_value", &DensityMatrix::get_classical_value, emscripten::allow_raw_pointers())
         .function("set_classical_value", &DensityMatrix::set_classical_value, emscripten::allow_raw_pointers())
