@@ -58,7 +58,7 @@ This benchmark test complies with [benchmark-qulacs](https://github.com/qulacs/b
 
 ### Single-thread benchmark
 
-![single thread benchmark](./img/fig_both_singlethread.png)
+![single thread benchmark](https://user-images.githubusercontent.com/3122541/228337270-bb8f52f4-c7d6-456e-81f4-1fcdb960578d.png)
 
 ## How to import from external .wasm file
 
