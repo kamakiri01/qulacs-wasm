@@ -1,4 +1,5 @@
-const ModuleQulacsWasm = require("../wasm/module.js");
+import ModuleQulacsWasm from "../wasm/module";
+import { EmscriptenWasm } from "../wasm/emscriptem-types";
 import { QulacsWasmModule } from "./emsciptenModule/QulacsWasmModule";
 import { applyModule } from "./instance";
 
@@ -30,6 +31,7 @@ function _initQulacsFromModule(compiledModule: WebAssembly.Module): Promise<Qula
                     successCallback(instance);
                 })
                 .catch(e => reject(e));
+                return undefined!;
         }
         ModuleQulacsWasm({ instantiateWasm: onInstantiateWasm })
             .then((emscriptenModule: EmscriptenWasm.Module) => {

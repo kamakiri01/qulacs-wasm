@@ -25,8 +25,8 @@
     "build:emscripten:em++:bundle": "em++ -O1 -s SINGLE_FILE=1 -I ./submodules/boost -I ./submodules/qulacs/include -L ./submodules/qulacs/lib -o ./lib-cpp/bundle/module.js   ./src-cpp/QulacsWasmModule.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleQulacsWasm\"' --bind -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_RUNTIME_METHODS=addFunction,removeFunction,ccall,cwrap,dyncall -s ALLOW_TABLE_GROWTH -s EXTRA_EXPORTED_RUNTIME_METHODS=['dynCall','getValue','setValue'] -s ALLOW_MEMORY_GROWTH",
     "build:emscripten:em++:nobundle": "em++ -O1 -I ./submodules/boost -I ./submodules/qulacs/include -L ./submodules/qulacs/lib -o ./lib-cpp/nobundle/module.js ./src-cpp/QulacsWasmModule.cpp -lvqcsim_static -lcppsim_static -lcsim_static -s MODULARIZE=1 -s 'EXPORT_NAME=\"ModuleQulacsWasm\"' --bind -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORTED_RUNTIME_METHODS=addFunction,removeFunction,ccall,cwrap,dyncall -s ALLOW_TABLE_GROWTH -s EXTRA_EXPORTED_RUNTIME_METHODS=['dynCall','getValue','setValue'] -s ALLOW_MEMORY_GROWTH",
     "build:emscripten:cp": "npm run build:emscripten:cp:bundle && npm run build:emscripten:cp:nobundle",
-    "build:emscripten:cp:bundle": "cpx \"./lib-cpp/bundle/**\" \"./lib/bundle/wasm/\" --clean",
-    "build:emscripten:cp:nobundle": "cpx \"./lib-cpp/nobundle/**\" \"./lib/nobundle/wasm/\" --clean",
+    "build:emscripten:cp:bundle": "cpx \"./lib-cpp/bundle/**\" \"./lib/bundle/wasm/\"",
+    "build:emscripten:cp:nobundle": "cpx \"./lib-cpp/nobundle/**\" \"./lib/nobundle/wasm/\"",
     "test": "jest && npm run lint",
     "lint": "eslint \"./src-ts/**/*.ts\" \"./test/**/*.ts\""
   },
