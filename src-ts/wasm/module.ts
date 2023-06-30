@@ -1,4 +1,4 @@
-// NOTE: このファイルはtscビルドを通す型定義のためだけに利用する。ビルド後の本ファイルはemscriptenのmodule.jsに上書きされる
+// NOTE: このファイルはtscビルドを通す型整合性のためだけに利用し、publishには含まない。このファイルはnpm run build終了時点でemscriptenのmodule.jsに上書きされる
 import {EmscriptenWasm} from "./emscriptem-types";
 import { QulacsWasmModule } from "../main/emsciptenModule/QulacsWasmModule";
 

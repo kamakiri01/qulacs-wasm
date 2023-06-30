@@ -31,7 +31,7 @@ function _initQulacsFromModule(compiledModule: WebAssembly.Module): Promise<Qula
                     successCallback(instance);
                 })
                 .catch(e => reject(e));
-                return undefined!;
+                return undefined!; // NOTE: @types/emscriptenでは不要なnon-null assertionかもしれない
         }
         ModuleQulacsWasm({ instantiateWasm: onInstantiateWasm })
             .then((emscriptenModule: EmscriptenWasm.Module) => {
