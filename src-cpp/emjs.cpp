@@ -65,7 +65,7 @@ EM_JS(int, AdaptiveWrapper, (intptr_t funcPtr, int* arr, int size), {
     return re;
 });
 
-EM_JS(void, QuantumStateMultiplyElementwiseFunctionWrapper, (intptr_t funcPtr, ITYPE num, double* complexArrPtr), {
+EM_JS(void, QuantumStateMultiplyElementwiseFunctionWrapper, (intptr_t funcPtr, int num, double* complexArrPtr), {
     // 受け取ったfuncPtrの関数がcomplexArrPtrにstd::Complex<double>の要素をそれぞれ格納することを期待する
     // @see https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html#calling-javascript-functions-as-function-pointers-from-c
     Module['dynCall']('vii', funcPtr, [num, complexArrPtr]);
