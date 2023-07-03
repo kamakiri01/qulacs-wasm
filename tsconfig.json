@@ -10,10 +10,6 @@
       "esModuleInterop": true,
       "forceConsistentCasingInFileNames": true
     },
-    "files": [
-        "./typings/ModuleQulacsWasm.d.ts",
-        "./typings/emscriptem-types.d.ts"
-    ],
     "include": [
       "./src-ts/**/*"
     ]

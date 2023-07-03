@@ -85,9 +85,8 @@ EMSCRIPTEN_BINDINGS(Bindings) {
         .function("multiply_elementwise_function_wrapper", emscripten::optional_override([](QuantumState& self, intptr_t funcPtr) {
             // JSのfuncPtr先の関数をC++の型でラップする
             std::function<CPPCTYPE(ITYPE)> func = [funcPtr](ITYPE num) -> CPPCTYPE {
-                int castedNum = (int) num;
                 double complexArr[2]; // 戻り値のcomplex要素を格納するメモリを確保する
-                QuantumStateMultiplyElementwiseFunctionWrapper(funcPtr, castedNum, complexArr); // メモリにfuncPtrの実行結果を書き込む
+                QuantumStateMultiplyElementwiseFunctionWrapper(funcPtr, num, complexArr); // メモリにfuncPtrの実行結果を書き込む
                 double real = complexArr[0];
                 double imag = complexArr[1];
                 std::complex<double> c(real, imag);
@@ -743,7 +742,7 @@ EMSCRIPTEN_BINDINGS(Bindings) {
             auto size = list.size();
             int arr[size];
             for (int i = 0; i < size; i++) {
-                arr[i] = (int)list[i];
+                arr[i] = list[i];
             }
             return AdaptiveWrapper(funcPtr, arr, size);
         };
