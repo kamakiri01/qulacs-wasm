@@ -1,4 +1,3 @@
-import { QuantumState } from "../instance";
 import { Complex } from "./common";
 
 export interface QuantumStateBase {}
