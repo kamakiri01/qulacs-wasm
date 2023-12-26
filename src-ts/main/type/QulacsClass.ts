@@ -58,7 +58,7 @@ export type DensityMatrixImpl = QuantumStateBase & {
 
 export interface QuantumCircuitImpl {
     new (qubit_count: number): QuantumCircuitImpl;
-    update_quantum_state(state: QuantumState, start_index?: number, end_index?: number): void;
+    update_quantum_state(state: QuantumStateBase, start_index?: number, end_index?: number): void;
     to_string(): string;
     copy(): QuantumCircuitImpl;
     add_gate(gate: QuantumGateBase, index?: number): void;
@@ -118,7 +118,7 @@ export interface ParametricQuantumCircuitImpl extends QuantumCircuitImpl {
 }
 
 export interface QuantumGateBase {
-    update_quantum_state(state: QuantumState): void;
+    update_quantum_state(state: QuantumStateBase): void;
     to_string(): string;
     copy(): QuantumGateMatrix;
     get_matrix(): Complex[][];
