@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { Worker } from "worker_threads";
-import { initQulacs } from "qulacs-wasm";
+import { initQulacs, QuantumState } from "qulacs-wasm";
 
 const USE_WORKER = false;
 if (USE_WORKER) {
@@ -17,7 +17,7 @@ if (USE_WORKER) {
 } else {
     initQulacs()
         .then(async () => {
-            const { QuantumState, QuantumCircuit } = await import("qulacs-wasm");
+            const {  QuantumCircuit } = await import("qulacs-wasm");
             const state = new QuantumState(3);
             const circuit = new QuantumCircuit(3);
             circuit.add_X_gate(0);
