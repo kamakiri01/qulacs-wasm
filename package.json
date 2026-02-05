@@ -27,8 +27,7 @@
     "build:emscripten:cp": "npm run build:emscripten:cp:bundle && npm run build:emscripten:cp:nobundle",
     "build:emscripten:cp:bundle": "cpx \"./lib-cpp/bundle/**\" \"./lib/bundle/wasm/\"",
     "build:emscripten:cp:nobundle": "cpx \"./lib-cpp/nobundle/**\" \"./lib/nobundle/wasm/\"",
-    "test": "npm run jest && npm run lint",
-    "jest": "node --experimental-wasm-threads --experimental-wasm-bulk-memory ./node_modules/.bin/jest",
+    "test": "jest && npm run lint",
     "lint": "eslint \"./src-ts/**/*.ts\" \"./test/**/*.ts\""
   },
   "keywords": [
