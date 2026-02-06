@@ -84,9 +84,9 @@ Building qulacs-wasm involves building Qulacs and Boost, so those requirements m
 ### Requirements
 
 - [Qulacs requirements](https://github.com/qulacs/qulacs#requirements) (tested on [v0.5.6](https://github.com/qulacs/qulacs/tree/v0.5.6))
-- Emscripten (tested on v3.1.22)
+- Emscripten (tested on v3.1.22 by emscripten-core/emsdk)
   - need `em++` command
-- Node.js/npm (tested on Node.js v18.3.0/npm 8.11.0)
+- Node.js/npm (tested on Node.js v22.21.1/npm 10.9.4)
   - some version included in Emscripten environment
 
 tested on the following systems.
