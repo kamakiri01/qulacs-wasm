@@ -1,5 +1,8 @@
 # ChangeLog
 
+## 0.0.6
+- fix gate assign bug, update build options
+
 ## 0.0.5
 - fix update_quantum_state type, enable to use DensityMatrix class
 

@@ -9,10 +9,10 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [18.x]
+        node: [22.x]
     steps:
       - uses: mymindstorm/setup-emsdk@v11
         with:
