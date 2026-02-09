@@ -27,7 +27,8 @@
     "build:emscripten:cp": "npm run build:emscripten:cp:bundle && npm run build:emscripten:cp:nobundle",
     "build:emscripten:cp:bundle": "cpx \"./lib-cpp/bundle/**\" \"./lib/bundle/wasm/\"",
     "build:emscripten:cp:nobundle": "cpx \"./lib-cpp/nobundle/**\" \"./lib/nobundle/wasm/\"",
-    "test": "jest && npm run lint",
+    "test": "npm run jest && npm run lint",
+    "jest": "jest",
     "lint": "eslint \"./src-ts/**/*.ts\" \"./test/**/*.ts\""
   },
   "keywords": [
