@@ -459,7 +459,7 @@ describe("QuantumCircuit Unit Tests", () => {
             circuit.update_quantum_state(state);
 
             expect(state.get_amplitude(0)).toEqual({ real: 0, imag: 0 });
-            expect(Math.abs(state.get_amplitude(1).imag)).toBeCloseTo(1, 2);
+            expect(state.get_amplitude(1)).toEqual({ real: 0, imag: -1 });
         });
 
         it("should add gate via add_gate with T", async () => {
