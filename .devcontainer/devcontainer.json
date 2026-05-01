@@ -1,0 +1,21 @@
+{
+	"name": "qulacs-wasm Build Environment",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": "."
+	},
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/qulacs-wasm,type=bind,consistency=cached",
+	"mounts": [
+		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached"
+	],
+	"remoteUser": "vscode",
+	"features": {},
+	"customizations": {
+		"vscode": {
+			"extensions": [],
+			"settings": {}
+		}
+	},
+	"forwardPorts": [],
+	"postCreateCommand": "echo 'Devcontainer setup complete!'"
+}
