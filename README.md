@@ -89,9 +89,21 @@ Building qulacs-wasm involves building Qulacs and Boost, so those requirements m
 - Node.js/npm (tested on Node.js v22.21.1/npm 10.9.4)
   - some version included in Emscripten environment
 
-tested on the following systems.
+### Devcontainer for build and development
 
-- Ubuntu 20.04.3 LTS (on WSL2)
+Automatically build environment for qulacs-wasm.
+
+```sh
+devcontainer up --workspace-folder .
+devcontainer exec --workspace-folder . /bin/bash
+```
+
+Tested on the following systems.
+
+- Ubuntu 20.04.3 LTS (on WSL)
+- Ubuntu 22.04 LTS (on devcontainer)
+
+### Build
 
 ```
 npm run init
